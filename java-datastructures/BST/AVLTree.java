@@ -1,18 +1,18 @@
 package BST;
 
-public class AVLTree implements IndexInterface<AVLNode>{
-	private AVLNode root;
-	static final AVLNode NIL = new AVLNode(null, null, null, 0);
+public class AVLTree<T extends Comparable<T>> implements IndexInterface<T, AVLNode<T>>{
+	private AVLNode<T> root;
+	static final AVLNode NIL = new AVLNode<>(null, null, null, 0);
 	
 	public AVLTree() {
  		root = NIL;
  	} 
  
  	// [알고리즘 10-1] 구현 : 검색
- 	public AVLNode search(Comparable x) {
+ 	public AVLNode<T> search(T x) {
  		return searchItem(root, x);
  	}
- 	private AVLNode searchItem(AVLNode tNode, Comparable x) {
+ 	private AVLNode<T> searchItem(AVLNode<T> tNode, T x) {
  			if (tNode == NIL) return NIL;
  			else if (x.compareTo(tNode.item) == 0) return tNode;
  			else if (x.compareTo(tNode.item) < 0)
@@ -22,13 +22,13 @@ public class AVLTree implements IndexInterface<AVLNode>{
  	} 
   
  	// [알고리즘 10-3] 구현 : 삽입
- 	public void insert(Comparable x) {
+ 	public void insert(T x) {
  			root = insertItem(root, x);
  	}
  
- 	private AVLNode insertItem(AVLNode tNode, Comparable x) {
+ 	private AVLNode<T> insertItem(AVLNode<T> tNode, T x) {
  		if (tNode == NIL) { // insert after a leaf  (or into an empty tree)
- 			tNode = new AVLNode(x);
+ 			tNode = new AVLNode<>(x);
  		} else  if (x.compareTo(tNode.item) < 0) { // branch left
  			tNode.left = insertItem(tNode.left, x);
  			tNode.height = 1 + Math.max(tNode.right.height, tNode.left.height);
@@ -41,15 +41,16 @@ public class AVLTree implements IndexInterface<AVLNode>{
  			int type = needBalance(tNode);
  			if(type != NO_NEED)
  				tNode = balanceAVL(tNode, type);
+        }
  		return tNode;
  	} 
  	
  	// [알고리즘 10-3] 구현 : 삭제
- 	public void delete(Comparable x) {
+ 	public void delete(T x) {
  		root = deleteItem(root, x);
  	}
  	
- 	private AVLNode deleteItem(AVLNode tNode, Comparable x) {
+ 	private AVLNode<T> deleteItem(AVLNode<T> tNode, T x) {
  	      if (tNode == NIL) return NIL; 
 	else {
  	            if (x.compareTo(tNode.item) == 0) {
@@ -71,7 +72,7 @@ public class AVLTree implements IndexInterface<AVLNode>{
  		}
  	}
  	
- 	private AVLNode deleteNode(AVLNode tNode)
+ 	private AVLNode<T> deleteNode(AVLNode<T> tNode) {
  		// 3가지 case
  		//    1. tNode이 리프 노드
  		//    2. tNode이 자식이 하나만 있음
@@ -93,7 +94,7 @@ public class AVLTree implements IndexInterface<AVLNode>{
          	}
  	}
  	 
- 	private returnPair deleteMinItem(AVLNode tNode) {
+ 	private returnPair deleteMinItem(AVLNode<T> tNode) {
  		int type;
  		if (tNode.left == NIL) { 
  			return new returnPair(tNode.item,tNode.right);
@@ -110,17 +111,17 @@ public class AVLTree implements IndexInterface<AVLNode>{
  	}
  	
  	private class returnPair {
- 		private Comparable item;
- 		private AVLNode node;
- 		private returnPair(Comparable it, AVLNode nd) {
+ 		private T item;
+ 		private AVLNode<T> node;
+ 		private returnPair(T it, AVLNode<T> nd) {
  			item = it;
  			node = nd;
  		}
  	}
  	
  	// 균형 잡기 
- 	private AVLNode balanceAVL(AVLNode tNode, int type) {
- 		AVLNode returnNode = NIL;
+ 	private AVLNode<T> balanceAVL(AVLNode<T> tNode, int type) {
+ 		AVLNode<T> returnNode = NIL;
  		switch (type) {
  		case LL: 
  			returnNode = rightRotate(tNode);
@@ -144,11 +145,11 @@ public class AVLTree implements IndexInterface<AVLNode>{
  	}
  	
  	// [알고리즘 11-1] 구현 : 좌회전
- 	private AVLNode leftRotate(AVLNode t) {
- 		AVLNode RChild = t.right;
+ 	private AVLNode<T> leftRotate(AVLNode<T> t) {
+ 		AVLNode<T> RChild = t.right;
  		if(RChild == NIL)
  			System.out.println(t.item + "'s RChild shouldn't be NIL!");
- 		AVLNode RLChild = RChild.left;
+ 		AVLNode<T> RLChild = RChild.left;
  		RChild.left = t;
  		t.right = RLChild;
  		t.height = 1 + Math.max(t.left.height, t.right.height);
@@ -157,11 +158,11 @@ public class AVLTree implements IndexInterface<AVLNode>{
  	}
  
  	// [알고리즘 11-1] 구현 : 우회전
- 	private AVLNode rightRotate(AVLNode t) {
- 		AVLNode LChild = t.left;
+ 	private AVLNode<T> rightRotate(AVLNode<T> t) {
+ 		AVLNode<T> LChild = t.left;
  		if(LChild == NIL)
  			System.out.println(t.item + "'s LChild shouldn't be NIL!");
- 		AVLNode LRChild = LChild.right;
+ 		AVLNode<T> LRChild = LChild.right;
  		LChild.right = t;
  		t.left = LRChild;
 		t.height = 1 + Math.max(t.left.height, t.right.height);
@@ -170,7 +171,7 @@ public class AVLTree implements IndexInterface<AVLNode>{
  	}
  
  	private final int LL = 1, LR =2, RR = 3, RL = 4, NO_NEED = 0, ILLEGAL = -1;
- 	private int needBalance(AVLNode t) {
+ 	private int needBalance(AVLNode<T> t) {
  		int type = ILLEGAL;
  		if (t.left.height + 2 <= t.right.height) {			// R 유형
  			if ((t.right.left.height) <= t.right.right.height)	// RR 유형
@@ -201,11 +202,67 @@ public class AVLTree implements IndexInterface<AVLNode>{
 		System.out.println("AVL Tree in preorder: (item, height)");
 		prPreOrder(root);
 	}
-	public void prPreOrder(AVLNode tNode) {
+	public void prPreOrder(AVLNode<T> tNode) {
 		if (tNode != NIL) {
 			System.out.println("(" + tNode.item + ", " + tNode.height + ")");
 			prPreOrder(tNode.left);
 			prPreOrder(tNode.right);
+		}
+	}
+
+	public void printInOrder() {
+		System.out.println("AVL Tree in inorder: (item, height)");
+		prInOrder(root);
+	}
+
+	public void prInOrder(AVLNode<T> tNode) {
+		if (tNode != NIL) {
+			prInOrder(tNode.left);
+			System.out.println("(" + tNode.item + ", " + tNode.height + ")");
+			prInOrder(tNode.right);
+		}
+	}
+
+	public void printPostOrder() {
+		System.out.println("AVL Tree in postorder: (item, height)");
+		prPostOrder(root);
+	}
+
+	public void prPostOrder(AVLNode<T> tNode) {
+		if (tNode != NIL) {
+			prPostOrder(tNode.left);
+			prPostOrder(tNode.right);
+			System.out.println("(" + tNode.item + ", " + tNode.height + ")");
+		}
+	}
+
+	public T findMin() {
+		if (root == NIL) {
+			return null; // Or throw an exception for an empty tree
+		}
+		return findMinItem(root).item;
+	}
+
+	private AVLNode<T> findMinItem(AVLNode<T> tNode) {
+		if (tNode.left == NIL) {
+			return tNode;
+		} else {
+			return findMinItem(tNode.left);
+		}
+	}
+
+	public T findMax() {
+		if (root == NIL) {
+			return null; // Or throw an exception for an empty tree
+		}
+		return findMaxItem(root).item;
+	}
+
+	private AVLNode<T> findMaxItem(AVLNode<T> tNode) {
+		if (tNode.right == NIL) {
+			return tNode;
+		} else {
+			return findMaxItem(tNode.right);
 		}
 	}
 } // 코드 11-2

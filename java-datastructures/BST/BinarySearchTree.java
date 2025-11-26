@@ -1,17 +1,17 @@
 package BST;
 
-public class BinarySearchTree implements IndexInterface<TreeNode> {
-	private TreeNode root;
+public class BinarySearchTree<T extends Comparable<T>> implements IndexInterface<T, TreeNode<T>> {
+	private TreeNode<T> root;
 	public BinarySearchTree() { // 생성자
 		root = null;
 	}
 	
 	// [알고리즘 10-1] 구현 : 검색
-	public TreeNode search(Comparable searchKey) {
+	public TreeNode<T> search(T searchKey) {
 		return searchItem(root, searchKey);
 	}
 	
-	private TreeNode searchItem(TreeNode tNode, Comparable searchKey) {
+	private TreeNode<T> searchItem(TreeNode<T> tNode, T searchKey) {
 		if (tNode == null) 
 			return null;  // 검색 실패
 		else if (searchKey.compareTo(tNode.key) == 0)
@@ -23,13 +23,13 @@ public class BinarySearchTree implements IndexInterface<TreeNode> {
 	}
 	
 	// [알고리즘 10-3] 구현 : 삽입
-	public void insert(Comparable newKey) {
+	public void insert(T newKey) {
 		root = insertItem(root, newKey);
 	}
  
-	private TreeNode insertItem(TreeNode tNode, Comparable newItem) {
+	private TreeNode<T> insertItem(TreeNode<T> tNode, T newItem) {
 		if (tNode == null)  // insert after a leaf  (or into an empty tree)
-			tNode = new TreeNode(newItem, null, null);
+			tNode = new TreeNode<>(newItem, null, null);
 		else  if (newItem.compareTo(tNode.key) < 0) 	// branch left
 			tNode.left = insertItem(tNode.left, newItem);
 		else  					// branch right
@@ -38,14 +38,14 @@ public class BinarySearchTree implements IndexInterface<TreeNode> {
 	}
 	
 	// [알고리즘 10-3] 구현 : 삭제
-	public void delete(Comparable searchKey) {
+	public void delete(T searchKey) {
 		root = deleteItem(root, searchKey);
 	}
 	
-	private TreeNode deleteItem(TreeNode tNode, Comparable searchKey) {
+	private TreeNode<T> deleteItem(TreeNode<T> tNode, T searchKey) {
 		if (tNode == null) return null;	// key not found!
 		else {
-			if (searchKey == tNode.key) 	// key found at tNode
+			if (searchKey.compareTo(tNode.key) == 0) 	// key found at tNode
 				tNode = deleteNode(tNode);
 			else if (searchKey.compareTo(tNode.key) < 0) 
 				tNode.left = deleteItem(tNode.left, searchKey);
@@ -55,7 +55,7 @@ public class BinarySearchTree implements IndexInterface<TreeNode> {
 		}
 	}
  
-	private TreeNode deleteNode(TreeNode tNode) {
+	private TreeNode<T> deleteNode(TreeNode<T> tNode) {
 	// 3가지 case
 		//    1. tNode이 리프 노드
 		//    2. tNode이 자식이 하나만 있음
@@ -73,7 +73,7 @@ public class BinarySearchTree implements IndexInterface<TreeNode> {
         	}
 	}
 	
-	private returnPair deleteMinItem(TreeNode tNode) {
+	private returnPair deleteMinItem(TreeNode<T> tNode) {
 		if (tNode.left == null) 
 			return new returnPair(tNode.key,tNode.right);
 		else {
@@ -85,16 +85,16 @@ public class BinarySearchTree implements IndexInterface<TreeNode> {
 	}
 	
 	private class returnPair {
-		private Comparable key;
-		private TreeNode node;
-		private returnPair(Comparable it, TreeNode nd) {
+		private T key;
+		private TreeNode<T> node;
+		private returnPair(T it, TreeNode<T> nd) {
 			key = it;
 			node = nd;
 		}
 	}
 	
 	// 기타
-	public void isEmpty() {
+	public boolean isEmpty() {
 		return root == null;
 	}
 	
@@ -106,11 +106,65 @@ public class BinarySearchTree implements IndexInterface<TreeNode> {
 	public void printPreOrder() {
 		prPreOrder(root);
 	}
-	public void prPreOrder(TreeNode tNode) {
+	public void prPreOrder(TreeNode<T> tNode) {
 		if (tNode != null) {
 			System.out.println(tNode.key);
 			prPreOrder(tNode.left);
 			prPreOrder(tNode.right);
+		}
+	}
+
+	public void printInOrder() {
+		prInOrder(root);
+	}
+
+	public void prInOrder(TreeNode<T> tNode) {
+		if (tNode != null) {
+			prInOrder(tNode.left);
+			System.out.println(tNode.key);
+			prInOrder(tNode.right);
+		}
+	}
+
+	public void printPostOrder() {
+		prPostOrder(root);
+	}
+
+	public void prPostOrder(TreeNode<T> tNode) {
+		if (tNode != null) {
+			prPostOrder(tNode.left);
+			prPostOrder(tNode.right);
+			System.out.println(tNode.key);
+		}
+	}
+
+	public T findMin() {
+		if (root == null) {
+			return null; // Or throw an exception for an empty tree
+		}
+		return findMinItem(root).key;
+	}
+
+	private TreeNode<T> findMinItem(TreeNode<T> tNode) {
+		if (tNode.left == null) {
+			return tNode;
+		} else {
+			return findMinItem(tNode.left);
+		}
+	}
+
+	public T findMax() {
+		if (root == null) {
+			return null; // Or throw an exception for an empty tree
+		}
+		return findMaxItem(root).key;
+	}
+
+	private TreeNode<T> findMaxItem(TreeNode<T> tNode) {
+		if (tNode.right == null) {
+			return tNode;
+		} else {
+			return findMaxItem(tNode.right);
 		}
 	}
 } // 코드 10-3

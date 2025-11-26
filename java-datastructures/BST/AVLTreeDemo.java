@@ -4,7 +4,7 @@ public class AVLTreeDemo {
 
 	public static void main(String[] args) {
 		System.out.println("AVL Tree!!");
-		AVLTree avl = new AVLTree(); 
+		AVLTree<Integer> avl = new AVLTree<>(); 
 		System.out.println("isEmpty(): " + avl.isEmpty());
 		
 		avl.insert(10);

@@ -3,7 +3,7 @@ package BST;
 public class BinarySearchTreeDemo {
 	public static void main(String[] args) {
 		System.out.println("Binary Search Tree!");
-		BinarySearchTree bst1 = new BinarySearchTree(); 
+		BinarySearchTree<Integer> bst1 = new BinarySearchTree<>(); 
 		bst1.insert(10);
 		bst1.insert(20);
 		bst1.insert(5);
@@ -23,7 +23,7 @@ public class BinarySearchTreeDemo {
 		bst1.printPreOrder();
 		
 		Integer tmp = 755;
-		TreeNode res = bst1.search(tmp);
+		TreeNode<Integer> res = bst1.search(tmp);
 		if(res ==  null) {
 			System.out.println("Search for " + tmp + " failed" );
 		} else {

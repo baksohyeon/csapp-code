@@ -1,23 +1,23 @@
 package BST;
 
-public class AVLNode {
-	public Comparable item;
-	public AVLNode left, right;
+public class AVLNode<T extends Comparable<T>> {
+	public T item;
+	public AVLNode<T> left, right;
 	public int height;
 	
-	public AVLNode(Comparable newItem) {
+	public AVLNode(T newItem) {
 		item = newItem;
 		left = right = AVLTree.NIL; 
 		height = 1;
 	}
 	
-	public AVLNode(Comparable newItem, AVLNode leftChild, AVLNode rightChild) {
+	public AVLNode(T newItem, AVLNode<T> leftChild, AVLNode<T> rightChild) {
 		item = newItem;
 		left = leftChild; right = rightChild;
 		height = 1;
 	}
 	
-	public AVLNode(Comparable newItem, AVLNode leftChild, AVLNode rightChild, int h) {
+	public AVLNode(T newItem, AVLNode<T> leftChild, AVLNode<T> rightChild, int h) {
 		item = newItem;
 		left = leftChild; right = rightChild;
 		height = h;
