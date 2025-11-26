@@ -1,0 +1,57 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Compiled Object files
+*.o
+*.obj
+*.ko
+*.elf
+
+# Executables
+*.exe
+*.out
+*.app
+a.out
+
+# Java compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# Build directories
+build/
+dist/
+target/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Assembly files (optional - uncomment if you want to ignore)
+# *.s
+# *.asm
+
+# Core dumps
+core
+core.*
+
+# Temporary files
+*.tmp
+*.temp
+*.log
