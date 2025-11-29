@@ -2,7 +2,7 @@ package BTree;
 
 public class BTree {
     private BTreeNode root;
-    private int t; // Minimum degree
+    private final int t; // Minimum degree
 
     public BTree(int t) {
         this.root = null;

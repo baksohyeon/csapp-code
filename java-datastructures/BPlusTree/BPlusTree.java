@@ -42,9 +42,65 @@ public class BPlusTree<K extends Comparable<K>, V> {
         System.out.println("Insert functionality is not yet implemented.");
     }
 
+    // Get the order of the B+ Tree
+    public int getOrder() {
+        return order;
+    }
+
     // Print the tree structure (for debugging)
     public void printTree() {
-        // To be implemented
-        System.out.println("Print functionality is not yet implemented.");
+        if (root == null) {
+            System.out.println("Tree is empty.");
+            return;
+        }
+        
+        System.out.println("B+ Tree Structure (Order: " + order + ")");
+        System.out.println("================================");
+        printTreeHelper(root, 0);
+        System.out.println("================================");
+    }
+    
+    // Helper method for recursive tree printing
+    @SuppressWarnings("unchecked")
+    private void printTreeHelper(BPlusTreeNode<K, V> node, int level) {
+        if (node == null) return;
+        
+        // Print indentation for current level
+        String indent = "  ".repeat(level);
+        
+        // Print node type and keys
+        System.out.print(indent + (node.isLeaf ? "LEAF: " : "INTERNAL: "));
+        System.out.print("[");
+        for (int i = 0; i < node.keyCount; i++) {
+            System.out.print(node.keys[i]);
+            if (i < node.keyCount - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.print("]");
+        
+        // For leaf nodes, also print values
+        if (node.isLeaf) {
+            System.out.print(" -> Values: [");
+            for (int i = 0; i < node.keyCount; i++) {
+                if (node.pointers[i + 1] != null) {
+                    System.out.print(node.pointers[i + 1]);
+                    if (i < node.keyCount - 1) {
+                        System.out.print(", ");
+                    }
+                }
+            }
+            System.out.print("]");
+        }
+        System.out.println();
+        
+        // Recursively print children for internal nodes
+        if (!node.isLeaf) {
+            for (int i = 0; i <= node.keyCount; i++) {
+                if (node.pointers[i] != null) {
+                    printTreeHelper((BPlusTreeNode<K, V>) node.pointers[i], level + 1);
+                }
+            }
+        }
     }
 }
