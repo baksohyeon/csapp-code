@@ -1,5 +1,8 @@
 package BTree;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class BTree {
     private BTreeNode root;
     private final int t; // Minimum degree
@@ -8,6 +11,48 @@ public class BTree {
         this.root = null;
         this.t = t;
     }
+
+    // This method is for manually setting up a B-Tree structure.
+    public void setRoot(BTreeNode root) {
+        this.root = root;
+    }
+
+    // Method to print the B-Tree structure (Level-Order Traversal)
+    public void printTree() {
+        if (root == null) {
+            System.out.println("The B-Tree is empty.");
+            return;
+        }
+
+        Queue<BTreeNode> queue = new LinkedList<>();
+        queue.add(root);
+
+        int level = 0;
+        while (!queue.isEmpty()) {
+            int levelNodes = queue.size();
+            System.out.print("Level " + level + ": ");
+            while (levelNodes > 0) {
+                BTreeNode currentNode = queue.poll();
+                System.out.print("[");
+                for (int i = 0; i < currentNode.n; i++) {
+                    System.out.print(currentNode.keys[i] + (i == currentNode.n - 1 ? "" : ","));
+                }
+                System.out.print("] ");
+
+                if (!currentNode.leaf) {
+                    for (int i = 0; i <= currentNode.n; i++) {
+                        if (currentNode.children[i] != null) {
+                            queue.add(currentNode.children[i]);
+                        }
+                    }
+                }
+                levelNodes--;
+            }
+            System.out.println();
+            level++;
+        }
+    }
+
 
     public void traverse() {
         if (root != null) {
