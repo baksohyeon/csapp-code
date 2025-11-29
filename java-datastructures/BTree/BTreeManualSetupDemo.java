@@ -57,8 +57,16 @@ public class BTreeManualSetupDemo {
         bTree.printTree();
         System.out.println();
 
-        System.out.println("Traversal of the constructed B-Tree is:");
-        bTree.traverse();
+
+        bTree.insert(18);
+        System.out.println("B-Tree structure (After Inserting 18):");
+        bTree.printTree();
+        System.out.println();
+
+
+        bTree.insert(16);
+        System.out.println("B-Tree structure (After Inserting 16):");
+        bTree.printTree();
         System.out.println();
     }
 }
