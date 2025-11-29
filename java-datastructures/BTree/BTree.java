@@ -132,4 +132,22 @@ public class BTree {
         x.keys[i] = y.keys[t - 1];
         x.n = x.n + 1;
     }
+
+    public void remove(int k) {
+        if (root == null) {
+            System.out.println("The tree is empty");
+            return;
+        }
+
+        root.remove(k);
+
+        // If root becomes empty after deletion, make its only child the new root
+        if (root.n == 0) {
+            if (!root.leaf && root.children[0] != null) {
+                root = root.children[0];
+            } else {
+                root = null;
+            }
+        }
+    }
 }
