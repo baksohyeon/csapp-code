@@ -7,6 +7,7 @@ class BPlusTreeNode<K extends Comparable<K>, V> {
     int keyCount;
     K[] keys;
     Object[] pointers; // Can be children nodes or values
+    BPlusTreeNode<K, V> parent;
 
     @SuppressWarnings("unchecked")
     public BPlusTreeNode(int order, boolean isLeaf) {
@@ -18,6 +19,7 @@ class BPlusTreeNode<K extends Comparable<K>, V> {
         } else {
             this.pointers = new BPlusTreeNode[order];
         }
+        this.parent = null;
     }
 
     // Utility to find the index of a key or where it should be inserted
