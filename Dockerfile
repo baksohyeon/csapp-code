@@ -3,4 +3,6 @@
 FROM nginx:alpine
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY . /usr/share/nginx/html
+# nginx:alpine 기본 index.html(Welcome to nginx!) 제거 → autoindex(Index of /)가 뜨게 함
+RUN rm -f /usr/share/nginx/html/index.html
 EXPOSE 80

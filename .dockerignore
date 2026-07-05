@@ -4,3 +4,8 @@
 .vscode
 *.swp
 .DS_Store
+
+# 배포 플러밍은 공개 목록에 안 보이게 (Index of /csapp/ 를 깔끔하게)
+Dockerfile
+.dockerignore
+deploy
