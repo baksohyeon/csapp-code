@@ -1,57 +1,27 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
 # macOS
 .DS_Store
 .AppleDouble
 .LSOverride
 
-# Compiled Object files
-*.o
-*.obj
-*.ko
-*.elf
-
-# Executables
-*.exe
-*.out
-*.app
-a.out
-
-# Java compiled files
+# Java 빌드 산출물
 *.class
-*.jar
-*.war
-*.ear
 
-# Build directories
-build/
-dist/
-target/
-out/
+# 임시 실행 파일 (실습 노트가 참조하는 .o 는 추적한다 — blanket *.o ignore 금지)
+a.out
+*.out
+*.s
+examples/**/hello
+examples/**/sum
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.project
-.classpath
-.settings/
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Assembly files (optional - uncomment if you want to ignore)
-# *.s
-# *.asm
-
-# Core dumps
+# 임시 파일
+*.tmp
+*.log
 core
 core.*
-
-# Temporary files
-*.tmp
-*.temp
-*.log
