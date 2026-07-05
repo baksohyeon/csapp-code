@@ -1,66 +1,74 @@
-
 # csapp-code
-- PDF: https://i.hyeon.me/csapp.pdf
-- Past whiteboard (this page): https://i.hyeon.me/csapp-archive
-- Current whiteboard: https://i.hyeon.me/csapp
 
+CSAPP(Computer Systems: A Programmer's Perspective) 스터디 기록.
+매주 일요일 오전 10시 스터디에서 배운 것을 wiki 형태로 쌓는 레포다.
 
-= 2025 09 21 =
-오늘 배운 것:
-- bomb lab 시크릿 페이즈 → 이진 트리
-- 바이너리 트리가 왜 빠른지 특징이 뭔지 
-- B+ tree 와 Hash Index
-- OLTP, OLAP DB 특징을 배움
-- ACID 개념이 뭔지
+## 빠른 시작
 
-소감문: 안다고 생각햇는데 ACID 키워드만 알앗지 설명하라고 했으면 탈탈 털렷을 것 같다. 그리고 인덱스의 기본 원리에 대해서 배웠는데 너무 궁금했던 부분이었어서 속이 싹 내려갔다. 
-그리고 관련해서 검색해보니 Inno DB 라는 키워드도 보였는데 그것도 궁금해졋다. // MySQL 의 구현체 (Inno DB 그 외의 것은 안쓰면 된다 생각하면 편하다 `MYSML 안쓰면 된다` )
+| 무엇을 보고 싶나 | 어디로 |
+|------------------|--------|
+| 전체 목차 | [wiki/index.md](wiki/index.md) |
+| 최신 강의노트 (Ch6 Memory Hierarchy) | [HTML 원본](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [요약 wrapper](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.md) |
+| 교재 PDF | https://i.hyeon.me/csapp.pdf |
+| 스터디 whiteboard | [현재](https://i.hyeon.me/csapp) · [과거 아카이브](https://i.hyeon.me/csapp-archive) |
 
-예전에 레디스를 직접 구현해보는 걸 시도해본 적 있었는데, 단순 key value 로 이루어진 그 무언가라고 생각했던 것이 디게 복잡해서 놀랐었다. 오늘 스터디를 듣고보니  아주 고능한 알고리즘의 집합체엿구나 너무 기특하다.
+## 레포 구조
 
----
-## Java 코드 컴파일하고 실행하기
+```
+wiki/                  ← knowledge base root (여기서부터 읽으면 된다)
+  index.md             ← 전체 목차. 항상 여기가 진입점
+  lectures/<year>/     ← 강의노트. HTML 원본 + 같은 이름의 .md 요약 wrapper 쌍
+  notes/               ← 개별 학습 노트 (컴파일/링킹, Java 실행법, 학습 로그 …)
+  topics/              ← 토픽 노드. 여러 노트가 공유하는 개념 허브
+  type/                ← 문서 타입 설명 (lecture / note / topic / example)
+  assets/              ← 노트에 첨부된 이미지
+examples/              ← C 실습 코드 (노트에서 참조)
+java-datastructures/   ← BST/AVL 트리 Java 구현
+exercises/             ← 자바 연습문제+해답 (hwp)
+AGENTS.md              ← 이 레포의 작성 규칙 (에이전트/사람 공용)
+```
 
-Java 프로그램을 돌리려면 크게 두 단계가 필요하다.
+## 읽는 법
 
-1.  **컴파일(Compile)**: `javac` 컴파일러로 사람이 쓴 Java 소스 코드(`.java`)를 바이트코드(`.class`)로 바꾼다.
-2.  **실행(Execute)**: `java` 명령어로 JVM(자바 가상 머신)을 띄워서 컴파일된 바이트코드를 실행시킨다.
+1. [wiki/index.md](wiki/index.md)를 연다. 강의노트·노트·토픽이 전부 링크되어 있다.
+2. 문서 안의 `[[이름]]` 표기는 wiki 내부 링크다. `wiki/` 아래에서 같은 이름의
+   파일(`이름.md`)을 찾으면 된다 (Obsidian 등 wikilink 지원 도구에서는 바로 클릭 가능).
+3. 강의노트는 **HTML이 1차 자료**다. GitHub 웹에서는 HTML이 코드로 보이므로,
+   렌더링된 화면을 보려면 로컬 클론 후 브라우저로 열거나 GitHub Pages 링크를 쓴다
+   (아래 [HTML 렌더링 보기](#html-렌더링-보기) 참고). 같은 이름의 `.md` wrapper에
+   요약과 메타데이터가 있으니 GitHub에서는 wrapper부터 봐도 된다.
 
-### Java 파일 컴파일
+## HTML 렌더링 보기
 
-`javac`는 **Java 컴파일러**다. 이건 우리가 쓴 `.java` 소스 코드를 JVM이 알아먹는 `.class` 바이트코드로 번역하는 역할을 한다.
+- **로컬**: 클론 후 HTML 파일을 브라우저로 연다.
+  ```bash
+  git clone git@github.com:baksohyeon/csapp-code.git
+  open csapp-code/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html
+  ```
+- **웹/모바일**: GitHub Pages가 켜져 있으면 아래 주소로 어느 기기에서든 렌더링된 노트를 볼 수 있다.
+  `https://baksohyeon.github.io/csapp-code/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html`
 
-`javac`가 하는 일:
-*   **소스 코드 변환**: `.java` 파일을 `.class` 파일로 만든다.
-*   **문법 & 타입 체크**: 코드에 문법 오류나 타입이 안 맞는 부분이 없는지 확인하고, 문제 있으면 에러를 띄운다.
-*   **플랫폼 독립성**: 컴파일된 `.class` 파일은 OS나 하드웨어에 상관없다. 이게 바로 Java가 "한 번 짜면 어디서든 돌아간다"고 하는 이유다.
+## 실습 실행하기
 
-이 프로젝트처럼 패키지 구조(`java-datastructures` 폴더 안에 `BST` 패키지)가 잡혀있으면, `-d` 옵션을 붙여주는 게 좋다. 이 옵션은 컴파일된 `.class` 파일을 어디에 둘지 정해주는 건데, 원래 패키지 구조를 그대로 복사해서 만들어준다.
+### C — 컴파일과 링킹 (자세한 설명: [노트](wiki/notes/0001-compile-linking.md))
 
-프로젝트 루트 폴더(`/Users/dorito/csapp-code`)에서 아래 명령어를 치면 `java-datastructures/BST` 폴더의 모든 자바 파일을 컴파일할 수 있다.
+```bash
+cd examples/0001-compile-linking
+gcc hello.c sum.c -o hello   # 컴파일 + 링킹 한 번에
+./hello                      # Hello, World! 4950
+```
+
+### Java — BST/AVL 데모 (자세한 설명: [노트](wiki/notes/java-compile-run.md))
 
 ```bash
 javac -d java-datastructures java-datastructures/BST/*.java
-```
-
-이 명령어는 `java-datastructures/BST` 안의 모든 `.java` 파일을 컴파일하고, 결과물인 `.class` 파일들을 `java-datastructures` 폴더 안에 `BST` 패키지 구조를 그대로 만들어서 넣어준다. (예: `java-datastructures/BST/BinarySearchTree.class`)
-
-컴파일할 때 "unchecked or unsafe operations" 같은 경고가 뜰 수도 있는데, 보통 제네릭 쓸 때 타입 정보가 좀 모자라서 뜨는 거라 지금은 무시해도 된다.
-
-### 데모 프로그램 실행
-
-컴파일이 끝났으면 `java` 명령어로 데모 프로그램을 돌려볼 수 있다. 이때 `-cp`(classpath) 옵션이 중요한데, JVM한테 실행할 `.class` 파일이 어디 있는지 알려주는 역할을 한다.
-
-**`BinarySearchTreeDemo` 실행:**
-
-```bash
 java -cp java-datastructures BST.BinarySearchTreeDemo
-```
-
-**`AVLTreeDemo` 실행:**
-
-```bash
 java -cp java-datastructures BST.AVLTreeDemo
 ```
 
-이렇게 하면 각 데모 클래스 파일 안에 있는 `main` 메소드가 실행되면서, 이진 탐색 트리랑 AVL 트리가 어떻게 도는지 볼 수 있다.
+## 새 문서 추가하는 법
+
+- **강의노트**: `wiki/lectures/<year>/YYYY-MM-DD-<slug>.html`(원본) +
+  같은 이름의 `.md`(frontmatter 소유 wrapper). 처음부터 Markdown으로 썼다면 `.md` 하나만.
+- **노트/토픽**: `wiki/notes/`, `wiki/topics/`에 Markdown + YAML frontmatter.
+- 자세한 규칙(frontmatter 필드, wikilink, `.o` 추적 정책)은 [AGENTS.md](AGENTS.md) 참고.
