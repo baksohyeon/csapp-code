@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 500" role="img" aria-labelledby="title desc">
+  <title id="title">오류와 조용한 병합의 대비</title>
+  <desc id="desc">strong strong 조합은 링크 시간에 중단되지만 strong common과 common common은 fcommon 모드에서 링크가 성공해 런타임 의미가 바뀔 수 있음을 비교</desc>
+  <defs>
+    <style>
+      .bg{fill:#f7f9fc}.panel{fill:#fff;stroke:#c8d4e5;stroke-width:2}.bad{fill:#fce8e6;stroke:#d46a63;stroke-width:2}
+      .warn{fill:#fff7dd;stroke:#c49a3a;stroke-width:2}.ok{fill:#e6f4ea;stroke:#58a16b;stroke-width:2}
+      .t{font:700 22px system-ui,sans-serif;fill:#152033}.s{font:500 15px system-ui,sans-serif;fill:#506078}
+      .mono{font:650 16px ui-monospace,monospace;fill:#18355d}.sym{font:800 30px ui-monospace,monospace;fill:#18355d}
+      .rule{stroke:#dbe3ee;stroke-width:2}
+    </style>
+  </defs>
+  <rect class="bg" width="1100" height="500" rx="24"/>
+  <text class="t" x="44" y="48">가장 위험한 경우는 실패가 아니라 성공이다</text>
+  <text class="s" x="44" y="76">즉시 오류는 원인을 가리킨다. 조용한 병합은 문제를 실행 시간까지 숨긴다.</text>
+
+  <rect class="panel" x="45" y="116" width="310" height="322" rx="18"/>
+  <text class="t" x="200" y="153" text-anchor="middle">strong + strong</text>
+  <text class="sym" x="200" y="217" text-anchor="middle">S  ×  S</text>
+  <line class="rule" x1="80" y1="246" x2="320" y2="246"/>
+  <rect class="bad" x="80" y="276" width="240" height="74" rx="13"/>
+  <text class="t" x="200" y="309" text-anchor="middle">링크 실패</text>
+  <text class="s" x="200" y="334" text-anchor="middle">multiple definition</text>
+  <text class="s" x="200" y="391" text-anchor="middle">원인이 빌드 로그에 남는다.</text>
+
+  <rect class="panel" x="395" y="116" width="310" height="322" rx="18"/>
+  <text class="t" x="550" y="153" text-anchor="middle">strong + COMMON</text>
+  <text class="sym" x="550" y="217" text-anchor="middle">S  ←  C</text>
+  <line class="rule" x1="430" y1="246" x2="670" y2="246"/>
+  <rect class="ok" x="430" y="276" width="240" height="74" rx="13"/>
+  <text class="t" x="550" y="309" text-anchor="middle">링크 성공</text>
+  <text class="s" x="550" y="334" text-anchor="middle">strong 하나를 선택</text>
+  <text class="s" x="550" y="383" text-anchor="middle">다른 파일도 같은 저장 공간을 봄</text>
+  <text class="s" x="550" y="407" text-anchor="middle">타입이 다르면 메모리 손상 가능</text>
+
+  <rect class="panel" x="745" y="116" width="310" height="322" rx="18"/>
+  <text class="t" x="900" y="153" text-anchor="middle">COMMON + COMMON</text>
+  <text class="sym" x="900" y="217" text-anchor="middle">C  ⊕  C</text>
+  <line class="rule" x1="780" y1="246" x2="1020" y2="246"/>
+  <rect class="warn" x="780" y="276" width="240" height="74" rx="13"/>
+  <text class="t" x="900" y="309" text-anchor="middle">조용히 병합</text>
+  <text class="s" x="900" y="334" text-anchor="middle">큰 크기·정렬을 채택</text>
+  <text class="s" x="900" y="383" text-anchor="middle">-Wl,--warn-common으로 관찰</text>
+  <text class="s" x="900" y="407" text-anchor="middle">현대 기본은 -fno-common</text>
+</svg>

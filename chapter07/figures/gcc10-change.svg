@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 520" role="img" aria-labelledby="title desc">
+  <title id="title">GCC 10의 fno-common 기본값 변경</title>
+  <desc id="desc">GCC 9까지의 기본 fcommon 동작과 GCC 10부터의 기본 fno-common 동작을 같은 두 소스 파일로 비교</desc>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#55708f"/></marker>
+    <style>
+      .bg{fill:#f7f9fc}.old{fill:#fff7dd;stroke:#c49a3a;stroke-width:2}.new{fill:#e8f0fe;stroke:#7ba4df;stroke-width:2}
+      .ok{fill:#e6f4ea;stroke:#58a16b;stroke-width:2}.bad{fill:#fce8e6;stroke:#d46a63;stroke-width:2}
+      .t{font:700 22px system-ui,sans-serif;fill:#152033}.s{font:500 15px system-ui,sans-serif;fill:#506078}
+      .mono{font:650 16px ui-monospace,monospace;fill:#18355d}.line{stroke:#55708f;stroke-width:2.5;fill:none;marker-end:url(#a)}
+      .year{font:800 48px system-ui,sans-serif;fill:#18355d}.tag{font:750 14px system-ui,sans-serif;fill:#18355d}
+    </style>
+  </defs>
+  <rect class="bg" width="1100" height="520" rx="24"/>
+  <text class="t" x="44" y="48">소스는 그대로, 기본 컴파일 정책이 바뀌었다</text>
+  <text class="s" x="44" y="76">두 파일 모두 int x;를 포함한다고 가정한다.</text>
+
+  <rect class="old" x="45" y="115" width="460" height="330" rx="20"/>
+  <text class="year" x="90" y="175">≤ 9</text>
+  <text class="tag" x="220" y="158">과거 GCC 기본</text>
+  <text class="mono" x="220" y="185">-fcommon</text>
+  <rect class="old" x="85" y="220" width="160" height="66" rx="12"/>
+  <text class="mono" x="165" y="248" text-anchor="middle">a.o: x COM</text>
+  <text class="s" x="165" y="272" text-anchor="middle">SHN_COMMON</text>
+  <rect class="old" x="305" y="220" width="160" height="66" rx="12"/>
+  <text class="mono" x="385" y="248" text-anchor="middle">b.o: x COM</text>
+  <text class="s" x="385" y="272" text-anchor="middle">SHN_COMMON</text>
+  <path class="line" d="M165 286C165 320 220 320 260 342"/>
+  <path class="line" d="M385 286C385 320 330 320 290 342"/>
+  <rect class="ok" x="125" y="342" width="300" height="72" rx="14"/>
+  <text class="t" x="275" y="374" text-anchor="middle">조용히 하나로 병합</text>
+  <text class="s" x="275" y="399" text-anchor="middle">실수도 통과할 수 있음</text>
+
+  <rect class="new" x="595" y="115" width="460" height="330" rx="20"/>
+  <text class="year" x="640" y="175">10+</text>
+  <text class="tag" x="790" y="158">현대 GCC 기본</text>
+  <text class="mono" x="790" y="185">-fno-common</text>
+  <rect class="new" x="635" y="220" width="160" height="66" rx="12"/>
+  <text class="mono" x="715" y="248" text-anchor="middle">a.o: x .bss</text>
+  <text class="s" x="715" y="272" text-anchor="middle">GLOBAL definition</text>
+  <rect class="new" x="855" y="220" width="160" height="66" rx="12"/>
+  <text class="mono" x="935" y="248" text-anchor="middle">b.o: x .bss</text>
+  <text class="s" x="935" y="272" text-anchor="middle">GLOBAL definition</text>
+  <path class="line" d="M715 286C715 320 770 320 810 342"/>
+  <path class="line" d="M935 286C935 320 880 320 840 342"/>
+  <rect class="bad" x="675" y="342" width="300" height="72" rx="14"/>
+  <text class="t" x="825" y="374" text-anchor="middle">multiple definition 오류</text>
+  <text class="s" x="825" y="399" text-anchor="middle">헤더의 extern 누락을 조기에 발견</text>
+
+  <text class="s" x="550" y="484" text-anchor="middle">호환이 필요하면 -fcommon을 명시할 수 있지만, 올바른 수정은 헤더 선언에 extern을 쓰고 정의를 한 곳에 두는 것이다.</text>
+</svg>

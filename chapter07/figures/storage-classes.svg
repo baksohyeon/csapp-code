@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 600" role="img" aria-labelledby="title desc">
+  <title id="title">data bss COMMON 비교</title>
+  <desc id="desc">초기화된 전역, 0으로 초기화된 전역, tentative definition이 fcommon과 fno-common에서 오브젝트 파일과 실행 파일의 어느 영역에 놓이는지 비교</desc>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#55708f"/></marker>
+    <style>
+      .bg{fill:#f7f9fc}.panel{fill:#fff;stroke:#c8d4e5;stroke-width:2}.data{fill:#e8f0fe;stroke:#7ba4df;stroke-width:2}
+      .bss{fill:#e6f4ea;stroke:#58a16b;stroke-width:2}.com{fill:#fff7dd;stroke:#c49a3a;stroke-width:2}.none{fill:#eef2f7;stroke:#9aa8b9;stroke-width:2}
+      .t{font:700 22px system-ui,sans-serif;fill:#152033}.s{font:500 15px system-ui,sans-serif;fill:#506078}
+      .mono{font:650 16px ui-monospace,monospace;fill:#18355d}.line{stroke:#55708f;stroke-width:2.5;fill:none;marker-end:url(#a)}
+      .tag{font:750 13px system-ui,sans-serif;fill:#18355d}
+    </style>
+  </defs>
+  <rect class="bg" width="1100" height="600" rx="24"/>
+  <text class="t" x="44" y="48">선언 형태가 같아 보여도 오브젝트 표현은 옵션에 따라 달라진다</text>
+  <text class="s" x="44" y="76">COMMON은 실제 입력 섹션이 아니라 아직 저장 공간이 배정되지 않은 특별한 심볼 상태다.</text>
+
+  <rect class="panel" x="45" y="112" width="260" height="420" rx="18"/>
+  <text class="t" x="175" y="151" text-anchor="middle">C 소스</text>
+  <rect class="data" x="70" y="184" width="210" height="72" rx="12"/>
+  <text class="mono" x="175" y="215" text-anchor="middle">int a = 7;</text>
+  <text class="s" x="175" y="239" text-anchor="middle">명시적 초기화</text>
+  <rect class="bss" x="70" y="278" width="210" height="72" rx="12"/>
+  <text class="mono" x="175" y="309" text-anchor="middle">int b = 0;</text>
+  <text class="s" x="175" y="333" text-anchor="middle">명시적 0 초기화</text>
+  <rect class="com" x="70" y="372" width="210" height="72" rx="12"/>
+  <text class="mono" x="175" y="403" text-anchor="middle">int c;</text>
+  <text class="s" x="175" y="427" text-anchor="middle">tentative definition</text>
+  <rect class="none" x="70" y="466" width="210" height="44" rx="12"/>
+  <text class="mono" x="175" y="494" text-anchor="middle">extern int d;</text>
+
+  <path class="line" d="M305 220H385"/>
+  <path class="line" d="M305 314H385"/>
+  <path class="line" d="M305 408H385"/>
+  <path class="line" d="M305 488H385"/>
+
+  <rect class="panel" x="385" y="112" width="325" height="420" rx="18"/>
+  <text class="t" x="548" y="151" text-anchor="middle">재배치 가능 .o</text>
+  <text class="tag" x="475" y="177" text-anchor="middle">-fcommon</text>
+  <text class="tag" x="626" y="177" text-anchor="middle">-fno-common</text>
+  <rect class="data" x="415" y="184" width="270" height="72" rx="12"/>
+  <text class="mono" x="550" y="216" text-anchor="middle">a → .data · GLOBAL</text>
+  <text class="s" x="550" y="240" text-anchor="middle">파일에 초기값 바이트 존재</text>
+  <rect class="bss" x="415" y="278" width="270" height="72" rx="12"/>
+  <text class="mono" x="550" y="310" text-anchor="middle">b → .bss · GLOBAL</text>
+  <text class="s" x="550" y="334" text-anchor="middle">파일 공간을 거의 쓰지 않음</text>
+  <rect class="com" x="415" y="372" width="125" height="72" rx="12"/>
+  <text class="mono" x="478" y="403" text-anchor="middle">c → COM</text>
+  <text class="s" x="478" y="427" text-anchor="middle">미할당</text>
+  <rect class="bss" x="560" y="372" width="125" height="72" rx="12"/>
+  <text class="mono" x="623" y="403" text-anchor="middle">c → .bss</text>
+  <text class="s" x="623" y="427" text-anchor="middle">정의</text>
+  <rect class="none" x="415" y="466" width="270" height="44" rx="12"/>
+  <text class="mono" x="550" y="494" text-anchor="middle">d → UND · 공간 없음</text>
+
+  <path class="line" d="M710 220H790"/>
+  <path class="line" d="M710 314H790"/>
+  <path class="line" d="M710 408H790"/>
+
+  <rect class="panel" x="790" y="112" width="265" height="420" rx="18"/>
+  <text class="t" x="923" y="151" text-anchor="middle">최종 실행 파일</text>
+  <rect class="data" x="820" y="184" width="205" height="72" rx="12"/>
+  <text class="mono" x="923" y="216" text-anchor="middle">.data</text>
+  <text class="s" x="923" y="240" text-anchor="middle">a</text>
+  <rect class="bss" x="820" y="278" width="205" height="166" rx="12"/>
+  <text class="mono" x="923" y="318" text-anchor="middle">.bss</text>
+  <text class="s" x="923" y="350" text-anchor="middle">b</text>
+  <text class="s" x="923" y="380" text-anchor="middle">c (COMMON도 여기 할당)</text>
+  <text class="s" x="923" y="418" text-anchor="middle">프로그램 시작 시 0</text>
+  <rect class="none" x="820" y="466" width="205" height="44" rx="12"/>
+  <text class="s" x="923" y="494" text-anchor="middle">d는 다른 정의 필요</text>
+  <text class="s" x="550" y="570" text-anchor="middle">COMMON ≠ .bss. 다만 최종 링크 시 COMMON 저장 공간이 보통 출력 .bss에 배치된다.</text>
+</svg>

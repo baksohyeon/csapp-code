@@ -51,4 +51,6 @@ Ch1(hello 프로그램의 일생)과 Ch7(Linking)에 해당한다.
 ## 관련 문서
 
 - 노트: [[0001-compile-linking]] — 링크 타임 에러 재현 실습
+- 강의: [[2026-07-26-csapp-ch7-symbol-resolution]] — strong/weak, COMMON, GCC 10 이후 심볼 해석
 - 실습: [examples/0001-compile-linking](../../examples/0001-compile-linking/)
+- 심화 실습: [chapter07/examples](../../chapter07/examples/)

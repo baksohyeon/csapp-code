@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 430" role="img" aria-labelledby="title desc">
+  <title id="title">컴파일러 드라이버에서 링커까지의 흐름</title>
+  <desc id="desc">두 C 소스가 각각 전처리, 컴파일, 어셈블 단계를 거쳐 재배치 가능 오브젝트가 되고, 링커가 심볼 해석과 재배치를 수행해 실행 파일을 만드는 과정</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#3569b8"/>
+    </marker>
+    <style>
+      .bg{fill:#f7f9fc}.card{fill:#fff;stroke:#c8d4e5;stroke-width:2}.stage{fill:#e8f0fe;stroke:#7ba4df;stroke-width:2}
+      .link{fill:#18355d;stroke:#0b57d0;stroke-width:3}.out{fill:#e6f4ea;stroke:#58a16b;stroke-width:2}
+      .t{font:700 22px system-ui,sans-serif;fill:#152033}.s{font:500 15px system-ui,sans-serif;fill:#506078}
+      .light{fill:#fff}.mono{font:650 16px ui-monospace,monospace;fill:#18355d}.line{stroke:#3569b8;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .dash{stroke:#8da2bd;stroke-width:2;stroke-dasharray:7 7;fill:none}
+    </style>
+  </defs>
+  <rect class="bg" width="1100" height="430" rx="24"/>
+  <text class="t" x="44" y="48">gcc는 지휘자, ld는 결합 담당자</text>
+  <text class="s" x="44" y="76">각 번역 단위는 따로 오브젝트가 된 뒤 링크 단계에서 처음 만난다.</text>
+
+  <rect class="card" x="45" y="118" width="140" height="70" rx="12"/>
+  <text class="mono" x="115" y="160" text-anchor="middle">main.c</text>
+  <rect class="card" x="45" y="245" width="140" height="70" rx="12"/>
+  <text class="mono" x="115" y="287" text-anchor="middle">worker.c</text>
+
+  <path class="line" d="M185 153H235"/>
+  <path class="line" d="M185 280H235"/>
+  <rect class="stage" x="235" y="110" width="210" height="86" rx="14"/>
+  <text class="t" x="340" y="145" text-anchor="middle">번역기</text>
+  <text class="s" x="340" y="173" text-anchor="middle">cpp → cc1 → as</text>
+  <rect class="stage" x="235" y="237" width="210" height="86" rx="14"/>
+  <text class="t" x="340" y="272" text-anchor="middle">번역기</text>
+  <text class="s" x="340" y="300" text-anchor="middle">cpp → cc1 → as</text>
+
+  <path class="line" d="M445 153H495"/>
+  <path class="line" d="M445 280H495"/>
+  <rect class="card" x="495" y="118" width="145" height="70" rx="12"/>
+  <text class="mono" x="568" y="151" text-anchor="middle">main.o</text>
+  <text class="s" x="568" y="175" text-anchor="middle">ELF relocatable</text>
+  <rect class="card" x="495" y="245" width="145" height="70" rx="12"/>
+  <text class="mono" x="568" y="278" text-anchor="middle">worker.o</text>
+  <text class="s" x="568" y="302" text-anchor="middle">ELF relocatable</text>
+
+  <path class="line" d="M640 153C690 153 684 190 725 190"/>
+  <path class="line" d="M640 280C690 280 684 240 725 240"/>
+  <rect class="link" x="725" y="145" width="190" height="140" rx="18"/>
+  <text class="t light" x="820" y="183" text-anchor="middle">링커 ld</text>
+  <text class="s light" x="820" y="215" text-anchor="middle">1. 심볼 해석</text>
+  <text class="s light" x="820" y="243" text-anchor="middle">2. 재배치</text>
+  <path class="line" d="M915 215H955"/>
+  <rect class="out" x="955" y="170" width="115" height="90" rx="14"/>
+  <text class="mono" x="1013" y="208" text-anchor="middle">a.out</text>
+  <text class="s" x="1013" y="235" text-anchor="middle">executable</text>
+
+  <path class="dash" d="M495 354H915"/>
+  <text class="s" x="705" y="387" text-anchor="middle">7.6.1의 질문: 같은 이름의 전역 정의가 여러 .o에 있으면 누구를 선택하는가?</text>
+</svg>

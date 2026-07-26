@@ -8,7 +8,8 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 기록.
 | 무엇을 보고 싶나 | 어디로 |
 |------------------|--------|
 | 렌더링된 노트 (웹/모바일에서 바로 보기) | https://raspberrypi.bobcat-fort.ts.net/csapp/ |
-| 최신 강의노트 (Ch6 Memory Hierarchy) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [레포 소스](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [요약 wrapper](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.md) |
+| 최신 강의노트 (Ch7.6.1 Symbol Resolution) | [레포 소스](chapter07/chapter-7.6.1.html) · [요약 wrapper](wiki/lectures/2026/2026-07-26-csapp-ch7-symbol-resolution.md) · [실습](chapter07/examples/) |
+| 이전 강의노트 (Ch6 Memory Hierarchy) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [레포 소스](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [요약 wrapper](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.md) |
 | 전체 목차 | [wiki/index.md](wiki/index.md) |
 | 교재 PDF | https://i.hyeon.me/csapp.pdf |
 | 스터디 whiteboard | [현재](https://i.hyeon.me/csapp) · [과거 아카이브](https://i.hyeon.me/csapp-archive) |
@@ -24,6 +25,7 @@ wiki/                  ← knowledge base root (여기서부터 읽으면 된다
   type/                ← 문서 타입 설명 (lecture / note / topic / example)
   assets/              ← 노트에 첨부된 이미지
 examples/              ← C 실습 코드 (노트에서 참조)
+chapter07/             ← Ch7.6.1 HTML, SVG, ELF 실습과 검증 스크립트
 java-datastructures/   ← BST/AVL 트리 Java 구현
 exercises/             ← 자바 연습문제+해답 (hwp)
 AGENTS.md              ← 이 레포의 작성 규칙 (에이전트/사람 공용)

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 540" role="img" aria-labelledby="title desc">
+  <title id="title">여러 오브젝트 파일의 심볼 테이블 병합</title>
+  <desc id="desc">main.o와 worker.o의 심볼 후보가 링커의 전역 심볼 표에 모이고, 우선순위 규칙으로 선택되거나 오류가 되는 과정</desc>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#3569b8"/></marker>
+    <style>
+      .bg{fill:#f7f9fc}.panel{fill:#fff;stroke:#c8d4e5;stroke-width:2}.head{fill:#e8f0fe}.merge{fill:#18355d}.ok{fill:#e6f4ea;stroke:#58a16b;stroke-width:2}
+      .bad{fill:#fce8e6;stroke:#d46a63;stroke-width:2}.t{font:700 22px system-ui,sans-serif;fill:#152033}
+      .s{font:500 15px system-ui,sans-serif;fill:#506078}.mono{font:600 15px ui-monospace,monospace;fill:#18355d}
+      .light{fill:#fff}.rule{stroke:#dbe3ee}.line{stroke:#3569b8;stroke-width:3;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <rect class="bg" width="1100" height="540" rx="24"/>
+  <text class="t" x="44" y="48">링커는 이름별 후보 집합을 만든다</text>
+  <text class="s" x="44" y="76">지역 심볼은 파일 안에 남고, 외부 연결 전역 심볼만 이름 충돌에 참여한다.</text>
+
+  <rect class="panel" x="45" y="112" width="280" height="286" rx="16"/>
+  <path class="head" d="M61 112H309Q325 112 325 128V162H45V128Q45 112 61 112Z"/>
+  <text class="t" x="185" y="146" text-anchor="middle">main.o / .symtab</text>
+  <text class="mono" x="70" y="201">main</text><text class="s" x="205" y="201">GLOBAL · .text</text>
+  <line class="rule" x1="65" y1="220" x2="305" y2="220"/>
+  <text class="mono" x="70" y="253">x</text><text class="s" x="205" y="253">GLOBAL · .data</text>
+  <line class="rule" x1="65" y1="272" x2="305" y2="272"/>
+  <text class="mono" x="70" y="305">update</text><text class="s" x="205" y="305">GLOBAL · UND</text>
+  <line class="rule" x1="65" y1="324" x2="305" y2="324"/>
+  <text class="mono" x="70" y="357">local</text><text class="s" x="205" y="357">LOCAL · .bss</text>
+
+  <rect class="panel" x="45" y="420" width="280" height="72" rx="14"/>
+  <text class="s" x="185" y="449" text-anchor="middle">LOCAL은 충돌 후보에서 제외</text>
+  <text class="mono" x="185" y="477" text-anchor="middle">main.o::local</text>
+
+  <rect class="panel" x="395" y="112" width="280" height="286" rx="16"/>
+  <path class="head" d="M411 112H659Q675 112 675 128V162H395V128Q395 112 411 112Z"/>
+  <text class="t" x="535" y="146" text-anchor="middle">worker.o / .symtab</text>
+  <text class="mono" x="420" y="201">update</text><text class="s" x="555" y="201">GLOBAL · .text</text>
+  <line class="rule" x1="415" y1="220" x2="655" y2="220"/>
+  <text class="mono" x="420" y="253">x</text><text class="s" x="555" y="253">GLOBAL · COM</text>
+  <line class="rule" x1="415" y1="272" x2="655" y2="272"/>
+  <text class="mono" x="420" y="305">helper</text><text class="s" x="555" y="305">WEAK · .text</text>
+  <line class="rule" x1="415" y1="324" x2="655" y2="324"/>
+  <text class="mono" x="420" y="357">local</text><text class="s" x="555" y="357">LOCAL · .bss</text>
+
+  <path class="line" d="M325 250C350 250 360 250 385 250"/>
+  <path class="line" d="M675 250H730"/>
+  <rect class="merge" x="730" y="112" width="325" height="286" rx="18"/>
+  <text class="t light" x="892" y="151" text-anchor="middle">전역 해석 결과</text>
+  <rect class="ok" x="758" y="179" width="269" height="63" rx="12"/>
+  <text class="mono" x="780" y="205">x</text>
+  <text class="s" x="780" y="229">.data 정의가 COMMON을 덮음</text>
+  <rect class="ok" x="758" y="257" width="269" height="52" rx="12"/>
+  <text class="mono" x="780" y="289">update → worker.o</text>
+  <rect class="bad" x="758" y="324" width="269" height="52" rx="12"/>
+  <text class="mono" x="780" y="356">strong × strong → ERROR</text>
+
+  <text class="s" x="535" y="456" text-anchor="middle">이름만 같다고 모두 합치는 것이 아니다.</text>
+  <text class="s" x="535" y="482" text-anchor="middle">binding, section index, 정의 여부, 입력 순서를 함께 본다.</text>
+</svg>

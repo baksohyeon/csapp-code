@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>2026-07-26 CSAPP 7.6.1 — Duplicate Symbol Names</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f7fb;
+      --surface: #ffffff;
+      --surface-2: #f7f9fc;
+      --ink: #142033;
+      --muted: #58677a;
+      --subtle: #7b899a;
+      --line: #d5deea;
+      --line-soft: #e9eef5;
+      --navy: #18355d;
+      --blue: #0b57d0;
+      --blue-soft: #e8f0fe;
+      --mint: #087f68;
+      --mint-soft: #e1f5ef;
+      --amber: #9a6700;
+      --amber-soft: #fff5d6;
+      --red: #b3261e;
+      --red-soft: #fce8e6;
+      --violet: #6542a6;
+      --violet-soft: #f0eafd;
+      --code: #111827;
+      --code-ink: #e5edf7;
+      --code-muted: #94a3b8;
+      --radius: 14px;
+      --radius-lg: 20px;
+      --max: 1080px;
+      --rail: 260px;
+      --shadow: 0 8px 28px rgba(24, 53, 93, .06);
+      --sans: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --paper: #0b1220;
+      --surface: #111b2c;
+      --surface-2: #152237;
+      --ink: #edf3fb;
+      --muted: #b0bfd1;
+      --subtle: #8999ad;
+      --line: #2b3c55;
+      --line-soft: #213149;
+      --navy: #dce9fb;
+      --blue: #82b1ff;
+      --blue-soft: #182f50;
+      --mint: #72d7bf;
+      --mint-soft: #123b36;
+      --amber: #ffd166;
+      --amber-soft: #3b3017;
+      --red: #ff9b95;
+      --red-soft: #402321;
+      --violet: #c5a8ff;
+      --violet-soft: #2e2444;
+      --code: #080d17;
+      --code-ink: #e8eef7;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .18);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--blue) 4%, transparent) 1px, transparent 1px),
+        linear-gradient(var(--paper), var(--paper));
+      background-size: 32px 32px, auto;
+      color: var(--ink);
+      font: 17px/1.78 var(--sans);
+      word-break: keep-all;
+    }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    a:focus-visible, button:focus-visible, summary:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--blue) 55%, transparent);
+      outline-offset: 3px;
+    }
+    img { display: block; max-width: 100%; }
+    code, pre, kbd { font-family: var(--mono); }
+    code {
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--surface-2);
+      padding: .08em .33em;
+      font-size: .93em;
+    }
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      padding: 19px 20px;
+      background: var(--code);
+      color: var(--code-ink);
+      font-size: 13px;
+      line-height: 1.62;
+      tab-size: 4;
+      white-space: pre;
+    }
+    pre code { border: 0; background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .kw { color: #93c5fd; font-weight: 700; }
+    .ty { color: #67e8f9; }
+    .fn { color: #c4b5fd; }
+    .num, .str { color: #fbbf24; }
+    .cm { color: #94a3b8; font-style: italic; }
+
+    .page {
+      width: min(100% - 40px, calc(var(--max) + var(--rail) + 54px));
+      margin: 0 auto;
+      padding: 28px 0 80px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: clamp(28px, 5vw, 54px);
+    }
+    .hero::after {
+      content: "GLOBAL · COM · WEAK";
+      position: absolute;
+      right: -22px;
+      bottom: 8px;
+      color: color-mix(in srgb, var(--blue) 7%, transparent);
+      font: 800 clamp(34px, 7vw, 92px)/1 var(--mono);
+      letter-spacing: -.08em;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .kicker {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 16px;
+      border: 1px solid color-mix(in srgb, var(--blue) 35%, var(--line));
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      padding: 5px 12px;
+      font: 750 12px/1.4 var(--mono);
+      letter-spacing: .02em;
+    }
+    h1, h2, h3, h4 { color: var(--ink); text-wrap: balance; }
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1.04;
+      letter-spacing: -.045em;
+      font-weight: 750;
+    }
+    h1 .section-number { color: var(--blue); font-family: var(--mono); font-weight: 650; }
+    .lead {
+      max-width: 820px;
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 21px);
+      line-height: 1.68;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 26px;
+    }
+    .meta {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--muted);
+      padding: 6px 9px;
+      font: 650 12px/1.4 var(--mono);
+    }
+    .theme-button {
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      z-index: 3;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 8px 12px;
+      font: 700 12px/1 var(--sans);
+      cursor: pointer;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: var(--rail) minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+      margin-top: 28px;
+    }
+    .rail {
+      position: sticky;
+      top: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(12px);
+    }
+    .rail-title {
+      margin: 0 0 10px;
+      color: var(--subtle);
+      font: 750 11px/1.4 var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .rail a {
+      display: block;
+      border-left: 2px solid var(--line);
+      color: var(--muted);
+      padding: 6px 8px 6px 12px;
+      font-size: 13px;
+      line-height: 1.35;
+      text-decoration: none;
+    }
+    .rail a:hover { border-left-color: var(--blue); color: var(--blue); }
+    .rail .rail-break { margin-top: 11px; }
+    main { min-width: 0; }
+    section {
+      margin: 0 0 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: clamp(23px, 4vw, 38px);
+    }
+    .section-head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 13px;
+      align-items: start;
+      margin-bottom: 22px;
+    }
+    .section-id {
+      margin-top: 3px;
+      border-radius: 7px;
+      background: var(--navy);
+      color: var(--surface);
+      padding: 5px 7px;
+      font: 750 12px/1 var(--mono);
+    }
+    h2 { margin: 0; font-size: clamp(26px, 3.5vw, 38px); line-height: 1.15; letter-spacing: -.025em; }
+    h3 { margin: 30px 0 12px; font-size: 22px; line-height: 1.35; letter-spacing: -.01em; }
+    h4 { margin: 22px 0 8px; font-size: 17px; }
+    p { margin: 11px 0; }
+    ul, ol { padding-left: 22px; }
+    li + li { margin-top: 7px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 14px; }
+
+    .source-key {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .source-card, .mini-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 17px 18px;
+    }
+    .source-tag, .label {
+      display: inline-block;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      padding: 4px 7px;
+      font: 800 11px/1.2 var(--mono);
+      letter-spacing: .04em;
+    }
+    .source-tag.csapp { background: var(--blue-soft); color: var(--blue); }
+    .source-tag.official { background: var(--mint-soft); color: var(--mint); }
+    .source-tag.commentary { background: var(--violet-soft); color: var(--violet); }
+    .source-card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .callout {
+      margin: 20px 0;
+      border: 1px solid var(--line);
+      border-left-width: 5px;
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 17px 19px;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout.eli5 { border-left-color: var(--mint); background: var(--mint-soft); }
+    .callout.remind { border-left-color: var(--violet); background: var(--violet-soft); }
+    .callout.note { border-left-color: var(--blue); background: var(--blue-soft); }
+    .callout.warning, .callout.gotcha { border-left-color: var(--red); background: var(--red-soft); }
+    .callout.mistake { border-left-color: var(--amber); background: var(--amber-soft); }
+    .callout .label { margin: 0 0 4px; padding: 0; background: transparent; color: currentColor; }
+    .callout.eli5 .label { color: var(--mint); }
+    .callout.remind .label { color: var(--violet); }
+    .callout.note .label { color: var(--blue); }
+    .callout.warning .label, .callout.gotcha .label { color: var(--red); }
+    .callout.mistake .label { color: var(--amber); }
+
+    .figure {
+      margin: 24px 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #f7f9fc;
+    }
+    .figure img { width: 100%; height: auto; }
+    figcaption {
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+      padding: 11px 15px;
+      font-size: 13px;
+    }
+    .figure-no { color: var(--blue); font: 750 12px var(--mono); }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      counter-reset: rule;
+    }
+    .rule {
+      position: relative;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 54px 18px 19px;
+      counter-increment: rule;
+    }
+    .rule::before {
+      content: "RULE " counter(rule);
+      position: absolute;
+      top: 17px;
+      left: 18px;
+      color: var(--blue);
+      font: 800 11px/1 var(--mono);
+      letter-spacing: .06em;
+    }
+    .rule strong { display: block; margin-bottom: 7px; font-size: 18px; }
+    .rule.error { border-top: 4px solid var(--red); }
+    .rule.pick { border-top: 4px solid var(--mint); }
+    .rule.unknown { border-top: 4px solid var(--amber); }
+
+    .table-wrap { margin: 18px 0; overflow-x: auto; }
+    table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 15px; }
+    th, td { border: 1px solid var(--line); padding: 11px 13px; text-align: left; vertical-align: top; }
+    th { background: var(--surface-2); color: var(--ink); font-weight: 750; }
+    td { color: var(--muted); }
+    td code { color: var(--ink); }
+    .status-ok { color: var(--mint); font-weight: 750; }
+    .status-bad { color: var(--red); font-weight: 750; }
+    .status-warn { color: var(--amber); font-weight: 750; }
+
+    .codeblock {
+      margin: 18px 0;
+      overflow: hidden;
+      border: 1px solid #2e3a4f;
+      border-radius: var(--radius);
+      background: var(--code);
+    }
+    .code-cap {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      border-bottom: 1px solid #2e3a4f;
+      background: #172033;
+      color: #cbd5e1;
+      padding: 9px 13px;
+      font: 650 12px/1.4 var(--mono);
+    }
+    .code-cap .observed { color: #86efac; }
+    .terminal-line { color: var(--code-muted); }
+
+    .grid { display: grid; gap: 13px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .mini-card h3, .mini-card h4 { margin-top: 0; }
+    .mini-card p:last-child { margin-bottom: 0; }
+
+    .ledger {
+      display: grid;
+      grid-template-columns: minmax(180px, .8fr) minmax(0, 1.7fr);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 18px 0;
+    }
+    .ledger > * { padding: 13px 15px; border-bottom: 1px solid var(--line); }
+    .ledger > :nth-last-child(-n+2) { border-bottom: 0; }
+    .ledger .term { background: var(--surface-2); color: var(--ink); font: 700 13px/1.5 var(--mono); }
+    .ledger .meaning { color: var(--muted); }
+
+    details {
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 0 16px;
+    }
+    summary {
+      cursor: pointer;
+      color: var(--ink);
+      padding: 13px 0;
+      font-weight: 720;
+    }
+    details > div { border-top: 1px solid var(--line); padding: 13px 0 16px; color: var(--muted); }
+    .quiz-list { counter-reset: quiz; list-style: none; padding: 0; }
+    .quiz-list > li {
+      counter-increment: quiz;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 15px 17px;
+    }
+    .quiz-list > li::before {
+      content: "Q" counter(quiz);
+      display: inline-block;
+      margin-right: 8px;
+      color: var(--blue);
+      font: 800 12px var(--mono);
+    }
+    .quiz-list > li + li { margin-top: 10px; }
+    .quiz-list details { margin-bottom: 0; background: var(--surface); }
+
+    footer {
+      margin-top: 26px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      padding: 24px 4px 0;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 1fr; }
+      .rail { position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px 12px; }
+      .rail-title { grid-column: 1 / -1; }
+      .rail .rail-break { margin-top: 0; }
+    }
+    @media (max-width: 760px) {
+      body { font-size: 16px; }
+      .page { width: min(100% - 20px, var(--max)); padding-top: 10px; }
+      .hero { border-radius: 18px; padding: 26px 20px; }
+      .theme-button { position: static; margin: 0 0 18px; }
+      .source-key, .rules, .grid.two, .grid.three { grid-template-columns: 1fr; }
+      .rail { grid-template-columns: 1fr 1fr; padding: 13px; }
+      section { border-radius: 16px; padding: 23px 18px; }
+      .ledger { grid-template-columns: 1fr; }
+      .ledger > * { border-bottom: 1px solid var(--line) !important; }
+      .ledger > :last-child { border-bottom: 0 !important; }
+      .code-cap { align-items: flex-start; flex-direction: column; gap: 3px; }
+      pre { padding: 16px; font-size: 12px; }
+    }
+    @media (max-width: 430px) {
+      .rail { grid-template-columns: 1fr; }
+      .meta-row { gap: 6px; }
+      .section-head { grid-template-columns: 1fr; }
+      .section-id { width: fit-content; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+    @media print {
+      body { background: #fff; color: #111; font-size: 11pt; }
+      .page { width: 100%; padding: 0; }
+      .rail, .theme-button { display: none; }
+      .layout { display: block; }
+      .hero, section { break-inside: avoid-page; box-shadow: none; }
+      section { border-color: #bbb; }
+      a { color: inherit; }
+      .codeblock, pre { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <button class="theme-button" type="button" id="theme-toggle" aria-label="밝은 모드와 어두운 모드 전환">◐ 테마</button>
+      <p class="kicker">2026-07-26 · CSAPP STUDY · LINKING</p>
+      <h1><span class="section-number">7.6.1</span><br>같은 이름의 심볼을<br>링커는 어떻게 고르는가</h1>
+      <p class="lead">
+        <strong>How Linkers Resolve Duplicate Symbol Names.</strong>
+        strong/weak 세 규칙에서 시작해 C의 tentative definition, ELF의
+        <code>SHN_COMMON</code>, GCC 10의 <code>-fno-common</code> 변경까지
+        실제 오브젝트 파일로 연결한다.
+      </p>
+      <div class="meta-row" aria-label="문서 메타데이터">
+        <span class="meta">CSAPP 3e §7.6.1</span>
+        <span class="meta">GCC 13.3 / Clang 18.1</span>
+        <span class="meta">GNU ld 2.42 / lld 18.1</span>
+        <span class="meta">Ubuntu 24.04 aarch64 검증</span>
+        <span class="meta">초안 v1</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="rail" aria-label="목차">
+        <p class="rail-title">Symbol index</p>
+        <a href="#reading">0. 읽는 법과 범위</a>
+        <a href="#eli5">1. ELI5</a>
+        <a href="#context">2. 링커 문맥 복원</a>
+        <a href="#rules">3. strong / weak 규칙</a>
+        <a href="#elf-truth">4. 교재 모델과 ELF</a>
+        <a href="#book-cases">5. 교재 사례 전부</a>
+        <a href="#storage">6. COMMON / .bss / .data</a>
+        <a href="#gcc10">7. GCC 10 경계</a>
+        <a href="#lab">8. 실제 도구 출력</a>
+        <a href="#linkers">9. GNU ld와 lld</a>
+        <a class="rail-break" href="#practice">10. QUIZ / EXERCISE</a>
+        <a href="#glossary">11. 용어 사전</a>
+        <a href="#mapping">12. 교재 대응표</a>
+        <a href="#beyond">13. Beyond CSAPP</a>
+      </nav>
+
+      <main>
+        <section id="reading">
+          <div class="section-head">
+            <span class="section-id">00</span>
+            <h2>무엇이 책이고, 무엇이 현대 보충인가</h2>
+          </div>
+          <div class="source-key">
+            <article class="source-card">
+              <span class="source-tag csapp">CSAPP</span>
+              <p>3판 7.6.1의 논점, 세 규칙, 다섯 코드 사례, Practice Problem 7.2를 재서술한다.</p>
+            </article>
+            <article class="source-card">
+              <span class="source-tag official">OFFICIAL</span>
+              <p>C11 초안, System V ELF ABI, GCC·Clang·GNU ld·lld 공식 문서와 정오표를 뜻한다.</p>
+            </article>
+            <article class="source-card">
+              <span class="source-tag commentary">COMMENTARY</span>
+              <p>교재와 현대 도구 사이의 차이, 실험 해석, 실무 안전 규칙을 명시적으로 덧붙인다.</p>
+            </article>
+          </div>
+          <div class="callout note">
+            <div class="label">NOTE · 절 제목 확인</div>
+            <p>
+              CSAPP 3판의 정확한 제목은 <strong>How Linkers Resolve Duplicate Symbol Names</strong>다.
+              2판의 제목은 <strong>How Linkers Resolve Multiply Defined Global Symbols</strong>이었다.
+              이 노트는 3판을 기준으로 한다.
+            </p>
+          </div>
+          <div class="callout warning">
+            <div class="label">WARNING · 2015년 책의 기본값과 2026년 도구는 다르다</div>
+            <p>
+              책의 weak 전역 예제는 과거 GCC의 <code>-fcommon</code> 기본 동작을 전제로 한다.
+              GCC 10부터 기본값은 <code>-fno-common</code>이다. 따라서 책의 “조용히 합쳐진다”는
+              예제를 현재 GCC에서 그대로 실행하면 기본 설정에서는 링크 오류가 난다.
+            </p>
+          </div>
+          <p class="muted small">
+            전체 근거와 조사 한계는 <a href="references.md">references.md</a>,
+            전체 검증 로그는 <a href="results/verified-linux-aarch64.txt">verified-linux-aarch64.txt</a>에 있다.
+          </p>
+        </section>
+
+        <section id="eli5">
+          <div class="section-head">
+            <span class="section-id">01</span>
+            <h2>ELI5: 이름표가 겹친 물품 창고</h2>
+          </div>
+          <div class="callout eli5">
+            <div class="label">ELI5</div>
+            <p>
+              여러 반이 물품을 창고에 맡긴다고 하자. 상자마다 <code>x</code>라는 이름표가 붙어 있다.
+              “이게 최종 물건”이라고 확정한 상자 두 개가 오면 창고지기는 어느 것을 써야 할지 몰라
+              작업을 중단한다. 하나만 확정 상자이고 나머지가 “자리만 필요해요” 상자라면 확정 상자를
+              쓴다. “자리만 필요해요” 상자만 여러 개라면 하나의 자리로 합친다.
+            </p>
+          </div>
+          <div class="grid three">
+            <article class="mini-card">
+              <h3>확정 상자 둘</h3>
+              <p><code>strong + strong</code></p>
+              <p class="status-bad">링크 오류</p>
+            </article>
+            <article class="mini-card">
+              <h3>확정 + 임시</h3>
+              <p><code>strong + weak/common</code></p>
+              <p class="status-ok">strong 선택</p>
+            </article>
+            <article class="mini-card">
+              <h3>임시 상자들</h3>
+              <p><code>weak/common + weak/common</code></p>
+              <p class="status-warn">하나로 병합 또는 하나 선택</p>
+            </article>
+          </div>
+          <div class="callout gotcha">
+            <div class="label">GOTCHA</div>
+            <p>
+              비유의 “임시 상자”는 한 종류가 아니다. 교재의 weak 분류, ELF의
+              <code>STB_WEAK</code>, ELF의 <code>SHN_COMMON</code>은 서로 겹치지만 같은 말은 아니다.
+              뒤에서 심볼 표의 실제 열로 분리한다.
+            </p>
+          </div>
+        </section>
+
+        <section id="context">
+          <div class="section-head">
+            <span class="section-id">02</span>
+            <h2>REMIND: 7.6.1에 도착하기 전 알아야 할 것</h2>
+          </div>
+          <div class="callout remind">
+            <div class="label">REMIND · 7.1–7.5 압축 복원</div>
+            <p>
+              각 <strong>번역 단위(translation unit)</strong>는 따로 컴파일된다. 컴파일러는 다른
+              <code>.c</code> 파일의 내부를 보지 못한 채 재배치 가능 오브젝트
+              <strong>(relocatable object file)</strong>를 만든다. 여러 파일의 전역 이름이 처음
+              만나는 시점은 링크 단계다.
+            </p>
+          </div>
+          <figure class="figure">
+            <img src="figures/linker-flow.svg" alt="main.c와 worker.c가 각각 번역되어 main.o와 worker.o가 되고 링커가 실행 파일을 만드는 흐름">
+            <figcaption><span class="figure-no">FIGURE N1</span> 컴파일러 드라이버와 링커. 이 문서에서 새로 제작한 설명용 SVG.</figcaption>
+          </figure>
+
+          <h3>링커가 하는 두 가지 일</h3>
+          <div class="grid two">
+            <article class="mini-card">
+              <h4>1. 심볼 해석 (symbol resolution)</h4>
+              <p>각 심볼 참조를 정확히 하나의 정의에 연결한다. 7.6.1의 주제다.</p>
+            </article>
+            <article class="mini-card">
+              <h4>2. 재배치 (relocation)</h4>
+              <p>합쳐진 코드와 데이터의 최종 주소를 정하고 참조 위치를 고친다. 7.7의 주제다.</p>
+            </article>
+          </div>
+
+          <h3>세 종류의 링커 심볼</h3>
+          <div class="ledger" role="list">
+            <div class="term">global definition</div>
+            <div class="meaning">모듈이 정의하고 다른 모듈에서도 참조할 수 있는 비정적 함수와 전역 변수.</div>
+            <div class="term">local definition</div>
+            <div class="meaning"><code>static</code>으로 내부 연결을 갖는 함수·파일 범위 변수. 같은 이름이 다른 오브젝트에 있어도 충돌하지 않는다.</div>
+            <div class="term">external reference</div>
+            <div class="meaning">현재 모듈이 참조하지만 정의하지 않은 심볼. ELF에서는 보통 <code>SHN_UNDEF</code>.</div>
+          </div>
+          <div class="callout mistake">
+            <div class="label">COMMON MISTAKE · local symbol ≠ local variable</div>
+            <p>
+              여기서 local symbol은 오브젝트 파일 밖에서 보이지 않는 심볼이다. 함수 안 자동
+              지역 변수는 보통 런타임 스택이나 레지스터에 놓이며 링커의 전역 이름 해석 대상이 아니다.
+            </p>
+          </div>
+        </section>
+
+        <section id="rules">
+          <div class="section-head">
+            <span class="section-id">03</span>
+            <h2>CSAPP의 strong / weak 세 규칙</h2>
+          </div>
+          <p>
+            <span class="source-tag csapp">CSAPP</span>
+            교재는 Linux 컴파일 시스템의 중복 이름 처리를 다음 모델로 설명한다.
+            함수와 초기화된 전역 변수는 strong, 초기화되지 않은 전역 변수는 weak로 분류한다.
+          </p>
+          <div class="rules">
+            <article class="rule error">
+              <strong>strong가 둘 이상이면 오류</strong>
+              <p>같은 이름의 강한 정의는 하나만 존재해야 한다. 함수 중복 정의도 여기에 포함된다.</p>
+            </article>
+            <article class="rule pick">
+              <strong>strong 하나를 선택</strong>
+              <p>strong 하나와 weak 여러 개가 있으면 strong 정의가 모든 참조를 만족한다.</p>
+            </article>
+            <article class="rule unknown">
+              <strong>weak 중 하나를 선택</strong>
+              <p>weak만 여러 개면 어느 하나를 고른다. 어떤 것을 고를지 프로그램이 가정하면 안 된다.</p>
+            </article>
+          </div>
+          <figure class="figure">
+            <img src="figures/resolution-tree.svg" alt="같은 이름 정의가 여러 개인지와 strong 개수에 따라 오류 또는 선택으로 분기하는 결정 트리">
+            <figcaption><span class="figure-no">FIGURE N2</span> 교재의 세 규칙을 결정 트리로 재구성.</figcaption>
+          </figure>
+          <div class="callout warning">
+            <div class="label">WARNING · arbitrary는 random이 아니다</div>
+            <p>
+              “아무 weak나 고른다”는 매 실행마다 무작위라는 뜻이 아니다. 특정 링커 버전과 입력
+              순서에서는 결과가 반복될 수 있다. 뜻은 <strong>소스 언어 수준에서 이식 가능한 선택을
+              보장하지 않는다</strong>는 것이다.
+            </p>
+          </div>
+        </section>
+
+        <section id="elf-truth">
+          <div class="section-head">
+            <span class="section-id">04</span>
+            <h2>가장 중요한 구분: 교재의 weak와 ELF의 WEAK</h2>
+          </div>
+          <p>
+            <span class="source-tag official">OFFICIAL · ELF ABI</span>
+            ELF 심볼 표의 <code>Bind</code>에는 <code>LOCAL</code>, <code>GLOBAL</code>,
+            <code>WEAK</code>가 있다. <code>SHN_COMMON</code>은 binding이 아니라
+            <strong>특별한 section index</strong>다.
+          </p>
+          <div class="callout gotcha">
+            <div class="label">GOTCHA · 책의 weak 분류를 readelf의 WEAK로 번역하지 말 것</div>
+            <p>
+              GCC <code>-fcommon</code>에서 파일 범위 <code>int x;</code>를 컴파일하면 실제 출력은
+              대개 <code>OBJECT GLOBAL DEFAULT COM x</code>다. 즉 <code>Bind=GLOBAL</code>,
+              <code>Ndx=COM</code>이며 <code>Bind=WEAK</code>가 아니다.
+            </p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>C 표기</th>
+                  <th>교재 모델</th>
+                  <th>현대 GCC ELF 관측</th>
+                  <th><code>nm</code></th>
+                  <th>중복 시</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>int f(void) {…}</code></td>
+                  <td>strong</td>
+                  <td><code>FUNC GLOBAL .text</code></td>
+                  <td><code>T</code></td>
+                  <td>두 정의면 오류</td>
+                </tr>
+                <tr>
+                  <td><code>int x = 7;</code></td>
+                  <td>strong</td>
+                  <td><code>OBJECT GLOBAL .data</code></td>
+                  <td><code>D</code></td>
+                  <td>두 정의면 오류</td>
+                </tr>
+                <tr>
+                  <td><code>int x = 0;</code></td>
+                  <td>strong</td>
+                  <td><code>OBJECT GLOBAL .bss</code></td>
+                  <td><code>B</code></td>
+                  <td>두 정의면 오류</td>
+                </tr>
+                <tr>
+                  <td><code>int x;</code> + <code>-fcommon</code></td>
+                  <td>weak</td>
+                  <td><code>OBJECT GLOBAL COM</code></td>
+                  <td><code>C</code></td>
+                  <td>COMMON 병합 가능</td>
+                </tr>
+                <tr>
+                  <td><code>int x;</code> + <code>-fno-common</code></td>
+                  <td>책 이후 기본값</td>
+                  <td><code>OBJECT GLOBAL .bss</code></td>
+                  <td><code>B</code></td>
+                  <td>여러 번역 단위면 오류</td>
+                </tr>
+                <tr>
+                  <td><code>__attribute__((weak))</code></td>
+                  <td>명시적 weak</td>
+                  <td><code>OBJECT WEAK .data</code></td>
+                  <td><code>V</code></td>
+                  <td>GLOBAL 정의가 우선</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <figure class="figure">
+            <img src="figures/symbol-merge.svg" alt="두 오브젝트 파일의 심볼 표에서 x와 update 후보가 전역 해석 결과로 병합되는 과정">
+            <figcaption><span class="figure-no">FIGURE N3</span> 심볼 표 병합의 개념도. LOCAL은 오브젝트별 이름 공간에 남는다.</figcaption>
+          </figure>
+
+          <h3>실제 출력으로 확인</h3>
+          <div class="codeblock">
+            <div class="code-cap"><span>GCC 13.3 · -fcommon</span><span class="observed">OBSERVED</span></div>
+            <pre><code><span class="terminal-line">$ readelf -Ws sc-worker.o | grep ' x$'</span>
+16: 0000000000000004  4 OBJECT  GLOBAL DEFAULT  COM x
+
+<span class="terminal-line">$ nm -S sc-worker.o</span>
+0000000000000004 0000000000000004 C x</code></pre>
+          </div>
+          <div class="codeblock">
+            <div class="code-cap"><span>명시적 ELF weak attribute</span><span class="observed">OBSERVED</span></div>
+            <pre><code><span class="terminal-line">$ readelf -Ws ew-provider.o | grep ' hook$'</span>
+17: 0000000000000000  4 OBJECT  WEAK   DEFAULT  3 hook
+
+<span class="terminal-line">$ nm -S ew-provider.o</span>
+0000000000000000 0000000000000004 V hook</code></pre>
+          </div>
+        </section>
+
+        <section id="book-cases">
+          <div class="section-head">
+            <span class="section-id">05</span>
+            <h2>CSAPP 7.6.1의 다섯 사례</h2>
+          </div>
+          <p>
+            <span class="source-tag csapp">CSAPP</span>
+            책의 코드 표현을 장문 복제하지 않고, 각 두 모듈이 무엇을 정의하고 어떤 규칙이
+            적용되는지 빠짐없이 재구성했다. 실행 가능한 변형은 <a href="examples/">examples/</a>에 있다.
+          </p>
+
+          <h3>사례 1 · <code>main</code> 함수가 두 개</h3>
+          <p>
+            두 모듈 모두 <code>main</code> 함수를 정의한다. 함수 정의는 strong이므로 Rule 1에 따라
+            링크 오류다. “어느 main이 먼저인가”를 따질 단계가 아니다.
+          </p>
+          <div class="codeblock">
+            <div class="code-cap"><span>duplicate-function</span><span class="observed">OBSERVED · GNU ld</span></div>
+            <pre><code>multiple definition of `helper';
+df-main.o: first defined here
+collect2: error: ld returned 1 exit status</code></pre>
+          </div>
+
+          <h3>사례 2 · 초기화된 전역 <code>x</code>가 두 개</h3>
+          <p>
+            두 모듈이 모두 <code>int x = 15213;</code> 같은 초기화된 전역을 정의한다. 둘 다
+            strong이므로 함수 중복과 똑같이 링크 오류다. 값이 우연히 같아도 동일한 저장 객체라는
+            증거가 아니므로 허용되지 않는다.
+          </p>
+
+          <h3>사례 3 · 초기화된 <code>x</code> + 초기화되지 않은 <code>x</code></h3>
+          <p>
+            과거 기본값 또는 <code>-fcommon</code>에서는 첫 모듈의 초기화된 <code>x</code>가
+            strong, 다른 모듈의 <code>int x;</code>가 COMMON 후보가 된다. strong 정의가 선택되고,
+            다른 모듈의 함수도 그 같은 저장 공간을 쓴다. 책의 결과처럼 <code>update()</code>가
+            호출자 모르게 값을 바꿀 수 있다.
+          </p>
+          <div class="codeblock">
+            <div class="code-cap"><span>strong-common</span><span class="observed">OBSERVED</span></div>
+            <pre><code><span class="terminal-line">$ nm -S sc-main.o sc-worker.o | grep ' x$'</span>
+0000000000000000 0000000000000004 D x
+0000000000000004 0000000000000004 C x
+
+<span class="terminal-line">$ ./strong-common</span>
+x = 15212</code></pre>
+          </div>
+
+          <h3>사례 4 · 초기화되지 않은 <code>x</code>가 두 개</h3>
+          <p>
+            <code>-fcommon</code>에서는 두 tentative definition이 COMMON으로 나온다. GNU ld는
+            하나의 저장 공간으로 병합하며, <code>--warn-common</code>을 주면 이 조용한 병합을
+            경고로 드러낼 수 있다. 현대 기본 <code>-fno-common</code>에서는 둘 다
+            <code>.bss</code> 정의이므로 오류다.
+          </p>
+          <div class="codeblock">
+            <div class="code-cap"><span>common-common</span><span class="observed">OBSERVED · -fcommon</span></div>
+            <pre><code><span class="terminal-line">$ gcc -Wl,--warn-common cc-main.o cc-worker.o -o common-common</span>
+ld: cc-worker.o and cc-main.o: warning: multiple common of `x'
+<span class="terminal-line">$ ./common-common</span>
+x = 15212</code></pre>
+          </div>
+
+          <h3>사례 5 · 이름은 같고 타입은 다르다</h3>
+          <p>
+            한 모듈은 <code>int x</code>, 다른 모듈은 <code>double x</code>라고 믿는다. 링커의 주된
+            해석 키는 C 타입이 아니라 심볼 이름과 오브젝트 메타데이터다. <code>-fcommon</code>에서
+            strong <code>int</code>가 선택되면, 다른 모듈은 같은 주소에 8바이트 <code>double</code>을
+            쓸 수 있다. 인접 객체가 덮일 수 있는 심각한 버그다.
+          </p>
+          <div class="callout warning">
+            <div class="label">WARNING · 출력 값은 시스템 의존</div>
+            <p>
+              책의 x86-64 예시는 <code>x</code>와 바로 다음 <code>y</code>가 함께 손상되는 한 배치를
+              보여 준다. CSAPP 공식 정오표는 정확한 손상 값이 시스템 의존이라고 명시한다.
+              본 aarch64 실험에서는 <code>x=0</code>이 되었지만 <code>y</code>는 유지됐다.
+              어느 쪽도 프로그램이 의존할 수 있는 결과가 아니다.
+            </p>
+          </div>
+          <div class="codeblock">
+            <div class="code-cap"><span>common-mismatch</span><span class="observed">OBSERVED · aarch64</span></div>
+            <pre><code>ld: warning: common of `x' overridden by definition
+ld: warning: alignment 4 of normal symbol `x' is smaller than 8
+ld: warning: alignment discrepancies can cause real problems
+
+<span class="terminal-line">$ ./common-mismatch</span>
+x = 0x0 y = 0x3b6c</code></pre>
+          </div>
+          <figure class="figure">
+            <img src="figures/silent-vs-error.svg" alt="strong strong의 즉시 오류와 strong COMMON 및 COMMON COMMON의 조용한 병합을 비교">
+            <figcaption><span class="figure-no">FIGURE N4</span> 실패보다 위험할 수 있는 조용한 성공.</figcaption>
+          </figure>
+        </section>
+
+        <section id="storage">
+          <div class="section-head">
+            <span class="section-id">06</span>
+            <h2>tentative definition, COMMON, .bss, .data</h2>
+          </div>
+          <p>
+            <span class="source-tag official">OFFICIAL · C11 §6.9.2</span>
+            파일 범위 객체 선언에 initializer가 없고 적절한 storage-class 조건을 만족하면
+            <strong>tentative definition(잠정 정의)</strong>이다. 같은 번역 단위 안에 실제 외부
+            정의가 끝까지 없다면 0 initializer를 가진 정의처럼 동작한다.
+          </p>
+          <div class="callout note">
+            <div class="label">NOTE · 언어 의미와 파일 배치는 다른 층</div>
+            <p>
+              C 표준은 “프로그램 시작 시 0으로 초기화된 객체”라는 의미를 규정한다.
+              그것을 오브젝트 파일에서 COMMON으로 낼지 <code>.bss</code>로 낼지는 컴파일러와
+              플랫폼의 구현 선택이다.
+            </p>
+          </div>
+          <figure class="figure">
+            <img src="figures/storage-classes.svg" alt="int a=7, int b=0, int c, extern int d가 fcommon과 fno-common에서 data bss COMMON undefined로 배치되는 비교">
+            <figcaption><span class="figure-no">FIGURE N5</span> 입력 오브젝트와 최종 실행 파일의 저장 위치. COMMON 자체는 입력 섹션이 아니다.</figcaption>
+          </figure>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>표현</th>
+                  <th>정의/선언</th>
+                  <th><code>-fcommon</code> 입력 .o</th>
+                  <th><code>-fno-common</code> 입력 .o</th>
+                  <th>최종 메모리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>int a = 7;</code></td>
+                  <td>외부 정의</td>
+                  <td><code>.data</code></td>
+                  <td><code>.data</code></td>
+                  <td>쓰기 가능한 초기화 데이터</td>
+                </tr>
+                <tr>
+                  <td><code>int b = 0;</code></td>
+                  <td>외부 정의</td>
+                  <td><code>.bss</code></td>
+                  <td><code>.bss</code></td>
+                  <td>0으로 초기화</td>
+                </tr>
+                <tr>
+                  <td><code>int c;</code></td>
+                  <td>tentative definition</td>
+                  <td><code>SHN_COMMON</code></td>
+                  <td><code>.bss</code></td>
+                  <td>최종적으로 보통 <code>.bss</code></td>
+                </tr>
+                <tr>
+                  <td><code>extern int d;</code></td>
+                  <td>선언/참조</td>
+                  <td><code>SHN_UNDEF</code></td>
+                  <td><code>SHN_UNDEF</code></td>
+                  <td>다른 정의가 제공해야 함</td>
+                </tr>
+                <tr>
+                  <td><code>static int e;</code></td>
+                  <td>내부 연결 tentative</td>
+                  <td><code>.bss LOCAL</code></td>
+                  <td><code>.bss LOCAL</code></td>
+                  <td>모듈 전용 0 초기화 객체</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout mistake">
+            <div class="label">COMMON MISTAKE · “COMMON section”을 실제 섹션이라고 생각하기</div>
+            <p>
+              ELF <code>SHN_COMMON</code> 심볼은 아직 어느 입력 섹션에도 할당되지 않았다.
+              <code>st_value</code>는 주소가 아니라 정렬 조건이고, <code>st_size</code>가 필요한
+              바이트 수다. GNU ld 스크립트의 <code>*(COMMON)</code>은 이런 심볼을 출력
+              <code>.bss</code>에 배치하기 위한 특별 표기다.
+            </p>
+          </div>
+        </section>
+
+        <section id="gcc10">
+          <div class="section-head">
+            <span class="section-id">07</span>
+            <h2>GCC 10: 실수를 허용하던 기본값을 뒤집다</h2>
+          </div>
+          <p>
+            <span class="source-tag official">OFFICIAL · GCC 10 PORTING GUIDE</span>
+            GCC 10은 C에서도 <code>-fno-common</code>을 기본으로 바꿨다. 헤더에
+            <code>int x;</code>를 써 여러 파일에서 정의를 만들어 버리는 실수를 링크 오류로
+            드러내고, 일부 target에서는 더 효율적인 전역 접근도 가능하게 한다.
+          </p>
+          <figure class="figure">
+            <img src="figures/gcc10-change.svg" alt="GCC 9까지 fcommon으로 두 COMMON을 병합하고 GCC 10부터 fno-common으로 두 bss 정의를 오류 처리하는 비교">
+            <figcaption><span class="figure-no">FIGURE N6</span> GCC 10 전후의 기본 정책. 본 실험은 현재 GCC에서 두 플래그를 명시해 같은 의미를 재현했다.</figcaption>
+          </figure>
+
+          <div class="grid two">
+            <article class="mini-card">
+              <h3>과거 의미 재현</h3>
+              <div class="codeblock">
+                <div class="code-cap"><span>-fcommon</span><span class="observed">PASS</span></div>
+                <pre><code>gcc -fcommon -c main.c worker.c
+gcc main.o worker.o -o before
+./before
+x = 15212</code></pre>
+              </div>
+            </article>
+            <article class="mini-card">
+              <h3>현대 기본 의미 재현</h3>
+              <div class="codeblock">
+                <div class="code-cap"><span>-fno-common</span><span class="observed">EXPECTED ERROR</span></div>
+                <pre><code>gcc -fno-common -c main.c worker.c
+gcc main.o worker.o -o after
+multiple definition of `x'</code></pre>
+              </div>
+            </article>
+          </div>
+
+          <h3>Clang 18에서도 플래그의 의미는 같다</h3>
+          <div class="codeblock">
+            <div class="code-cap"><span>Clang 18.1.3 + lld 18.1.3</span><span class="observed">OBSERVED</span></div>
+            <pre><code><span class="terminal-line">$ clang -c main.c worker.c</span>
+<span class="cm"># 기본 출력: x는 각 .o의 .bss GLOBAL 정의 → duplicate symbol 오류</span>
+
+<span class="terminal-line">$ clang -fcommon -c main.c worker.c</span>
+<span class="cm"># x는 GLOBAL COM → 링크 성공, x = 15212</span>
+
+<span class="terminal-line">$ clang -fno-common -c main.c worker.c</span>
+<span class="cm"># x는 각 .o의 .bss GLOBAL 정의 → duplicate symbol 오류</span></code></pre>
+          </div>
+
+          <h3>고치는 방법</h3>
+          <div class="codeblock">
+            <div class="code-cap"><span>전역 변수의 단일 정의 패턴</span><span>RECOMMENDED</span></div>
+            <pre><code><span class="cm">/* state.h: 공간을 만들지 않는 선언 */</span>
+<span class="kw">extern</span> <span class="ty">int</span> x;
+
+<span class="cm">/* state.c: 프로그램 전체에서 정확히 하나인 정의 */</span>
+<span class="ty">int</span> x = <span class="num">0</span>;
+
+<span class="cm">/* user.c: 헤더를 통해 같은 객체를 참조 */</span>
+<span class="kw">#include</span> <span class="str">"state.h"</span></code></pre>
+          </div>
+          <div class="callout mistake">
+            <div class="label">COMMON MISTAKE · 링크가 되게 하려고 -fcommon만 되돌리기</div>
+            <p>
+              레거시 이행을 위해 임시로 쓸 수는 있지만, 중복 정의 설계를 그대로 숨긴다.
+              먼저 헤더의 정의를 <code>extern</code> 선언으로 바꾸고 한 구현 파일에만 정의를 둔다.
+            </p>
+          </div>
+        </section>
+
+        <section id="lab">
+          <div class="section-head">
+            <span class="section-id">08</span>
+            <h2>실험실: nm, readelf, objdump로 증거 읽기</h2>
+          </div>
+          <p>
+            아래 출력은 <a href="verify-elf.sh">verify-elf.sh</a>를
+            Ubuntu 24.04 aarch64 컨테이너에서 실행한 결과다. macOS의 <code>gcc</code>는 Apple
+            Clang이며 Mach-O를 만들기 때문에, ELF 설명과 섞지 않았다.
+          </p>
+
+          <h3><code>nm</code> 한 글자 해독표</h3>
+          <div class="grid three">
+            <article class="mini-card"><h4><code>D</code> / <code>d</code></h4><p>초기화된 data. 대문자는 보통 global, 소문자는 local.</p></article>
+            <article class="mini-card"><h4><code>B</code> / <code>b</code></h4><p>BSS의 0 초기화·미초기화 데이터.</p></article>
+            <article class="mini-card"><h4><code>C</code></h4><p>아직 할당되지 않은 common symbol.</p></article>
+            <article class="mini-card"><h4><code>T</code> / <code>t</code></h4><p>text 영역의 함수·코드.</p></article>
+            <article class="mini-card"><h4><code>U</code></h4><p>현재 오브젝트에는 정의가 없는 참조.</p></article>
+            <article class="mini-card"><h4><code>V</code> / <code>W</code></h4><p>실제 weak object / weak non-object.</p></article>
+          </div>
+
+          <h3>같은 소스, 다른 section index</h3>
+          <div class="codeblock">
+            <div class="code-cap"><span>storage-layout/symbols.c</span><span class="observed">OBSERVED</span></div>
+            <pre><code><span class="terminal-line">$ nm -S layout-common.o</span>
+0000000000000000 0000000000000004 D initialized
+0000000000000004 0000000000000004 C tentative
+0000000000000000 0000000000000004 B zero
+
+<span class="terminal-line">$ nm -S layout-nocommon.o</span>
+0000000000000000 0000000000000004 D initialized
+0000000000000000 0000000000000004 B tentative
+0000000000000004 0000000000000004 B zero</code></pre>
+          </div>
+
+          <h3><code>static</code>은 이름을 파일 안에 가둔다</h3>
+          <div class="codeblock">
+            <div class="code-cap"><span>static-internal</span><span class="observed">OBSERVED</span></div>
+            <pre><code><span class="terminal-line">$ ./static-internal</span>
+main.x=11 other.x=22
+<span class="terminal-line">$ nm -a static-internal | grep ' [bd] x$'</span>
+0000000000020010 d x
+0000000000020014 d x</code></pre>
+          </div>
+          <p>
+            소문자 <code>d</code>는 두 <code>x</code>가 각각 local data symbol임을 보인다.
+            소스 이름은 같지만 외부 연결 이름 공간에 나오지 않으므로 충돌하지 않는다.
+          </p>
+
+          <h3>직접 재현</h3>
+          <div class="codeblock">
+            <div class="code-cap"><span>macOS에서도 ELF를 똑같이 재현</span><span>DOCKER</span></div>
+            <pre><code>cd chapter07
+./verify-in-docker.sh
+
+<span class="cm"># HTML의 로컬 링크·필수 블록도 검사</span>
+node verify-html.mjs</code></pre>
+          </div>
+          <div class="callout note">
+            <div class="label">NOTE · .o를 커밋하지 않는 이유</div>
+            <p>
+              실습 노트는 오브젝트 내용을 직접 참조하지만, 이 산출물은 CPU·OS·컴파일러에
+              의존한다. 재생성 명령과 검증 텍스트는 추적하고, <code>examples/build/</code>의
+              바이너리는 추적하지 않는다.
+            </p>
+          </div>
+        </section>
+
+        <section id="linkers">
+          <div class="section-head">
+            <span class="section-id">09</span>
+            <h2>GNU ld와 lld: 규칙은 같고 진단은 다르다</h2>
+          </div>
+          <div class="grid two">
+            <article class="mini-card">
+              <h3>GNU ld 2.42</h3>
+              <div class="codeblock">
+                <div class="code-cap"><span>strong + strong</span><span>ERROR</span></div>
+                <pre><code>multiple definition of `conflict';
+ss-main.o: first defined here</code></pre>
+              </div>
+            </article>
+            <article class="mini-card">
+              <h3>lld 18.1.3</h3>
+              <div class="codeblock">
+                <div class="code-cap"><span>strong + strong</span><span>ERROR</span></div>
+                <pre><code>duplicate symbol: conflict
+&gt;&gt;&gt; defined at main.c:3
+&gt;&gt;&gt; defined at other.c:1</code></pre>
+              </div>
+            </article>
+          </div>
+          <p>
+            둘 다 기본적으로 중복 strong 정의를 거부한다. lld는 각 정의의 소스 위치를
+            구조적으로 보여 줬고, GNU ld는 “first defined here” 형태로 보여 줬다.
+          </p>
+
+          <h3>실제 WEAK + WEAK 입력 순서 실험</h3>
+          <div class="codeblock">
+            <div class="code-cap"><span>GNU ld와 lld에서 같은 관측</span><span class="observed">OBSERVED, NOT GUARANTEED</span></div>
+            <pre><code><span class="terminal-line">$ cc main.o left.o right.o -o left-first &amp;&amp; ./left-first</span>
+choice=11
+<span class="terminal-line">$ cc main.o right.o left.o -o right-first &amp;&amp; ./right-first</span>
+choice=22
+
+<span class="terminal-line">$ clang -fuse-ld=lld main.o left.o right.o -o lld-left &amp;&amp; ./lld-left</span>
+choice=11
+<span class="terminal-line">$ clang -fuse-ld=lld main.o right.o left.o -o lld-right &amp;&amp; ./lld-right</span>
+choice=22</code></pre>
+          </div>
+          <div class="callout warning">
+            <div class="label">WARNING · 관측을 계약으로 승격하지 말 것</div>
+            <p>
+              이 버전의 두 링커는 먼저 입력된 weak 정의를 골랐다. 그러나 ELF ABI는 weak 동작의
+              일부를 implementation-defined로 두고, 교재도 “어느 weak든”이라고 표현한다.
+              입력 순서로 기능 선택을 설계하지 말고, 명시적 strong 정의나 등록 메커니즘을 사용한다.
+            </p>
+          </div>
+
+          <h3>escape hatch: <code>--allow-multiple-definition</code></h3>
+          <p>
+            GNU ld와 lld 공식 문서는 이 옵션을 주면 여러 정의를 오류로 처리하지 않고 첫 정의를
+            쓴다고 설명한다. 바이너리 분석·특수 빌드에는 쓸 수 있지만, 일반 애플리케이션의
+            중복 정의 버그를 고치는 수단은 아니다.
+          </p>
+        </section>
+
+        <section id="practice">
+          <div class="section-head">
+            <span class="section-id">10</span>
+            <h2>QUIZ · EXERCISE · 면접 질문</h2>
+          </div>
+          <p class="kicker">QUIZ</p>
+          <ol class="quiz-list">
+            <li>
+              <code>int x = 0;</code>은 초기값이 0이므로 weak인가?
+              <details>
+                <summary>정답 보기</summary>
+                <div>아니다. 교재 모델에서 initializer가 있으므로 strong이다. ELF에서는 보통 <code>GLOBAL</code> 객체로 <code>.bss</code>에 놓인다.</div>
+              </details>
+            </li>
+            <li>
+              <code>readelf</code>의 <code>GLOBAL DEFAULT COM</code>은 ELF weak symbol인가?
+              <details>
+                <summary>정답 보기</summary>
+                <div>아니다. binding은 <code>GLOBAL</code>이고 section index가 <code>SHN_COMMON</code>이다. 실제 weak binding은 <code>WEAK</code>로 표시된다.</div>
+              </details>
+            </li>
+            <li>
+              두 파일에 <code>static int x;</code>가 있으면 왜 링크 오류가 아닌가?
+              <details>
+                <summary>정답 보기</summary>
+                <div><code>static</code> 파일 범위 객체는 내부 연결을 가진다. 각 오브젝트의 local symbol이라 서로 다른 이름 공간에 있다.</div>
+              </details>
+            </li>
+            <li>
+              GCC 10 이후 여러 파일의 <code>int x;</code>가 기본 설정에서 실패하는 이유는?
+              <details>
+                <summary>정답 보기</summary>
+                <div>기본 <code>-fno-common</code>이 각 tentative definition을 오브젝트의 <code>.bss</code> GLOBAL 정의로 내므로, 링커가 여러 strong 정의로 보고 거부한다.</div>
+              </details>
+            </li>
+          </ol>
+
+          <h3>Practice Problem 7.2 대응</h3>
+          <details>
+            <summary>A. 함수 <code>main</code> + tentative object <code>main</code></summary>
+            <div>함수 정의가 strong, tentative object가 weak/common인 과거 모델에서는 두 참조 모두 함수 정의 쪽에 연결된다. 그러나 함수와 객체가 같은 이름을 공유하는 설계 자체가 타입 안전하지 않다.</div>
+          </details>
+          <details>
+            <summary>B. 함수 <code>main</code> + 초기화된 object <code>main</code></summary>
+            <div>둘 다 strong이므로 Rule 1 링크 오류다.</div>
+          </details>
+          <details>
+            <summary>C. tentative <code>int x</code> + initialized <code>double x</code></summary>
+            <div>과거 모델에서는 initialized <code>double</code> strong 정의가 선택되어 두 참조가 그 정의로 해석된다. C 타입 관점에서는 위험한 불일치다. 현대 <code>-fno-common</code> 기본에서는 두 정의로 오류가 난다.</div>
+          </details>
+
+          <h3>EXERCISE</h3>
+          <ol>
+            <li><code>examples/storage-layout/symbols.c</code>에 <code>static int s;</code>와 <code>int z = 0;</code>을 추가하고 <code>readelf -Ws</code>의 Bind/Ndx를 예측한 뒤 확인한다.</li>
+            <li><code>common-common</code>의 두 <code>x</code>를 각각 <code>char x[4]</code>, <code>char x[32]</code>로 바꾸고 <code>-fcommon -Wl,--warn-common</code>에서 GNU ld가 어떤 크기를 택하는지 확인한다.</li>
+            <li><code>explicit-weak</code>의 strong 정의를 제거하고 weak 정의만 남긴 뒤 <code>nm</code>과 실행 결과를 비교한다.</li>
+            <li>헤더에 <code>int counter;</code>를 둔 잘못된 3파일 프로그램을 만들고, <code>extern</code> + 단일 정의 패턴으로 고친다.</li>
+          </ol>
+
+          <h3>면접에서 자주 이어지는 질문</h3>
+          <div class="grid two">
+            <article class="mini-card"><h4>컴파일 오류와 링크 오류를 구분해 보라</h4><p>각 번역 단위의 문법·타입 검사는 컴파일러, 번역 단위 사이 정의 연결은 링커가 담당한다.</p></article>
+            <article class="mini-card"><h4><code>.bss</code>가 파일 크기를 아끼는 이유는?</h4><p>0 바이트를 모두 저장하지 않고 메모리 크기만 기록해 로더가 0으로 준비할 수 있다.</p></article>
+            <article class="mini-card"><h4>weak symbol은 언제 쓰나?</h4><p>시스템 코드의 기본 hook, 선택적 override 등에 쓰인다. ELF ABI도 애플리케이션의 무분별한 weak 사용을 경고한다.</p></article>
+            <article class="mini-card"><h4>왜 헤더에는 <code>extern</code>인가?</h4><p>헤더는 여러 번역 단위에 복제되므로 공간을 만드는 정의가 아니라 하나의 정의를 가리키는 선언이어야 한다.</p></article>
+          </div>
+        </section>
+
+        <section id="glossary">
+          <div class="section-head">
+            <span class="section-id">11</span>
+            <h2>용어 사전: 영문을 기준으로 고정하기</h2>
+          </div>
+          <div class="ledger">
+            <div class="term">symbol resolution</div><div class="meaning">심볼 해석. 각 심볼 참조를 하나의 정의에 연결하는 링크 단계.</div>
+            <div class="term">duplicate symbol name</div><div class="meaning">중복 심볼 이름. 여러 입력 모듈이 같은 외부 이름을 정의한 상태.</div>
+            <div class="term">strong symbol</div><div class="meaning">강한 심볼. CSAPP 모델에서 함수와 초기화된 전역. 같은 이름의 strong은 하나만 허용.</div>
+            <div class="term">weak symbol</div><div class="meaning">약한 심볼. 문맥을 밝혀야 한다. CSAPP 학습 모델인지 ELF <code>STB_WEAK</code>인지 구분한다.</div>
+            <div class="term">tentative definition</div><div class="meaning">잠정 정의. 파일 범위에서 initializer 없이 나온 객체 선언의 C 표준 개념.</div>
+            <div class="term">common symbol</div><div class="meaning">공통 심볼. ELF relocatable object에서 아직 저장 공간이 배정되지 않은 <code>SHN_COMMON</code> 심볼.</div>
+            <div class="term">binding</div><div class="meaning">바인딩. ELF의 <code>STB_LOCAL</code>, <code>STB_GLOBAL</code>, <code>STB_WEAK</code> 같은 가시성·우선순위 속성.</div>
+            <div class="term">linkage</div><div class="meaning">연결. C 식별자가 다른 범위·번역 단위의 같은 이름 선언과 같은 대상을 가리키는지 정하는 언어 개념.</div>
+            <div class="term">translation unit</div><div class="meaning">번역 단위. 전처리가 끝난 하나의 소스 단위. 각 단위가 독립적으로 컴파일된다.</div>
+            <div class="term">relocatable object file</div><div class="meaning">재배치 가능 오브젝트 파일. 심볼·재배치 정보를 가진 링커 입력 <code>.o</code>.</div>
+            <div class="term">multiple definition</div><div class="meaning">다중 정의. 하나여야 하는 외부 strong 정의가 둘 이상인 링크 오류.</div>
+            <div class="term">internal linkage</div><div class="meaning">내부 연결. 파일 범위 <code>static</code>처럼 현재 번역 단위 안에서만 같은 대상을 가리킴.</div>
+          </div>
+        </section>
+
+        <section id="mapping">
+          <div class="section-head">
+            <span class="section-id">12</span>
+            <h2>책의 절·예제·그림 대응표</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>CSAPP 3e 7.6.1 요소</th>
+                  <th>책의 역할</th>
+                  <th>이 문서</th>
+                  <th>재현 실습</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>절 도입</td><td>여러 모듈의 같은 전역 이름 문제 제기</td><td>§2–§4</td><td>전체</td></tr>
+                <tr><td>Strong/weak Rule 1–3</td><td>Linux 링커 선택 규칙</td><td>§3 결정 트리</td><td><code>strong-strong</code>, <code>common-common</code>, <code>weak-weak</code></td></tr>
+                <tr><td><code>foo1/bar1</code></td><td>중복 <code>main</code> 함수</td><td>§5 사례 1</td><td><code>duplicate-function</code></td></tr>
+                <tr><td><code>foo2/bar2</code></td><td>초기화된 <code>x</code> 중복</td><td>§5 사례 2</td><td><code>strong-strong</code></td></tr>
+                <tr><td><code>foo3/bar3</code></td><td>strong + uninitialized global</td><td>§5 사례 3</td><td><code>strong-common</code></td></tr>
+                <tr><td><code>foo4/bar4</code></td><td>uninitialized global 둘</td><td>§5 사례 4</td><td><code>common-common</code></td></tr>
+                <tr><td><code>foo5/bar5</code></td><td><code>int</code>/<code>double</code> 타입 불일치와 손상</td><td>§5 사례 5</td><td><code>common-mismatch</code></td></tr>
+                <tr><td>COMMON과 <code>.bss</code> 설명</td><td>컴파일러가 결정을 링커에 미루는 이유</td><td>§6</td><td><code>storage-layout</code></td></tr>
+                <tr><td>Practice Problem 7.2</td><td>REF → DEF 규칙 연습</td><td>§10</td><td>QUIZ</td></tr>
+                <tr><td>번호 Figure</td><td colspan="3"><strong>7.6.1에는 번호가 붙은 교재 Figure가 없다.</strong> 본문 FIGURE N1–N6은 모두 새 설명용 SVG다.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout note">
+            <div class="label">NOTE · 누락 점검</div>
+            <p>
+              절의 세 규칙, 다섯 코드 사례, 타입 불일치 경고, <code>-fno-common</code> 조언,
+              COMMON/<code>.bss</code> 결론, Practice Problem 7.2를 모두 대응했다.
+              7.6 직전의 C++/Java name mangling aside는 7.6.1 본문 밖이므로 용어 확장 범위에
+              포함하지 않았다.
+            </p>
+          </div>
+        </section>
+
+        <section id="beyond">
+          <div class="section-head">
+            <span class="section-id">13</span>
+            <h2>Beyond CSAPP: 2026년에 가져갈 규칙</h2>
+          </div>
+          <div class="grid two">
+            <article class="mini-card">
+              <h3>빌드 성공을 안전성으로 착각하지 않는다</h3>
+              <p><code>-fcommon</code>의 조용한 병합은 과거 호환 동작이지 타입 검사가 아니다. 링크 성공 뒤에도 ABI 불일치가 남을 수 있다.</p>
+            </article>
+            <article class="mini-card">
+              <h3>경고를 링크 계약의 일부로 본다</h3>
+              <p>레거시 코드 조사에는 <code>-Wl,--warn-common</code>이 숨은 병합을 드러낸다. CI에서는 관련 경고를 무시하지 않는다.</p>
+            </article>
+            <article class="mini-card">
+              <h3>weak는 시스템 메커니즘으로 제한한다</h3>
+              <p>기본 구현이나 선택적 hook에는 유용하지만, 애플리케이션 로직을 입력 순서에 의존시키지 않는다.</p>
+            </article>
+            <article class="mini-card">
+              <h3>도구 출력에서 층을 읽는다</h3>
+              <p>C의 linkage, ELF의 binding, section index, linker의 선택 규칙을 한 단어 “weak”로 뭉개지 않는다.</p>
+            </article>
+          </div>
+          <h3>5분 디버깅 순서</h3>
+          <ol>
+            <li>오류의 심볼 이름과 각 정의 파일을 확인한다.</li>
+            <li><code>nm -A</code>로 모든 후보의 글자(<code>D/B/C/V/W/T</code>)를 본다.</li>
+            <li><code>readelf -Ws</code>로 <code>Bind</code>와 <code>Ndx</code>를 분리해 본다.</li>
+            <li>헤더에 공간을 만드는 정의가 들어갔는지 찾는다.</li>
+            <li><code>extern</code> 선언 + 단일 정의로 고친 뒤 <code>-fno-common</code>에서 다시 링크한다.</li>
+          </ol>
+          <div class="callout eli5">
+            <div class="label">한 문장 결론</div>
+            <p>
+              <strong>같은 전역 이름이 여러 파일에 보이면, 링커의 관용에 기대지 말고 정의의 소유자를 하나로 만든다.</strong>
+            </p>
+          </div>
+        </section>
+
+        <footer>
+          <p>
+            CSAPP 3e §7.6.1 기반 재서술. 공식 근거:
+            <a href="https://csapp.cs.cmu.edu/3e/errata.html">CSAPP 정오표</a>,
+            <a href="https://refspecs.linuxfoundation.org/elf/gabi4%2B/ch4.symtab.html">System V ELF ABI</a>,
+            <a href="https://gcc.gnu.org/gcc-10/porting_to.html">GCC 10 Porting Guide</a>,
+            <a href="https://sourceware.org/binutils/docs/ld/Options.html">GNU ld</a>,
+            <a href="https://clang.llvm.org/docs/CommandGuide/clang.html">Clang</a>.
+          </p>
+          <p>문서·실습·SVG: 2026-07-26. 다음 반복에서는 스터디 피드백을 반영해 예제와 설명을 조정한다.</p>
+        </footer>
+      </main>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const button = document.getElementById("theme-toggle");
+      const saved = localStorage.getItem("csapp-theme");
+      if (saved === "dark" || saved === "light") root.dataset.theme = saved;
+      button.addEventListener("click", () => {
+        const current = root.dataset.theme ||
+          (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        const next = current === "dark" ? "light" : "dark";
+        root.dataset.theme = next;
+        localStorage.setItem("csapp-theme", next);
+      });
+    })();
+  </script>
+</body>
+</html>

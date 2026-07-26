@@ -9,11 +9,13 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.
 
 ## 최신
 
+- [[2026-07-26-csapp-ch7-symbol-resolution]] — Chapter 7.6.1 Duplicate Symbol Names 강의노트
 - [[2026-07-05-csapp-ch6-memory-hierarchy]] — Chapter 6 Memory Hierarchy 통합 강의노트
 
 ## 강의노트 (Lectures)
 
 - 2026
+  - [[2026-07-26-csapp-ch7-symbol-resolution]] — Ch7.6.1 Symbol Resolution ([HTML 원본](../chapter07/chapter-7.6.1.html))
   - [[2026-07-05-csapp-ch6-memory-hierarchy]] — Ch6 Memory Hierarchy ([HTML 원본](lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html))
 
 ## 노트 (Notes)
@@ -33,6 +35,7 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.
 ## 실습 (Examples)
 
 - [examples/0001-compile-linking](../examples/0001-compile-linking/) — 링크 타임 에러 재현 실습 (→ [[0001-compile-linking]])
+- [chapter07/examples](../chapter07/examples/) — strong/weak/COMMON과 GCC 10 전후 ELF 실습 (→ [[2026-07-26-csapp-ch7-symbol-resolution]])
 - [java-datastructures/BST](../java-datastructures/BST/) — BST/AVL 트리 Java 구현 (→ [[java-compile-run]], [[tree-index]])
 - [exercises](../exercises/) — 자바 연습문제+해답 (1~10장, hwp)
 
