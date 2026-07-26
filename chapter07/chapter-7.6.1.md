@@ -69,8 +69,8 @@
 | 링크 최적화 | 전통적인 컴파일과 링크 분리를 중심으로 설명 | section GC, Full LTO, ThinLTO를 구분 | 최종 링크는 선택된 입력 전체를 봄 |
 | 링커 구현 | GNU ld 중심 | GNU ld, LLD, mold의 성능과 호환성 비교 | 심볼 해석 뒤 재배치와 최종 ELF 생성 |
 
-교재의 핵심 알고리즘이 모두 폐기된 것은 아니다. 많이 바뀐 부분은 컴파일러 기본값,
-LTO가 링커에 전달하는 정보, archive 탐색의 편의 기능, 링커 구현과 성능이다.
+교재의 심볼 해석과 재배치 알고리즘은 현재 도구에서도 기본 원리로 유지된다. 컴파일러
+기본값, LTO가 전달하는 정보, archive 탐색 기능, 링커 구현과 성능은 달라졌다.
 
 전체 근거와 조사 한계는 [references.md](references.md), 전체 검증 로그는 [verified-linux-aarch64.txt](results/verified-linux-aarch64.txt)에 있다.
 
@@ -159,7 +159,8 @@ LTO가 링커에 전달하는 정보, archive 탐색의 편의 기능, 링커 �
 
 **local definition**
 
-`static`으로 내부 연결을 갖는 함수·파일 범위 변수. 같은 이름이 다른 오브젝트에 있어도 충돌하지 않는다.
+`static`으로 내부 연결을 갖는 함수·파일 범위 변수. 각 오브젝트의 local symbol
+이름 공간에 속한다.
 
 **external reference**
 
@@ -167,7 +168,9 @@ LTO가 링커에 전달하는 정보, archive 탐색의 편의 기능, 링커 �
 
 > **COMMON MISTAKE · local symbol ≠ local variable**
 >
-> 여기서 local symbol은 오브젝트 파일 밖에서 보이지 않는 심볼이다. 함수 안 자동 지역 변수는 보통 런타임 스택이나 레지스터에 놓이며 링커의 전역 이름 해석 대상이 아니다.
+> 여기서 local symbol은 오브젝트 파일 안에서만 보이는 심볼이다. 함수 안 자동 지역
+> 변수는 보통 런타임 스택이나 레지스터에 놓인다. 링커의 심볼 해석은 파일 범위 이름을
+> 다룬다.
 
 <a id="rules"></a>
 
@@ -183,9 +186,10 @@ LTO가 링커에 전달하는 정보, archive 탐색의 편의 기능, 링커 �
 
 **FIGURE N3** 교재의 세 규칙을 적용하는 순서.
 
-> **WARNING · arbitrary는 random이 아니다**
+> **WARNING · arbitrary의 의미**
 >
-> “아무 weak나 고른다”는 매 실행마다 무작위라는 뜻이 아니다. 특정 링커 버전과 입력 순서에서는 결과가 반복될 수 있다. 뜻은 **소스 언어 수준에서 이식 가능한 선택을 보장하지 않는다**는 것이다.
+> arbitrary는 **소스 언어 수준에서 이식 가능한 선택을 보장하지 않음**을 뜻한다.
+> 특정 링커 버전과 입력 순서에서는 같은 결과가 반복될 수 있다.
 
 <a id="book-cases"></a>
 
@@ -193,7 +197,7 @@ LTO가 링커에 전달하는 정보, archive 탐색의 편의 기능, 링커 �
 
 ### 사례 1 · `main` 함수가 두 개
 
-두 모듈 모두 `main` 함수를 정의한다. 함수 정의는 strong이므로 Rule 1에 따라 링크 오류다. “어느 main이 먼저인가”를 따질 단계가 아니다.
+두 모듈 모두 `main` 함수를 정의한다. 함수 정의는 strong이므로 Rule 1에 따라 링크 오류다.
 
 **duplicate-function · OBSERVED · GNU ld**
 
@@ -205,7 +209,8 @@ collect2: error: ld returned 1 exit status
 
 ### 사례 2 · 초기화된 전역 `x`가 두 개
 
-두 모듈이 모두 `int x = 15213;` 같은 초기화된 전역을 정의한다. 둘 다 strong이므로 함수 중복과 똑같이 링크 오류다. 값이 우연히 같아도 동일한 저장 객체라는 증거가 아니므로 허용되지 않는다.
+두 모듈이 모두 `int x = 15213;` 같은 초기화된 전역을 정의한다. 둘 다 strong이므로
+함수 중복과 같은 링크 오류가 발생한다. 외부 연결을 가진 저장 객체의 정의는 하나여야 한다.
 
 ### 사례 3 · 초기화된 `x` + 초기화되지 않은 `x`
 
@@ -237,16 +242,19 @@ x = 15212
 
 ### 사례 5 · 이름은 같고 타입은 다르다
 
-한 모듈은 `int x`, 다른 모듈은 `double x`라고 믿는다. 링커의 주된 해석 키는 C 타입이 아니라 심볼 이름과 오브젝트 메타데이터다. `-fcommon`에서 strong `int`가 선택되면, 다른 모듈은 같은 주소에 8바이트 `double`을 쓸 수 있다. 인접 객체가 덮일 수 있는 심각한 버그다.
+한 모듈은 `int x`, 다른 모듈은 `double x`라고 믿는다. 링커는 심볼 이름과 오브젝트
+메타데이터를 주된 해석 키로 사용한다. `-fcommon`에서 strong `int`가 선택되면, 다른
+모듈은 같은 주소에 8바이트 `double`을 쓸 수 있다. 인접 객체가 덮일 수 있는 심각한 버그다.
 
-일반 ELF 링커도 `STT_OBJECT`, `STT_FUNC`, `st_size` 같은 거친 정보는 본다. 그러나
-`int`, `double`, 함수 매개변수, 구조체 레이아웃 같은 C 타입 체계는 알지 못한다.
-따라서 “링커는 타입을 모른다”는 말은 “C 타입 전체를 검사하지 않는다”는 뜻으로 읽어야
-한다.
+일반 ELF 링커는 `STT_OBJECT`, `STT_FUNC`, `st_size` 같은 오브젝트 메타데이터를
+사용한다. `int`, `double`, 함수 매개변수, 구조체 레이아웃 같은 C 타입 검사는 컴파일러와
+LTO의 역할이다. 강의의 “링커는 타입을 모른다”는 이 역할 구분을 가리킨다.
 
 > **WARNING · 출력 값은 시스템 의존**
 >
-> 책의 x86-64 예시는 `x`와 바로 다음 `y`가 함께 손상되는 한 배치를 보여 준다. CSAPP 공식 정오표는 정확한 손상 값이 시스템 의존이라고 명시한다. 본 aarch64 실험에서는 `x=0`이 되었지만 `y`는 유지됐다. 어느 쪽도 프로그램이 의존할 수 있는 결과가 아니다.
+> 책의 x86-64 예시는 `x`와 바로 다음 `y`가 함께 손상되는 한 배치를 보여 준다. CSAPP
+> 공식 정오표는 정확한 손상 값이 시스템 의존이라고 명시한다. 본 aarch64 실험에서는
+> `x=0`, `y=15212`가 관측됐다. 이 값들은 정의되지 않은 동작에서 나온 관측값이다.
 
 **common-mismatch · OBSERVED · aarch64**
 
@@ -267,11 +275,13 @@ x = 0x0 y = 0x3b6c
 
 ## 가장 중요한 구분: 교재의 weak와 ELF의 WEAK
 
-**[OFFICIAL · ELF ABI]** ELF 심볼 표의 `Bind`에는 `LOCAL`, `GLOBAL`, `WEAK`가 있다. `SHN_COMMON`은 binding이 아니라 **특별한 section index**다.
+**[OFFICIAL · ELF ABI]** ELF 심볼 표의 `Bind`에는 `LOCAL`, `GLOBAL`, `WEAK`가 있다.
+`SHN_COMMON`은 특별한 section index다.
 
-> **GOTCHA · 책의 weak 분류를 readelf의 WEAK로 번역하지 말 것**
+> **GOTCHA · `-fcommon`의 ELF 표기**
 >
-> GCC `-fcommon`에서 파일 범위 `int x;`를 컴파일하면 실제 출력은 대개 `OBJECT GLOBAL DEFAULT COM x`다. 즉 `Bind=GLOBAL`, `Ndx=COM`이며 `Bind=WEAK`가 아니다.
+> GCC `-fcommon`에서 파일 범위 `int x;`를 컴파일하면 대개
+> `OBJECT GLOBAL DEFAULT COM x`가 나온다. `Bind=GLOBAL`, `Ndx=COM`이다.
 
 | C 표기 | 교재 모델 | 현대 GCC ELF 관측 | `nm` | 중복 시 |
 | --- | --- | --- | --- | --- |
@@ -320,7 +330,8 @@ $ nm -S ew-provider.o
 
 ![int a=7, int b=0, int c, extern int d가 fcommon과 fno-common에서 data bss COMMON undefined로 배치되는 비교](figures/storage-classes.svg)
 
-**FIGURE N6** 입력 오브젝트와 최종 실행 파일의 저장 위치. COMMON 자체는 입력 섹션이 아니다.
+**FIGURE N6** 입력 오브젝트와 최종 실행 파일의 저장 위치. COMMON 심볼은 section
+index로 `SHN_COMMON`을 사용한다.
 
 | 표현 | 정의/선언 | `-fcommon` 입력 .o | `-fno-common` 입력 .o | 최종 메모리 |
 | --- | --- | --- | --- | --- |
@@ -330,9 +341,11 @@ $ nm -S ew-provider.o
 | `extern int d;` | 선언/참조 | `SHN_UNDEF` | `SHN_UNDEF` | 다른 정의가 제공해야 함 |
 | `static int e;` | 내부 연결 tentative | `.bss LOCAL` | `.bss LOCAL` | 모듈 전용 0 초기화 객체 |
 
-> **COMMON MISTAKE · “COMMON section”을 실제 섹션이라고 생각하기**
+> **COMMON MISTAKE · `SHN_COMMON` 필드 읽기**
 >
-> ELF `SHN_COMMON` 심볼은 아직 어느 입력 섹션에도 할당되지 않았다. `st_value`는 주소가 아니라 정렬 조건이고, `st_size`가 필요한 바이트 수다. GNU ld 스크립트의 `*(COMMON)`은 이런 심볼을 출력 `.bss`에 배치하기 위한 특별 표기다.
+> ELF `SHN_COMMON` 심볼은 입력 섹션 배정 전 상태다. `st_value`는 정렬 조건,
+> `st_size`는 필요한 바이트 수다. GNU ld 스크립트의 `*(COMMON)`은 이런 심볼을
+> 출력 `.bss`에 배치하는 특별 표기다.
 
 <a id="gcc10"></a>
 
@@ -348,15 +361,12 @@ $ nm -S ew-provider.o
 
 ### 기본값이 바뀌기 전에도 `-fno-common`을 쓴 프로젝트가 있었다
 
-GCC 9까지의 기본값이 `-fcommon`이었다고 해서 모든 프로젝트가 그 기본값에 의존한 것은
-아니다. Linux 2.6.12의 2005년 Makefile에도 이미 `-fno-common`이 전역 CFLAGS에 들어
-있다. 중복 tentative definition을 일찍 오류로 만들고 전역 접근 방식을 명확히 하려는
-프로젝트는 컴파일러 기본값이 바뀌기 전부터 이 옵션을 명시했다.
+GCC 9까지 기본값은 `-fcommon`이었다. Linux 2.6.12의 2005년 Makefile은 전역
+CFLAGS에 `-fno-common`을 명시했다. 일부 프로젝트는 중복 tentative definition을
+일찍 발견하고 전역 배치를 명확히 하기 위해 컴파일러 기본값을 직접 설정했다. GCC 10
+전환 과정에서는 기본값에 의존하던 프로젝트들이 중복 정의를 수정했다.
 
-반대로 “개발자 모두가 `-fno-common`을 썼다”고 일반화할 근거도 없다. GCC 10 전환 때
-여러 프로젝트가 중복 정의를 수정해야 했다는 사실이 이를 보여 준다.
-
-> **GOTCHA · `-fcommon`은 ELF weak를 만드는 옵션이 아니다**
+> **GOTCHA · `-fcommon`이 만드는 심볼**
 >
 > `-fcommon`의 `int x;`는 보통 `STB_GLOBAL + SHN_COMMON`이다.
 > `-fno-common`의 같은 소스는 보통 `STB_GLOBAL + .bss`다. 교재 모델에서는 앞을 weak,
@@ -544,7 +554,8 @@ choice=22
 
 ### escape hatch: `--allow-multiple-definition`
 
-GNU ld와 lld 공식 문서는 이 옵션을 주면 여러 정의를 오류로 처리하지 않고 첫 정의를 쓴다고 설명한다. 바이너리 분석·특수 빌드에는 쓸 수 있지만, 일반 애플리케이션의 중복 정의 버그를 고치는 수단은 아니다.
+GNU ld와 lld 공식 문서는 이 옵션에서 첫 정의를 사용한다고 설명한다. 적용 범위는
+바이너리 분석과 의도적으로 중복 정의를 사용하는 특수 빌드다.
 
 <a id="beyond-book"></a>
 
@@ -553,9 +564,8 @@ GNU ld와 lld 공식 문서는 이 옵션을 주면 여러 정의를 오류로 �
 ### 1. 같은 번역 단위 안의 잠정 정의는 하나로 정리된다
 
 C11 §6.9.2에 따르면 같은 번역 단위 안의 `int x;`가 여러 번 나와도, 호환되는 선언이라면
-번역 단위 끝에서 하나의 0 초기화 정의처럼 동작한다. 이 단계는 오브젝트 파일이 생기기
-전이므로 링커의 “중복 strong” 문제가 아니다. 또한 initializer가 붙은
-`extern int x = 3;`은 선언이 아니라 **정의**다.
+번역 단위 끝에서 하나의 0 초기화 정의처럼 동작한다. 이 처리는 오브젝트 파일 생성 전에
+완료된다. initializer가 붙은 `extern int x = 3;`은 **정의**다.
 
 **C11 규칙 · N1570 §6.9.2**
 
@@ -569,8 +579,8 @@ int a[];            /* 끝까지 불완전하면 0인 원소 하나의 배열 */
 ### 2. 크기가 다른 COMMON은 가장 큰 저장 공간을 택한다
 
 GNU ld는 같은 이름의 COMMON들이 크기가 다르면 가장 큰 크기를 사용한다. ELF `.comm`은
-크기뿐 아니라 정렬 조건도 전달한다. 이것은 타입 검사가 아니라 바이트 수와 정렬의
-병합이므로, 링크 성공만으로 타입이 일치한다고 판단하면 안 된다.
+크기와 정렬 조건을 전달한다. 링커는 바이트 수와 정렬 조건을 병합한다. C 타입 일치는
+공유 헤더와 컴파일러 진단으로 확인한다.
 
 **common-size · OBSERVED · GNU ld 2.42**
 
@@ -587,14 +597,13 @@ $ nm -S common-size | grep ' arena$'
 
 ### 3. 정의되지 않은 실제 ELF weak는 0으로 남을 수 있다
 
-System V ELF ABI에서 해결되지 않은 `STB_WEAK` 참조는 링크 오류가 아니라 0 값을 갖는다.
-또한 undefined weak 하나만 만족시키기 위해 정적 라이브러리의 멤버를 꺼내지 않는다.
-선택적 hook을 만들 수 있지만, 함수 포인터가 0인지 확인하지 않고 호출하면 안 된다.
+System V ELF ABI에서 해결되지 않은 `STB_WEAK` 참조의 값은 0이다. undefined weak만
+만족시키는 정적 라이브러리 멤버는 추출되지 않는다. 선택적 hook은 함수 포인터의 0 값을
+검사한 뒤 호출한다.
 
 `-fno-common`이 기본이어도 실제 ELF weak는 그대로 쓸 수 있다. GCC와 Clang에서 가장
-직접적인 소스 표현은 `__attribute__((weak))`다. `weakref`, `#pragma weak`, 어셈블러의
-`.weak`, `objcopy --weaken` 같은 방법도 있으므로 이 attribute만이 유일한 생성 방법은
-아니다.
+직접적인 소스 표현은 `__attribute__((weak))`다. 생성 방법에는 `weakref`,
+`#pragma weak`, 어셈블러의 `.weak`, `objcopy --weaken`도 있다.
 
 #### 기본 구현을 strong 정의로 교체
 
@@ -659,14 +668,13 @@ ELF C에서는 정의되지 않은 weak 참조가 0이 될 수 있으므로 호�
 | Java | `Class.forName`의 `ClassNotFoundException` 처리 |
 | C# / .NET | `Assembly.Load`의 `FileNotFoundException` 또는 `AssemblyLoadContext`의 실패 처리 |
 
-이 방식들은 ELF weak symbol과 같은 구현이 아니다. 의존성 부재를 오류 대신 선택 가능한
-기능으로 다룬다는 점만 같다.
+각 환경은 자체 런타임과 로더로 선택적 의존성을 구현한다. 공통 목적은 의존성이 있을 때
+추가 기능을 활성화하는 것이다.
 
 ### 4. 일반 링커와 LTO가 아는 타입 정보는 다르다
 
 일반 정적 링커는 심볼 이름, binding, `STT_OBJECT`·`STT_FUNC`, 크기, 섹션, 가시성을
-본다. `int`와 `double`, 함수 원형, 구조체 필드 같은 C 타입 전체는 비교하지 않는다.
-반면 GCC의
+본다. C의 `int`, `double`, 함수 원형, 구조체 필드 정보는 컴파일러와 LTO가 다룬다. GCC의
 **link-time optimization(LTO)**은 중간 표현(IR)을 함께 보므로 `-Wlto-type-mismatch`
 진단을 낼 수 있다. 이 경고는 `-flto`가 있을 때만 가능하며, 올바른 해결책은 여전히
 선언을 한 헤더로 통일하고 정의를 하나만 두는 것이다.
@@ -685,11 +693,11 @@ main.c:4:5: note: code may be misoptimized
 JVM의 constant pool 기반 method resolution, shared object의 동적 심볼 검색은 별도
 규칙을 따른다.
 
-> **GOTCHA · name mangling을 같은 규칙으로 묶지 않는다**
+> **GOTCHA · 언어 런타임별 심볼 해석**
 >
 > 현재 ELF 계열 C++ ABI의 mangled name은 보통 `_Z`로 시작한다. JVM은 class file의
-> 이름과 descriptor로 symbolic reference를 해석한다. 둘을 같은 정적 링커 규칙으로
-> 설명하면 안 된다.
+> 이름과 descriptor로 symbolic reference를 해석한다. 두 환경은 각자의 ABI와 런타임
+> 규칙을 사용한다.
 
 <a id="static-libraries"></a>
 
@@ -743,8 +751,7 @@ gcc main.o -L. -lvector -o prog
 > 프로그램이 `addvec`만 참조한 실험에서 archive 결과에는 `multvec`가 없었지만, 명시적
 > 오브젝트 결과에는 `multvec`도 남았다. 같은 멤버가 선택된 경우에만 결과가 비슷하다.
 
-사용자가 예로 든 `main.o`와 `utils.o`가 `foo`만 사용하고 vector 심볼을 전혀 참조하지
-않는다면 `libvector.a`에서는 아무 멤버도 선택되지 않는다.
+`main.o`와 `utils.o`가 `foo`만 사용하면 `libvector.a`에서는 선택되는 멤버가 없다.
 
 <a id="driver-libc"></a>
 
@@ -774,9 +781,9 @@ gcc -c main.s -o main.o       # 어셈블해 오브젝트 생성
 gcc main.o utils.o -o app     # 링크
 ```
 
-마지막 명령은 컴파일이 아니라 링크다. `gcc` 드라이버는 링커를 호출하면서 시작 코드
-`crt*.o`, 기본 라이브러리, 동적 로더 경로 같은 인수를 함께 전달한다. 반면 다음 명령은
-오브젝트 두 개만 `ld`에 넘긴다.
+마지막 명령은 링크 단계다. `gcc` 드라이버는 링커를 호출하면서 시작 코드 `crt*.o`,
+기본 라이브러리, 동적 로더 경로 같은 인수를 함께 전달한다. 다음 raw `ld` 명령에는
+오브젝트 두 개만 들어간다.
 
 ```text
 $ gcc main.o utils.o -o driver-gcc
@@ -789,15 +796,14 @@ ld: undefined reference to `__isoc99_scanf'
 ld: undefined reference to `printf'
 ```
 
-`ld`가 부족한 링커라서 실패한 것이 아니다. raw `ld` 명령에 시작 코드와 libc를 비롯한
-필수 입력을 주지 않았기 때문이다. 실제로 GCC가 어떤 인수를 넘기는지는
+raw `ld` 명령은 시작 코드와 libc 입력이 빠져 실패한다. GCC가 넘기는 전체 인수는
 `gcc -### main.o utils.o`로 확인할 수 있다.
 
 ### GCC와 C 표준 라이브러리를 구분한다
 
-GCC는 완전한 C 표준 라이브러리 구현을 제공하지 않는다. Linux 배포판에서는 GCC가
-glibc와 함께 설치되는 경우가 많지만 둘은 별도 프로젝트다. 헤더는 함수와 타입을
-선언하고, 실제 구현은 정적 아카이브나 공유 오브젝트에 있다. 위치도
+GCC와 C 표준 라이브러리는 별도 프로젝트다. Linux 배포판에서는 GCC와 glibc가 함께
+설치되는 경우가 많다. 헤더는 함수와 타입을 선언하고, 실제 구현은 정적 아카이브나
+공유 오브젝트에 있다. 위치는
 `/usr/include`, `/usr/lib`로 고정되지 않으며 sysroot, multiarch 디렉터리, SDK 구성에
 따라 달라진다.
 
@@ -821,7 +827,7 @@ not a dynamic executable
 
 glibc 정적 링크는 NSS, locale, 동적 모듈을 사용하는 기능에서 추가 제약이 생길 수 있다.
 배포 대상의 glibc 호환성이 중요하면 가장 오래된 지원 환경에서 빌드하는 방식도 쓴다.
-musl은 대안이지 모든 Linux 배포의 필수 선택은 아니다.
+musl은 정적 배포를 위한 선택지 중 하나다.
 
 <a id="archive-search"></a>
 
@@ -913,7 +919,7 @@ ld.lld: warning: backward reference detected: addvec in main.o refers to libvect
 <details>
 <summary>정답 보기</summary>
 
-아니다. 교재 모델에서 initializer가 있으므로 strong이다. ELF에서는 보통 `GLOBAL`
+교재 모델에서 initializer가 있는 전역 정의는 strong이다. ELF에서는 보통 `GLOBAL`
 객체로 `.bss`에 놓인다.
 
 </details>
@@ -923,7 +929,7 @@ ld.lld: warning: backward reference detected: addvec in main.o refers to libvect
 <details>
 <summary>정답 보기</summary>
 
-아니다. binding은 `GLOBAL`이고 section index가 `SHN_COMMON`이다. 실제 weak binding은
+binding은 `GLOBAL`, section index는 `SHN_COMMON`이다. 실제 weak binding은
 `WEAK`로 표시된다.
 
 </details>
@@ -996,8 +1002,8 @@ ld.lld: warning: backward reference detected: addvec in main.o refers to libvect
 
 #### 헤더에는 왜 `extern`을 쓰는가?
 
-헤더는 여러 번역 단위에 포함되므로 저장 공간을 만드는 정의가 아니라 하나의 정의를 가리키는
-선언을 둔다.
+헤더에는 하나의 외부 정의를 가리키는 `extern` 선언을 둔다. 여러 번역 단위가 같은
+선언을 공유할 수 있다.
 
 <a id="glossary"></a>
 
@@ -1188,14 +1194,14 @@ $ objdump -dr driver-main-gcc.o
 
 - **LLD**: LLVM 프로젝트의 링커. ELF용 실행 파일은 보통 `ld.lld`이며
   `clang -fuse-ld=lld`로 선택한다.
-- **ldd**: 이미 만들어진 동적 실행 파일의 공유 라이브러리 의존성을 표시한다. 링크 작업을
-  하지 않는다. 신뢰할 수 없는 실행 파일에는 직접 실행하지 않는 편이 안전하다.
+- **ldd**: 만들어진 동적 실행 파일의 공유 라이브러리 의존성을 표시한다. 신뢰할 수 없는
+  실행 파일은 `objdump -p ... | grep NEEDED`처럼 파일을 실행하지 않는 방법으로 확인한다.
 
 ### 링커는 교체할 수 있다
 
-GCC에 링커가 내장된 것은 아니다. GCC 드라이버가 기본 링커를 찾아 실행한다. 많은 Linux
-GCC 구성에서 기본값은 GNU Binutils의 **GNU ld**, 정확히는 BFD 링커인 `ld.bfd`다.
-실제 선택은 다음 명령으로 확인한다.
+GCC 드라이버는 외부 링커를 찾아 실행한다. 많은 Linux GCC 구성에서 기본값은 GNU
+Binutils의 **GNU ld**, 정확히는 BFD 링커인 `ld.bfd`다. 실제 선택은 다음 명령으로
+확인한다.
 
 ```text
 $ gcc -print-prog-name=ld
@@ -1233,10 +1239,10 @@ Rust의 증분 컴파일은 바뀌지 않은 컴파일 질의와 오브젝트 �
 결과 파일을 만들어야 한다. Cargo 공식 문서도 증분 빌드에서 최종 링크가 빌드 시간의
 대부분을 차지할 수 있다고 설명한다.
 
-전통적인 ELF 최종 링크는 컴파일러의 증분 질의 캐시처럼 변경된 함수 하나만 고치는
-방식이 아니다. 링크 단위가 크고 디버그 정보가 많을수록 입력 처리와 출력 기록 비용이
-커진다. 그래서 Rust, Chromium, Clang 같은 큰 프로그램에서는 링커 교체만으로
-수정 후 재빌드 시간이 줄어들 수 있다.
+전통적인 ELF 최종 링크는 선택된 오브젝트와 라이브러리를 다시 읽고 결과 파일을 쓴다.
+링크 단위가 크고 디버그 정보가 많을수록 입력 처리와 출력 기록 비용이 커진다. 그래서
+Rust, Chromium, Clang 같은 큰 프로그램에서는 링커 교체로 수정 후 재빌드 시간이
+줄어들 수 있다.
 
 Cargo에서는 프로젝트 설정으로 링커 인수를 지정할 수 있다.
 
@@ -1246,18 +1252,17 @@ Cargo에서는 프로젝트 설정으로 링커 인수를 지정할 수 있다.
 rustflags = ["-C", "link-arg=-fuse-ld=mold"]
 ```
 
-빌드 도구가 항상 최적의 링커를 자동으로 고르는 것은 아니다. 운영체제, Rust target,
-배포판 도구 체인, 프로젝트 설정에 따라 기본값이 다르므로 실제 링크 명령과 CI 환경을
-확인해야 한다.
+기본 링커는 운영체제, Rust target, 배포판 도구 체인, 프로젝트 설정에 따라 달라진다.
+실제 링크 명령과 CI 환경에서 선택된 링커를 확인한다.
 
 ![GNU ld, GNU gold, LLVM LLD, mold의 대규모 프로그램 링크 시간 비교](figures/linker-performance.svg)
 
 **FIGURE N8** mold 프로젝트가 공개한 대규모 프로그램 최종 링크 시간.
 
 이 수치는 mold 프로젝트가 debuginfo를 포함한 실행 파일을 16코어 32스레드 환경을
-모사해 측정한 결과다. MySQL 8.3, Clang 19, Chromium 124라는 특정 입력과 당시 링커
-버전에 대한 값이며, 모든 환경에서 같은 비율이 나온다는 뜻은 아니다. 링커 성능은
-CPU, 메모리, 저장 장치, 디버그 정보, LTO, 출력 크기와 링커 옵션에 따라 달라진다.
+모사해 측정한 결과다. 측정 대상은 MySQL 8.3, Clang 19, Chromium 124와 당시 링커
+버전이다. 링커 성능은 CPU, 메모리, 저장 장치, 디버그 정보, LTO, 출력 크기와 링커
+옵션에 따라 달라진다.
 
 <a id="lto-thinlto"></a>
 
@@ -1286,10 +1291,11 @@ CPU, 메모리, 저장 장치, 디버그 정보, LTO, 출력 크기와 링커 �
 | 링커 section GC | 심볼, 재배치, 입력 섹션 | 시작점에서 도달할 수 없는 함수별·데이터별 섹션 제외 |
 | LTO | 여러 번역 단위의 compiler IR | 번역 단위 사이의 인라이닝, 상수 전파, 내부화, 죽은 코드 제거 |
 
-**dead code elimination(DCE)**은 LTO 전용 명칭이 아니다. 컴파일러도 한 번역 단위 안에서
-DCE를 수행한다. GNU ld의 `--gc-sections`는 compiler IR을 해석하지 않고 심볼과 재배치
-관계로 도달 가능한 입력 섹션을 표시한다. 함수와 데이터를 개별 섹션으로 나누려면 보통
-컴파일할 때 `-ffunction-sections -fdata-sections`를 함께 쓴다.
+**dead code elimination(DCE)**은 실행 결과에 영향을 주지 않는 코드를 제거하는 일반
+최적화다. 컴파일러는 한 번역 단위 안에서 DCE를 수행한다. GNU ld의
+`--gc-sections`는 심볼과 재배치 관계로 도달 가능한 입력 섹션을 표시한다. 함수와
+데이터를 개별 섹션으로 나누려면 보통 컴파일할 때
+`-ffunction-sections -fdata-sections`를 함께 쓴다.
 
 ```bash
 # 링커 section GC
@@ -1316,10 +1322,9 @@ clang -O2 -flto=thin -fuse-ld=lld \
 | GCC `-flto` | 없음 | 없음 | `cube(3)`을 호출 지점에 반영하고 외부 함수 심볼을 남기지 않음 |
 | Clang `-flto=thin` | 있음 | 없음 | 호출되지 않는 함수는 없어졌지만 `cube`는 별도 심볼로 유지 |
 
-심볼이 보이지 않는다는 사실만으로 모든 기계어가 삭제되었다고 단정할 수는 없다. 함수가
-인라인되거나 계산 결과가 상수로 바뀌어 별도 외부 심볼이 필요 없어졌을 수 있다.
-Full LTO와 ThinLTO도 항상 같은 결정을 내리지 않는다. 이 실험에서 Clang ThinLTO는
-외부에 보이는 `cube`를 유지했다.
+심볼이 사라진 결과에는 함수 삭제, 인라이닝, 상수 계산으로 인한 외부 심볼 제거가 모두
+포함될 수 있다. 정확한 결과는 disassembly와 실행 결과를 함께 확인한다. 이 실험에서
+GCC Full LTO는 `cube` 심볼을 제거했고, Clang ThinLTO는 외부 `cube` 심볼을 유지했다.
 
 ### LTO로 가능한 최적화
 
@@ -1332,8 +1337,7 @@ LTO는 프로그램과 옵션에 따라 다음 최적화를 가능하게 한다.
 - 같은 구현을 가진 함수의 병합
 - 함수가 읽고 쓰는 메모리 범위를 이용한 호출 간 분석
 
-항상 이 최적화가 적용되는 것은 아니다. 주소가 외부로 노출되거나 동적 링크, 가시성,
-언어 규칙 때문에 정의를 보존해야 할 수 있다.
+주소 노출, 동적 링크, 심볼 가시성, 언어 규칙은 정의 보존 범위를 결정한다.
 
 ### Full LTO와 ThinLTO
 
@@ -1350,34 +1354,33 @@ ThinLTO는 각 모듈에 함수와 참조 관계를 요약한 정보를 넣는�
 
 **FIGURE N9** 일반 컴파일, Full LTO, ThinLTO의 처리 범위.
 
-> **GOTCHA · LTO 전체를 하나의 시간 복잡도로 단정하지 않는다**
+> **NOTE · CSAPP 링크 모델과 현대 LTO**
 >
-> “링크 시간은 항상 O(N²)”라고 말할 수는 없다. 분석 패스와 구현마다 복잡도가 다르다.
-> Full LTO의 핵심 부담은 모든 IR을 합친 큰 단위와 전역 분석의 시간·메모리 규모다.
-> ThinLTO는 요약 분석과 병렬 백엔드로 이 병목을 줄인다.
+> CSAPP의 전통적 링크 모델에서는 최종 링크가 선택된 입력 전체의 심볼과 재배치 정보를
+> 다시 처리한다. Full LTO는 모든 IR을 합친 큰 단위와 전역 분석 때문에 시간과 메모리
+> 부담이 커진다. ThinLTO는 요약 분석, 병렬 백엔드, 모듈 캐시로 처리 범위를 나눈다.
+> 개별 분석 패스의 시간 복잡도는 알고리즘과 구현에 따라 정해진다.
 
-현재 GCC에는 `-flto-incremental=경로`로 LTO 결과를 재사용하는 기능도 있다. 따라서
-“LTO는 캐시할 수 없다”는 설명도 현재 도구 전체에 적용되지 않는다. ThinLTO는 처음부터
-요약 기반 분석, 병렬 백엔드, 증분 빌드 통합을 주요 목표로 설계되었다는 점이 핵심이다.
+현재 GCC는 `-flto-incremental=경로`로 LTO 결과를 재사용할 수 있다. ThinLTO는
+요약 기반 분석, 병렬 백엔드, 증분 빌드 통합을 주요 목표로 설계됐다.
 
-Google의 ThinLTO 논문은 전체 IR을 읽고 쓰지 않는 빠른 요약 분석을 직렬 단계로 두고,
-모듈별 최적화를 병렬화하는 구조를 설명한다. 논문의 결론은 Full LTO와 완전히 같은
-최적화를 보장한다는 뜻이 아니라, 대부분의 번역 단위 간 최적화를 유지하면서 비 LTO에
-가까운 확장성을 얻는다는 것이다.
+Google의 ThinLTO 논문은 빠른 요약 분석을 직렬 단계로 두고 모듈별 최적화를 병렬화하는
+구조를 설명한다. 이 구조는 대부분의 번역 단위 간 최적화를 유지하면서 비 LTO에 가까운
+확장성을 목표로 한다.
 
 ### Rust의 기본값 범위
 
-Rust가 항상 전체 프로그램에 ThinLTO를 적용하는 것은 아니다. 최적화가 켜지고 codegen
-unit이 여러 개인 빌드에서는 같은 크레이트 안의 **thin local LTO**를 기본으로 시도한다.
-기본 개발 프로필은 `opt-level = 0`이므로 이 동작이 비활성화된다. 의존 크레이트까지
-분석하는 cross-crate ThinLTO는 Cargo 프로필에서 따로 설정한다.
+Rust는 최적화가 켜지고 codegen unit이 여러 개인 빌드에서 같은 크레이트 안의
+**thin local LTO**를 기본으로 시도한다. 기본 개발 프로필의 `opt-level = 0`에서는
+이 동작이 비활성화된다. 의존 크레이트까지 분석하는 cross-crate ThinLTO는 Cargo
+프로필에서 따로 설정한다.
 
 ```toml
 [profile.release]
 lto = "thin"
 ```
 
-Cargo에서 `lto = false`는 LTO가 완전히 꺼졌다는 뜻이 아니라 thin local LTO를 허용한다.
+Cargo에서 `lto = false`는 thin local LTO를 허용하고, `lto = "off"`는 LTO를 끈다.
 완전히 끄려면 `lto = "off"`를 사용한다.
 
 <a id="loader-aslr"></a>
@@ -1409,18 +1412,18 @@ x86-64 glibc 환경에서는 인터프리터 경로가 흔히
 구분할 수 없다. `readelf -l`의 `PT_INTERP`와 `readelf -d`의 `DT_NEEDED`를 따로
 확인해야 한다.
 
-위 AArch64 실험에서는 동적 로더가 `PT_INTERP`와 `DT_NEEDED`에 모두 나타났다. glibc가
-설치하는 `libc.so`는 실제 공유 오브젝트가 아니라 `libc.so.6`, `libc_nonshared.a`,
-동적 로더를 묶는 GNU ld 스크립트일 수 있다. 이 스크립트의 `AS_NEEDED` 처리 결과로
-동적 로더가 `DT_NEEDED`에도 남을 수 있다. 반면 다른 glibc 환경에서는
+위 AArch64 실험에서는 동적 로더가 `PT_INTERP`와 `DT_NEEDED`에 모두 나타났다. 일부
+glibc 개발 환경의 `libc.so`는 `libc.so.6`, `libc_nonshared.a`, 동적 로더를 묶는 GNU
+ld 스크립트다. 이 스크립트의 `AS_NEEDED` 처리 결과로 동적 로더가 `DT_NEEDED`에도
+남을 수 있다. 다른 glibc 환경에서는
 `DT_NEEDED`에 `libc.so.6`만 나타나기도 한다. 실행 시작 시 사용할 로더를 정하는
 정보는 두 경우 모두 `PT_INTERP`다.
 
 프로그램을 실행하면 커널은 `PT_INTERP`에 적힌 동적 로더를 함께 적재하고 로더에 먼저
 제어를 넘긴다. 동적 로더는 `DT_NEEDED` 항목을 따라 `libc.so.6` 같은 공유 오브젝트를
 찾아 메모리에 매핑하고 동적 재배치를 처리한다. 그다음 프로그램의 시작점 `_start`로
-제어를 넘기며, C 런타임 초기화가 끝난 뒤 `main`이 호출된다. 따라서 `main`이 프로세스에서
-가장 먼저 실행되는 함수는 아니다.
+제어를 넘기며, C 런타임 초기화가 끝난 뒤 `main`이 호출된다. 실행 순서는 동적 로더,
+`_start`, C 런타임 초기화, `main`이다.
 
 ![ELF의 PT_INTERP가 동적 로더를 지정하고 비 PIE와 PIE에서 ASLR 적용 범위가 달라지는 흐름](figures/dynamic-loader-aslr.svg)
 
@@ -1440,20 +1443,17 @@ Linux의 `/proc/sys/kernel/randomize_va_space` 값은 일반적으로 다음 범
 | `1` | `mmap` 기준 주소, 공유 라이브러리, 스택, VDSO. PIE 실행 파일의 코드 시작 주소도 포함 |
 | `2` | 값 `1`의 범위와 힙 |
 
-과거 시스템의 메인 실행 파일 코드, 스택, 힙이 모두 링커가 정한 하나의 절대 주소에
-고정되어 있었다고 설명하면 부정확하다. 전통적인 `ET_EXEC` 파일의 코드와 데이터는
-링크 시 정한 가상 주소에 적재되는 경우가 많았고, 스택과 힙은 운영체제가 관례적인
-위치에 비교적 예측 가능하게 배치했다.
+전통적인 `ET_EXEC` 파일의 코드와 데이터는 링크 시 정한 가상 주소에 적재되는 경우가
+많았다. 스택과 힙은 운영체제가 관례적인 위치에 비교적 예측 가능하게 배치했다.
 
-ASLR은 취약점을 없애지 않는다. 주소를 알아내는 정보 누출이 있거나 무작위화 범위가
-좁으면 우회될 수 있다. 메모리 안전성 검사, 스택 보호, NX, 제어 흐름 보호 같은 기법과
-함께 쓰는 완화책이다.
+ASLR은 주소 예측을 어렵게 만드는 완화책이다. 주소를 알아내는 정보 누출이 있거나
+무작위화 범위가 좁으면 우회될 수 있다. 메모리 안전성 검사, 스택 보호, NX, 제어 흐름
+보호 같은 기법과 함께 사용한다.
 
-### 비 PIE 프로그램도 ASLR 전체가 꺼지는 것은 아니다
+### 비 PIE 프로그램의 ASLR 적용 범위
 
-오래된 비 PIE 실행 파일을 실행하기 위해 ASLR을 전부 꺼야 한다는 설명은 틀리다.
-ASLR이 켜진 Linux에서도 비 PIE 실행 파일의 스택, `mmap` 영역, 공유 라이브러리는
-무작위화될 수 있다. 보통 고정되는 부분은 주 실행 파일의 코드 주소다.
+ASLR이 켜진 Linux에서 비 PIE 실행 파일의 스택, `mmap` 영역, 공유 라이브러리는
+무작위화될 수 있다. 주 실행 파일의 코드 주소는 보통 링크 시 정한 주소에 놓인다.
 
 반면 **PIE(Position Independent Executable)**는 주 실행 파일도 다른 기준 주소에
 적재할 수 있게 만든 실행 파일이다. ASLR과 함께 사용하면 `main`을 포함한 실행 파일의
@@ -1488,19 +1488,19 @@ PIE의 `main` 주소는 실행마다 달라졌다. 비 PIE의 `main` 주소는 �
 ### PIC와 PIE
 
 **PIC(Position Independent Code)**는 특정 절대 적재 주소에 묶이지 않도록 만든 코드다.
-단순히 모든 주소를 상대 주소로 바꾼다는 뜻은 아니다.
+PC 상대 주소, GOT(Global Offset Table), PLT(Procedure Linkage Table), 동적 재배치를
+조합한다.
 
 - 같은 모듈 안의 코드와 데이터는 ISA가 지원하면 PC 상대 주소를 사용할 수 있다.
 - 외부 데이터와 함수 주소는 GOT(Global Offset Table), PLT(Procedure Linkage Table),
   동적 재배치를 사용할 수 있다.
 - `-fPIC`는 주로 공유 라이브러리용, `-fPIE`는 실행 파일용 코드를 만든다.
-- PIE는 위치 독립 코드만 뜻하지 않는다. 링크 결과가 위치 독립 실행 파일 형식이어야 한다.
+- PIE는 위치 독립 코드와 위치 독립 실행 파일 형식을 함께 사용한다.
 
-반대로 상대 주소 명령이 하나 보인다고 그 프로그램이 PIE인 것은 아니다. 예를 들어
-x86-64의 비 PIE 코드도 같은 모듈 안의 참조에 RIP 상대 주소를 사용할 수 있다. 최종
-판정은 명령어 하나가 아니라 컴파일 옵션, ELF 타입, 동적 재배치 방식을 함께 확인한다.
+PIE 판정에는 컴파일 옵션, ELF 타입, 동적 재배치 방식을 함께 사용한다. x86-64의 비 PIE
+코드도 같은 모듈 안의 참조에 RIP 상대 주소를 사용할 수 있다.
 
-> **COMMON MISTAKE · PIC, PIE, ASLR은 같은 말이 아니다**
+> **COMMON MISTAKE · PIC, PIE, ASLR의 역할**
 >
 > PIC는 코드 생성 방식, PIE는 실행 파일 형식과 링크 방식, ASLR은 운영체제가 실행할 때
 > 주소를 고르는 정책이다. PIE는 ASLR이 주 실행 파일의 코드까지 옮길 수 있게 해 주지만,
@@ -1510,9 +1510,10 @@ x86-64의 비 PIE 코드도 같은 모듈 안의 참조에 RIP 상대 주소를 
 
 ## 코드에 적용할 원칙
 
-### 빌드 성공을 안전성으로 착각하지 않는다
+### 링크 성공 뒤 타입 일치도 확인한다
 
-`-fcommon`의 조용한 병합은 과거 호환 동작이지 타입 검사가 아니다. 링크 성공 뒤에도 ABI 불일치가 남을 수 있다.
+`-fcommon`은 크기와 정렬 조건에 따라 COMMON 심볼을 병합한다. C 타입 일치는 공유
+헤더와 컴파일러 진단으로 확인한다. 링크 성공 뒤에도 ABI 불일치가 남을 수 있다.
 
 ### 경고를 링크 계약의 일부로 본다
 

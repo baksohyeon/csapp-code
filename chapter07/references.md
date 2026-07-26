@@ -19,8 +19,8 @@
    - 이 레포 README가 가리키는 **3판 Global Edition PDF**에서 §7.6.1, §7.6.2,
      §7.6.3을 확인했다. 공식 북미판 정오표에서는 §7.6.1의 대응 위치를 p.680부터로
      표기한다.
-   - 3판의 절 제목은 “Multiply Defined Global Symbols”가 아니라
-     **“Duplicate Symbol Names”**이다. “Multiply Defined Global Symbols”는 2판 제목이다.
+   - 3판의 절 제목은 **“Duplicate Symbol Names”**이다. 2판의 대응 제목은
+     “Multiply Defined Global Symbols”이다.
    - 7.6.1에는 번호가 붙은 Figure가 없다. 두 모듈씩 이루어진 다섯 코드 사례와
      Practice Problem 7.2가 핵심 구성이다.
    - 7.6.2의 Figure 7.6, Figure 7.7, Figure 7.8은 `libvector.a`, `main2.c`,
@@ -63,8 +63,8 @@
    - initializer가 붙은 `extern int x = 3;`은 외부 정의다.
    - 끝까지 불완전한 `int a[];` tentative definition은 원소 하나가 0인 배열이 된다.
 
-중요한 경계: C 표준은 `COMMON`, `.bss`, `STB_WEAK`를 규정하지 않는다. 그것들은
-컴파일러·오브젝트 포맷·링커 층의 구현 전략이다.
+C 표준은 tentative definition의 언어 의미를 규정한다. `COMMON`, `.bss`,
+`STB_WEAK`는 컴파일러, 오브젝트 포맷, 링커 층에서 정한다.
 
 ## 4. ELF ABI
 
@@ -77,10 +77,11 @@
    - unresolved weak symbol은 0 값을 가지며, undefined weak만 해결하기 위해 archive member를
      추출하지 않는 규칙
 
-교재와 ELF를 연결할 때 가장 중요한 교정은 다음과 같다.
+교재의 분류와 ELF 출력은 다음과 같이 연결된다.
 
 > `-fcommon`의 tentative definition은 `readelf`에서 보통
-> `OBJECT GLOBAL DEFAULT COM`으로 보인다. 이것은 `WEAK` binding이 아니다.
+> `OBJECT GLOBAL DEFAULT COM`으로 보인다. binding은 `GLOBAL`, section index는
+> `SHN_COMMON`이다.
 
 ## 5. GCC
 
@@ -108,8 +109,7 @@
    - GCC 10 이전에도 프로젝트가 컴파일러 기본값을 명시적으로 덮어쓴 사례
 
 “GCC 10 전후 실험”은 GCC 13.3에서 `-fcommon`과 `-fno-common`을 명시해 두 정책을
-같은 소스에 재현했다. GCC 9/10 바이너리 자체의 버전 비교가 아니라, 공식 변경 문서에 적힌
-두 기본 정책의 의미 비교다.
+같은 소스에 재현했다. GCC 9와 GCC 10의 기본 정책은 공식 변경 문서로 확인했다.
 
 ## 6. GNU binutils: nm, readelf, ld
 
@@ -155,8 +155,8 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
    - `-l`, `-L`, `-static`, `-nostartfiles`, `-nodefaultlibs`, `-nostdlib`
    - `-fuse-ld=bfd`, `-fuse-ld=gold`, `-fuse-ld=lld`, `-fuse-ld=mold`
 3. [GCC Standard Libraries](https://gcc.gnu.org/onlinedocs/gcc/Standard-Libraries.html)
-   - GCC가 완전한 C 표준 라이브러리 구현을 제공하지 않으며 운영체제나 공급자의
-     라이브러리를 사용한다는 경계
+   - C 표준 라이브러리 구현은 운영체제나 공급자가 제공하며 GCC 드라이버가 이를
+     링크한다는 구성
 4. [Clang Command Guide](https://clang.llvm.org/docs/CommandGuide/clang.html)
    - Clang driver와 전처리, 파싱, 코드 생성, 어셈블, 링크 단계
 5. [GNU ar](https://sourceware.org/binutils/docs/binutils/ar.html)
@@ -222,13 +222,14 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
    - `lto = false`, `lto = "off"`, `lto = "thin"`의 차이
    - 기본 개발·릴리스 프로필의 `opt-level`, `codegen-units`
 
-`dead code elimination`은 LTO 전용 용어가 아니다. 일반 컴파일러 최적화에도 해당한다.
-링커의 section GC는 compiler IR이 아니라 심볼, 재배치, 입력 섹션의 도달 가능성을 본다.
-LTO는 compiler IR을 이용해 번역 단위 사이의 인라이닝과 상수 전파까지 수행할 수 있다.
+`dead code elimination`은 실행 결과에 영향을 주지 않는 코드를 제거하는 일반 최적화다.
+링커의 section GC는 심볼, 재배치, 입력 섹션의 도달 가능성을 사용한다. LTO는 compiler
+IR을 이용해 번역 단위 사이의 인라이닝과 상수 전파까지 수행한다.
 
-“링크 시간은 O(N²)”라는 설명은 일반화하지 않았다. 분석 패스와 구현마다 복잡도가 다르며,
-공식 자료가 지적하는 핵심은 Full LTO의 단일 모듈 병합과 전역 분석이 큰 입력에서 시간과
-메모리 확장성을 제한한다는 점이다.
+CSAPP의 전통적 링크 모델은 선택된 입력 전체의 심볼과 재배치 정보를 최종 링크에서
+처리한다. Full LTO는 단일 모듈 병합과 전역 분석 때문에 큰 입력에서 시간과 메모리
+부담이 커진다. ThinLTO는 모듈 요약, 병렬 백엔드, 캐시를 사용한다. 개별 분석 패스의
+시간 복잡도는 알고리즘과 구현에 따라 정해진다.
 
 ## 10. 동적 로더, ASLR, PIC, PIE
 
@@ -332,5 +333,5 @@ Node.js, Python, Ruby, Java, .NET의 선택적 의존성도 ELF undefined weak�
   않았다.
 - 동적 링커의 interposition과 shared object 심볼 lookup은 7.10 이후 범위이므로 설명을
   확장하지 않았다.
-- `--allow-multiple-definition`은 관찰용 escape hatch일 뿐, 일반 프로그램의 중복 정의를
-  고치는 방법으로 권장하지 않는다.
+- `--allow-multiple-definition`은 바이너리 분석과 의도적으로 중복 정의를 쓰는 특수
+  빌드를 위한 escape hatch로 분류했다.

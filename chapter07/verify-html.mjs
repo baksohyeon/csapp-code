@@ -19,6 +19,13 @@ for (const [name, document] of [
   for (const phrase of [
     ["면접", "질문"].join(" "),
     ["이", "문서에서", "새로", "제작한", "설명용", "SVG"].join(" "),
+    "설명은 틀리다",
+    "라고 말할 수는 없다",
+    "LTO 전체를 하나의 시간 복잡도로 단정하지 않는다",
+    "LTO는 캐시할 수 없다",
+    "GCC에 링커가 내장된 것은 아니다",
+    "ld가 부족한 링커라서 실패한 것이 아니다",
+    "GCC는 완전한 C 표준 라이브러리 구현을 제공하지 않는다",
   ]) {
     if (document.includes(phrase)) {
       failures.push(`${name} contains removed wording: ${phrase}`);
@@ -108,6 +115,7 @@ for (const requiredText of [
   "GNU gold",
   "증분 컴파일",
   "ThinLTO",
+  "CSAPP 링크 모델과 현대 LTO",
   "--gc-sections",
   "thin local LTO",
   'lto = "thin"',
