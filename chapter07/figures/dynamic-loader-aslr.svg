@@ -75,5 +75,5 @@
   <text class="mono" x="1003" y="545" text-anchor="middle">heap</text>
   <text class="body" x="1003" y="572" text-anchor="middle">정책 값 2에서 무작위화</text>
 
-  <text class="small" x="55" y="662">ASLR은 취약점을 제거하지 않는다. 공격자가 주소를 예측하기 어렵게 만드는 완화책이다.</text>
+  <text class="small" x="55" y="662">ASLR은 공격자가 주소를 예측하기 어렵게 만드는 완화책이다.</text>
 </svg>

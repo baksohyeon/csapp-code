@@ -47,5 +47,5 @@
   <text class="t" x="825" y="374" text-anchor="middle">multiple definition 오류</text>
   <text class="s" x="825" y="399" text-anchor="middle">헤더의 extern 누락을 조기에 발견</text>
 
-  <text class="s" x="550" y="484" text-anchor="middle">호환이 필요하면 -fcommon을 명시할 수 있지만, 올바른 수정은 헤더 선언에 extern을 쓰고 정의를 한 곳에 두는 것이다.</text>
+  <text class="s" x="550" y="484" text-anchor="middle">-fcommon은 이행 기간의 호환 옵션이다. 최종 코드는 헤더의 extern 선언과 한 곳의 정의를 사용한다.</text>
 </svg>

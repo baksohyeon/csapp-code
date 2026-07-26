@@ -19,17 +19,15 @@ CSAPP 3판의 §7.6은 §7.6.3에서 끝나며 다음 절은 §7.7 Relocation이
 ## 핵심 결론
 
 - 교재의 strong/weak 규칙은 중복 이름을 이해하는 유용한 **링커 모델**이다.
-- 하지만 교재가 “weak”라고 부르는 `int x;`는 현대 ELF에서 보통 실제
-  `STB_WEAK`가 아니다. `-fcommon`에서는 `STB_GLOBAL + SHN_COMMON`으로 나타난다.
+- 교재가 “weak”라고 부르는 `int x;`는 `-fcommon`에서 보통
+  `STB_GLOBAL + SHN_COMMON`으로 나타난다.
 - GCC 10부터 C의 기본값이 `-fno-common`이 되어, 여러 번역 단위의 `int x;`는
   기본적으로 링크 오류가 된다.
 - Linux kernel처럼 GCC 10 이전부터 `-fno-common`을 명시한 프로젝트도 있었다.
-- `-fcommon`은 실제 `STB_WEAK`를 만들지 않는다. 실제 weak 함수는
-  `__attribute__((weak))` 같은 별도 표현으로 만든다.
-- `COMMON`은 `.bss`와 같은 입력 섹션이 아니다. 아직 저장 공간이 할당되지 않은 특별한
-  심볼 상태이고, 최종 링크 때 보통 출력 `.bss`에 공간을 배정받는다.
-- 올바른 전역 변수 패턴은 헤더에 `extern` 선언을 두고 정확히 한 `.c` 파일에 정의를 두는
-  것이다.
+- 실제 `STB_WEAK` 함수는 `__attribute__((weak))` 같은 별도 표현으로 만든다.
+- `COMMON`은 저장 공간 배정 전의 특별한 심볼 상태다. 최종 링크 때 보통 출력
+  `.bss`에 공간을 배정받는다.
+- 전역 변수는 헤더에 `extern` 선언을 두고 정확히 한 `.c` 파일에서 정의한다.
 
 ## 실습 실행
 
@@ -73,8 +71,8 @@ cd chapter07
 - 일반 컴파일, `--gc-sections`, GCC Full LTO, Clang ThinLTO의 심볼 비교
 
 빌드 산출물은 `examples/build/`에 생성되며 Git에서 제외한다. 검증 환경과 텍스트 출력은
-`results/verified-linux-aarch64.txt`에 기록한다. `.o` 파일은 CPU/플랫폼 의존 산출물이므로
-추적하지 않고 위 명령으로 재생성한다.
+`results/verified-linux-aarch64.txt`에 기록한다. `.o` 파일은 CPU와 플랫폼에 따라
+달라지므로 소스, 재생성 명령, 검증 결과를 추적한다.
 
 ## 문서 구조 검사
 

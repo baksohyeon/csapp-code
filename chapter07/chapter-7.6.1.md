@@ -102,10 +102,9 @@
 
 > **ELI10**
 >
-> CPU는 C 소스를 직접 실행하지 못한다. 컴파일러는 C 코드를 기계 명령과 데이터로
-> 바꾼다. 여러 소스 파일을 따로 컴파일하면 다른 파일의 함수 주소와 전역 변수 위치는
-> 아직 알 수 없다. 링커가 이 오브젝트 파일들을 모아 빠진 연결을 채우고 실행 파일을
-> 만든다.
+> CPU는 기계 명령을 실행한다. 컴파일러는 C 코드를 기계 명령과 데이터로 바꾼다.
+> 여러 소스 파일은 각각 오브젝트 파일이 되며 외부 함수와 전역 변수의 주소는 미정
+> 상태로 남는다. 링커가 오브젝트 파일을 모아 주소를 연결하고 실행 파일을 만든다.
 
 ### 컴파일러
 
@@ -133,7 +132,9 @@
 
 > **REMIND · 7.1–7.5 압축 복원**
 >
-> 각 **번역 단위(translation unit)**는 따로 컴파일된다. 컴파일러는 다른 `.c` 파일의 내부를 보지 못한 채 재배치 가능 오브젝트 **(relocatable object file)**를 만든다. 여러 파일의 전역 이름이 처음 만나는 시점은 링크 단계다.
+> 각 **번역 단위(translation unit)**는 독립적으로 컴파일되어 재배치 가능 오브젝트
+> **(relocatable object file)**가 된다. 여러 파일의 전역 이름은 링크 단계에서 처음
+> 만난다.
 
 ![main.c와 worker.c가 각각 번역되어 main.o와 worker.o가 되고 링커가 실행 파일을 만드는 흐름](figures/linker-flow.svg)
 
@@ -164,7 +165,7 @@
 
 **external reference**
 
-현재 모듈이 참조하지만 정의하지 않은 심볼. ELF에서는 보통 `SHN_UNDEF`.
+현재 모듈에 정의가 없고 참조만 있는 심볼. ELF에서는 보통 `SHN_UNDEF`.
 
 > **COMMON MISTAKE · local symbol ≠ local variable**
 >
@@ -269,11 +270,11 @@ x = 0x0 y = 0x3b6c
 
 ![strong strong의 즉시 오류와 strong COMMON 및 COMMON COMMON의 조용한 병합을 비교](figures/silent-vs-error.svg)
 
-**FIGURE N5** 실패보다 위험할 수 있는 조용한 성공.
+**FIGURE N5** 조용한 병합으로 남는 실행 시간 오류.
 
 <a id="elf-truth"></a>
 
-## 가장 중요한 구분: 교재의 weak와 ELF의 WEAK
+## 교재의 weak와 ELF의 WEAK 구분
 
 **[OFFICIAL · ELF ABI]** ELF 심볼 표의 `Bind`에는 `LOCAL`, `GLOBAL`, `WEAK`가 있다.
 `SHN_COMMON`은 특별한 section index다.
@@ -414,7 +415,7 @@ $ clang -fno-common -c main.c worker.c
 **전역 변수의 단일 정의 패턴 · RECOMMENDED**
 
 ```c
-/* state.h: 공간을 만들지 않는 선언 */
+/* state.h: 외부 정의를 가리키는 선언 */
 extern int x;
 
 /* state.c: 프로그램 전체에서 정확히 하나인 정의 */
@@ -424,9 +425,10 @@ int x = 0;
 #include "state.h"
 ```
 
-> **COMMON MISTAKE · 링크가 되게 하려고 -fcommon만 되돌리기**
+> **COMMON MISTAKE · `-fcommon`을 호환 옵션으로만 사용**
 >
-> 레거시 이행을 위해 임시로 쓸 수는 있지만, 중복 정의 설계를 그대로 숨긴다. 먼저 헤더의 정의를 `extern` 선언으로 바꾸고 한 구현 파일에만 정의를 둔다.
+> `-fcommon`은 레거시 이행 기간의 호환 옵션으로 사용할 수 있다. 최종 구조는 헤더의
+> `extern` 선언과 한 구현 파일의 정의로 구성한다.
 
 <a id="lab"></a>
 
@@ -488,7 +490,8 @@ $ nm -a static-internal | grep ' [bd] x$'
 0000000000020014 d x
 ```
 
-소문자 `d`는 두 `x`가 각각 local data symbol임을 보인다. 소스 이름은 같지만 외부 연결 이름 공간에 나오지 않으므로 충돌하지 않는다.
+소문자 `d`는 두 `x`가 각각 local data symbol임을 보인다. 각 심볼은 해당 오브젝트의
+내부 연결 이름 공간에 속한다.
 
 ### 직접 재현
 
@@ -504,8 +507,8 @@ node verify-html.mjs
 
 > **NOTE · 재현 환경**
 >
-> `.o`는 CPU, 운영체제, 컴파일러에 따라 달라진다. 저장소에는 소스와 재생성 명령,
-> 검증 결과를 남기고 `examples/build/`의 바이너리는 추적하지 않는다.
+> `.o`는 CPU, 운영체제, 컴파일러에 따라 달라진다. 저장소는 소스, 재생성 명령,
+> 검증 결과를 추적하며 `examples/build/`는 재생성 가능한 출력 디렉터리로 둔다.
 
 <a id="linkers"></a>
 
@@ -548,9 +551,11 @@ $ clang -fuse-ld=lld main.o right.o left.o -o lld-right && ./lld-right
 choice=22
 ```
 
-> **WARNING · 관측을 계약으로 승격하지 말 것**
+> **WARNING · weak + weak의 계약 범위**
 >
-> 이 버전의 두 링커는 먼저 입력된 weak 정의를 골랐다. 그러나 ELF ABI는 weak 동작의 일부를 implementation-defined로 두고, 교재도 “어느 weak든”이라고 표현한다. 입력 순서로 기능 선택을 설계하지 말고, 명시적 strong 정의나 등록 메커니즘을 사용한다.
+> 이 버전의 두 링커는 먼저 입력된 weak 정의를 골랐다. ELF ABI는 weak 동작의 일부를
+> implementation-defined로 두며, 교재도 “어느 weak든”이라고 표현한다. 기능 선택에는
+> 명시적 strong 정의나 등록 메커니즘을 사용한다.
 
 ### escape hatch: `--allow-multiple-definition`
 
@@ -597,9 +602,9 @@ $ nm -S common-size | grep ' arena$'
 
 ### 3. 정의되지 않은 실제 ELF weak는 0으로 남을 수 있다
 
-System V ELF ABI에서 해결되지 않은 `STB_WEAK` 참조의 값은 0이다. undefined weak만
-만족시키는 정적 라이브러리 멤버는 추출되지 않는다. 선택적 hook은 함수 포인터의 0 값을
-검사한 뒤 호출한다.
+System V ELF ABI에서 해결되지 않은 `STB_WEAK` 참조의 값은 0이다. 정적 라이브러리의
+멤버 선택 기준은 일반 undefined 참조이며 undefined weak는 선택 기준에서 빠진다.
+선택적 hook은 함수 포인터의 0 값을 검사한 뒤 호출한다.
 
 `-fno-common`이 기본이어도 실제 ELF weak는 그대로 쓸 수 있다. GCC와 Clang에서 가장
 직접적인 소스 표현은 `__attribute__((weak))`다. 생성 방법에는 `weakref`,
@@ -655,9 +660,8 @@ int main(void)
 }
 ```
 
-ELF C에서는 정의되지 않은 weak 참조가 0이 될 수 있으므로 호출 전에 검사한다. 다른
-언어의 optional dependency도 목적은 비슷하지만 런타임의 모듈·클래스 로더에서 부재를
-처리한다.
+ELF C는 정의되지 않은 weak 참조의 0 값을 호출 전에 검사한다. 다른 언어는 런타임의
+모듈 또는 클래스 로더에서 선택적 의존성의 부재를 처리한다.
 
 | 환경 | 의존성이 없을 때 확인하는 방식 |
 | --- | --- |
@@ -668,16 +672,16 @@ ELF C에서는 정의되지 않은 weak 참조가 0이 될 수 있으므로 호�
 | Java | `Class.forName`의 `ClassNotFoundException` 처리 |
 | C# / .NET | `Assembly.Load`의 `FileNotFoundException` 또는 `AssemblyLoadContext`의 실패 처리 |
 
-각 환경은 자체 런타임과 로더로 선택적 의존성을 구현한다. 공통 목적은 의존성이 있을 때
-추가 기능을 활성화하는 것이다.
+각 환경은 자체 런타임과 로더로 선택적 의존성을 구현한다. 의존성이 있으면 추가 기능을
+활성화한다.
 
 ### 4. 일반 링커와 LTO가 아는 타입 정보는 다르다
 
 일반 정적 링커는 심볼 이름, binding, `STT_OBJECT`·`STT_FUNC`, 크기, 섹션, 가시성을
 본다. C의 `int`, `double`, 함수 원형, 구조체 필드 정보는 컴파일러와 LTO가 다룬다. GCC의
 **link-time optimization(LTO)**은 중간 표현(IR)을 함께 보므로 `-Wlto-type-mismatch`
-진단을 낼 수 있다. 이 경고는 `-flto`가 있을 때만 가능하며, 올바른 해결책은 여전히
-선언을 한 헤더로 통일하고 정의를 하나만 두는 것이다.
+진단을 낼 수 있다. 이 경고는 `-flto`가 있을 때 가능하다. 선언은 한 헤더로 통일하고
+정의는 하나만 둔다.
 
 **common-mismatch + -flto · OBSERVED · GCC 13.3**
 
@@ -703,17 +707,14 @@ JVM의 constant pool 기반 method resolution, shared object의 동적 심볼 �
 
 ## 7.6.2 정적 라이브러리
 
-**정적 라이브러리(static library)**는 여러 재배치 가능 오브젝트를 하나의
-**아카이브(archive)** 파일로 묶은 것이다. Unix 계열에서는 보통 `.a` 확장자를 쓴다.
-링커는 아카이브 전체를 실행 파일에 복사하지 않고, 현재 해결하지 못한 심볼을 정의하는
-멤버만 꺼낸다.
+**정적 라이브러리(static library)**는 여러 재배치 가능 오브젝트를 묶은
+**아카이브(archive)**다. Unix 계열에서는 보통 `.a` 확장자를 쓴다.
+링커는 현재 해결하지 못한 심볼을 정의하는 아카이브 멤버만 꺼낸다.
 
 ### 왜 오브젝트를 아카이브로 묶는가
 
-표준 함수 전체를 컴파일러에 넣으면 컴파일러와 라이브러리를 분리하기 어렵다. 모든 함수를
-거대한 `libc.o` 하나로 만들면 사용하지 않는 코드도 실행 파일에 들어간다. 함수를 각각의
-`.o`로 배포하면 사용자가 긴 파일 목록과 순서를 직접 관리해야 한다. 아카이브는 이 문제를
-다음 방식으로 줄인다.
+라이브러리는 컴파일러와 별도로 배포한다. 아카이브는 함수를 여러 `.o` 멤버로 나누고
+하나의 파일과 심볼 인덱스로 관리해 다음 기능을 제공한다.
 
 1. 관련 `.o`를 파일 하나로 묶는다.
 2. 심볼 인덱스로 정의가 들어 있는 멤버를 찾는다.
@@ -744,9 +745,9 @@ gcc main.o -L. -lvector -o prog
 `libvector.so` 또는 `libvector.a`를 찾는다. Linux의 일반 링크에서는 공유 라이브러리를
 먼저 고를 수 있다. 정적 링크만 원하면 `-static`을 사용하거나 `.a` 경로를 직접 지정한다.
 
-> **GOTCHA · archive와 오브젝트 목록은 완전히 같지 않다**
+> **GOTCHA · archive 입력과 오브젝트 입력**
 >
-> `gcc main.o libvector.a`는 참조된 멤버만 선택한다. 반면
+> `gcc main.o libvector.a`는 참조된 멤버만 선택한다.
 > `gcc main.o addvec.o multvec.o`는 두 오브젝트를 모두 일반 입력으로 넣는다.
 > 프로그램이 `addvec`만 참조한 실험에서 archive 결과에는 `multvec`가 없었지만, 명시적
 > 오브젝트 결과에는 `multvec`도 남았다. 같은 멤버가 선택된 경우에만 결과가 비슷하다.
@@ -770,9 +771,8 @@ gcc main.o -L. -lvector -o prog
 | `ld`, `ld.lld` | 오브젝트와 라이브러리를 결합하는 정적 링커 | `gcc -fuse-ld=lld ...` |
 | `ldd` | 실행 파일이 요구하는 동적 의존성을 표시 | `ldd a.out` |
 
-`#include`, `#define`, 조건부 컴파일을 처리하는 단계는 전처리다. 다만 GCC 전체를
-전처리기, 컴파일러, 링커, C 표준 라이브러리가 한 파일에 들어 있는 프로그램으로 이해하면
-안 된다. GCC 드라이버가 설치된 도구와 파일을 찾아 조합하는 구조다.
+`#include`, `#define`, 조건부 컴파일을 처리하는 단계는 전처리다. GCC 드라이버는
+설치된 전처리기, 컴파일러, 어셈블러, 링커, 라이브러리 파일을 찾아 조합한다.
 
 ```bash
 gcc -E main.c -o main.i       # 전처리까지만
@@ -811,7 +811,7 @@ GCC와 C 표준 라이브러리는 별도 프로젝트다. Linux 배포판에서
 | --- | --- |
 | glibc | `libc.so.6`을 쓰는 동적 링크와 `libc.a`를 쓰는 정적 링크를 모두 지원. 정적 패키지가 설치되어 있어야 함 |
 | musl | 동적 링크와 정적 링크를 모두 지원. 외부 런타임 의존성이 없는 Linux 실행 파일을 만들 때 자주 사용 |
-| macOS | 정적 라이브러리는 지원하지만, 시스템 libc까지 포함한 완전 정적 서드파티 실행 파일은 지원하지 않음 |
+| macOS | 정적 라이브러리 지원. 시스템 libc까지 포함한 완전 정적 서드파티 실행 파일은 지원하지 않음 |
 | MSVC | `/MD`는 DLL CRT, `/MT`는 정적 CRT. Visual C++ Redistributable은 주로 `/MD` 실행 파일에 필요한 런타임 DLL을 배포 |
 
 glibc는 동적 링크와 정적 링크를 모두 지원한다. 다음 Ubuntu 실험에서는 `gcc -static`이
@@ -860,11 +860,12 @@ gcc libvector.a main.o -o fail
 ```
 
 첫 명령에서는 `main.o`가 `addvec`를 `U`에 넣은 다음 `libvector.a`를 만난다. 링커는
-`addvec.o`를 선택할 수 있다. 둘째 명령에서는 아카이브를 볼 때 `U`가 비어 있으므로
-아무 멤버도 고르지 않는다. 뒤에서 `main.o`가 `addvec`를 요구해도 GNU ld는 이미 지나간
-아카이브를 자동으로 다시 보지 않는다.
+`addvec.o`를 선택할 수 있다. 둘째 명령에서는 아카이브를 볼 때 `U`가 비어 있어 선택되는
+멤버가 없다. GNU ld는 아카이브를 명령줄의 해당 위치에서 처리하므로 뒤의 `main.o`가
+추가한 `addvec` 참조는 해결되지 않은 상태로 남는다.
 
-일반 규칙은 참조를 만드는 입력을 먼저, 정의를 제공하는 라이브러리를 뒤에 두는 것이다.
+일반 규칙은 참조를 만드는 입력을 먼저 두고 정의를 제공하는 라이브러리를 뒤에 두는
+순서다.
 라이브러리 `A`가 `B`를 사용한다면 보통 `-lA -lB`로 쓴다.
 
 ### 순환 의존성
@@ -903,8 +904,8 @@ ld.lld: warning: backward reference detected: addvec in main.o refers to libvect
 > <details><summary>정답</summary>
 >
 > `libx.a`를 처리할 때는 `x_helper`가 아직 `U`에 없었다. `liby.a`를 처리한 뒤
-> `x_helper`가 생기지만 GNU ld는 앞의 `libx.a`로 돌아가지 않는다. `libx.a`를
-> 반복하거나 두 아카이브를 그룹으로 묶어야 한다.
+> `x_helper`가 생긴다. `libx.a`를 다시 적거나 두 아카이브를 그룹으로 묶으면 다음
+> 탐색에서 정의를 찾는다.
 >
 > </details>
 
@@ -934,7 +935,7 @@ binding은 `GLOBAL`, section index는 `SHN_COMMON`이다. 실제 weak binding은
 
 </details>
 
-#### Q3. 두 파일에 `static int x;`가 있으면 왜 링크 오류가 아닌가?
+#### Q3. 두 파일의 `static int x;`는 어떻게 분리되는가?
 
 <details>
 <summary>정답 보기</summary>
@@ -959,7 +960,9 @@ binding은 `GLOBAL`, section index는 `SHN_COMMON`이다. 실제 weak binding은
 <details>
 <summary>A. 함수 `main` + tentative object `main`</summary>
 
-함수 정의가 strong, tentative object가 weak/common인 과거 모델에서는 두 참조 모두 함수 정의 쪽에 연결된다. 그러나 함수와 객체가 같은 이름을 공유하는 설계 자체가 타입 안전하지 않다.
+함수 정의가 strong, tentative object가 weak/common인 과거 모델에서는 두 참조 모두
+함수 정의 쪽에 연결된다. 함수와 객체가 같은 이름을 공유하므로 C 타입 관점에서 안전하지
+않은 설계다.
 
 </details>
 
@@ -998,7 +1001,8 @@ binding은 `GLOBAL`, section index는 `SHN_COMMON`이다. 실제 weak binding은
 
 #### weak symbol은 언제 쓰는가?
 
-기본 구현이나 선택적 hook에 쓴다. 입력 순서에 따라 기능이 바뀌게 설계하면 안 된다.
+기본 구현이나 선택적 hook에 쓴다. 기능 선택은 명시적 strong 정의나 등록 메커니즘으로
+구성한다.
 
 #### 헤더에는 왜 `extern`을 쓰는가?
 
@@ -1032,8 +1036,8 @@ binding은 `GLOBAL`, section index는 `SHN_COMMON`이다. 실제 weak binding은
 
 **optional dependency**
 
-선택적 의존성. 기능이 있으면 사용하지만 없어도 프로그램의 기본 동작을 계속할 수 있는
-의존성. ELF weak hook과 런타임 모듈 로딩은 서로 다른 구현이다.
+선택적 의존성. 기본 동작과 분리된 추가 기능을 제공하는 의존성. ELF weak hook과
+런타임 모듈 로딩은 각각의 실행 환경에 맞는 구현을 사용한다.
 
 **tentative definition**
 
@@ -1084,8 +1088,7 @@ GNU ld, LLD, mold가 여기에 해당한다.
 
 **ThinLTO**
 
-모듈 전체를 하나의 중간 표현으로 합치지 않고, 모듈 요약과 통합 인덱스를 이용해 분석한 뒤
-모듈별 백엔드를 병렬 실행하는 LTO 방식.
+모듈 요약과 통합 인덱스로 분석 범위를 정하고 모듈별 백엔드를 병렬 실행하는 LTO 방식.
 
 **section garbage collection**
 
@@ -1190,8 +1193,6 @@ $ objdump -dr driver-main-gcc.o
 
 ### `lld`와 `ldd`
 
-이름은 비슷하지만 역할은 관계가 없다.
-
 - **LLD**: LLVM 프로젝트의 링커. ELF용 실행 파일은 보통 `ld.lld`이며
   `clang -fuse-ld=lld`로 선택한다.
 - **ldd**: 만들어진 동적 실행 파일의 공유 라이브러리 의존성을 표시한다. 신뢰할 수 없는
@@ -1228,16 +1229,15 @@ gcc -fuse-ld=mold main.o utils.o -o app-mold
 | --- | --- | --- |
 | GNU ld, `ld.bfd` | GNU Binutils의 범용 링커. 많은 Linux GCC 구성의 기본값 | 지원 대상과 링커 스크립트 호환 범위가 넓지만 대규모 ELF 링크에서는 시간이 길어질 수 있음 |
 | GNU gold, `ld.gold` | BFD보다 빠른 ELF 링크를 목표로 개발됨. Binutils 2.44부터 사용 중단 예정(deprecated) | 기존 빌드 호환 때문에 남아 있을 수 있으나 새 구성의 기본 선택으로 권하기 어려움 |
-| LLVM LLD, `ld.lld` | LLVM의 링커. GNU 링커와 호환되는 명령행을 넓게 지원 | 빠르고 여러 오브젝트 형식을 지원하지만 프로젝트의 특수 링커 스크립트와 옵션은 확인 필요 |
+| LLVM LLD, `ld.lld` | LLVM의 링커. GNU 링커와 호환되는 명령행을 넓게 지원 | 빠르고 여러 오브젝트 형식을 지원함. 프로젝트의 특수 링커 스크립트와 옵션은 확인 필요 |
 | mold | 빠른 ELF 링크와 병렬 처리를 목표로 개발 | 플랫폼 지원, 링커 스크립트, LTO와 빌드 시스템 호환성을 실제 프로젝트에서 확인 |
 
 ### 증분 컴파일 뒤에는 최종 링크가 남는다
 
 Rust의 증분 컴파일은 바뀌지 않은 컴파일 질의와 오브젝트 결과를 재사용한다. Cargo도 이미
-빌드된 의존성을 매번 다시 컴파일하지 않는다. 그러나 실행 파일에 들어갈 크레이트가
-바뀌면 최종 링커는 많은 오브젝트와 라이브러리의 심볼, 섹션, 재배치 정보를 다시 읽어
-결과 파일을 만들어야 한다. Cargo 공식 문서도 증분 빌드에서 최종 링크가 빌드 시간의
-대부분을 차지할 수 있다고 설명한다.
+빌드된 의존성을 재사용한다. 실행 파일에 들어갈 크레이트가 바뀌면 최종 링커는 많은
+오브젝트와 라이브러리의 심볼, 섹션, 재배치 정보를 다시 읽어 결과 파일을 만든다. Cargo
+공식 문서도 증분 빌드에서 최종 링크가 빌드 시간의 대부분을 차지할 수 있다고 설명한다.
 
 전통적인 ELF 최종 링크는 선택된 오브젝트와 라이브러리를 다시 읽고 결과 파일을 쓴다.
 링크 단위가 크고 디버그 정보가 많을수록 입력 처리와 출력 기록 비용이 커진다. 그래서
@@ -1274,16 +1274,15 @@ rustflags = ["-C", "link-arg=-fuse-ld=mold"]
 
 > **REMIND · `static`과 인라이닝**
 >
-> 파일 범위의 함수나 전역에 `static`을 붙이면 내부 연결이 된다. 컴파일러는 다른 번역
-> 단위가 그 이름을 참조하지 못한다는 사실을 알기 때문에 현재 번역 단위 안에서 인라이닝하거나
-> 사용하지 않는 정의를 제거하기 쉽다. LTO는 컴파일러 중간 표현을 링크 단계까지 보존해 이
-> 분석 범위를 여러 번역 단위로 넓힌다.
+> 파일 범위의 함수나 전역에 `static`을 붙이면 이름의 범위가 현재 번역 단위로 제한된다.
+> 컴파일러는 이 범위 정보를 이용해 인라이닝과 사용하지 않는 정의 제거를 적용한다. LTO는
+> 컴파일러 중간 표현을 링크 단계까지 보존해 분석 범위를 여러 번역 단위로 넓힌다.
 
 ### tree shaking과 같은 점, 다른 점
 
 웹 번들러의 tree shaking은 진입점에서 실제로 도달하는 모듈과 export만 결과에 남긴다.
-네이티브 빌드에서도 사용하지 않는 코드와 데이터를 제외할 수 있지만, 구현 층을 구분해야
-한다.
+네이티브 빌드의 일반 컴파일, 링커 section GC, LTO는 서로 다른 정보로 사용하지 않는
+코드와 데이터를 제외한다.
 
 | 방식 | 분석 입력 | 가능한 일 |
 | --- | --- | --- |
@@ -1455,9 +1454,9 @@ ASLR은 주소 예측을 어렵게 만드는 완화책이다. 주소를 알아�
 ASLR이 켜진 Linux에서 비 PIE 실행 파일의 스택, `mmap` 영역, 공유 라이브러리는
 무작위화될 수 있다. 주 실행 파일의 코드 주소는 보통 링크 시 정한 주소에 놓인다.
 
-반면 **PIE(Position Independent Executable)**는 주 실행 파일도 다른 기준 주소에
-적재할 수 있게 만든 실행 파일이다. ASLR과 함께 사용하면 `main`을 포함한 실행 파일의
-코드 시작 주소도 실행할 때마다 달라질 수 있다.
+**PIE(Position Independent Executable)**는 주 실행 파일도 다른 기준 주소에 적재할 수
+있게 만든 실행 파일이다. ASLR과 함께 사용하면 `main`을 포함한 실행 파일의 코드 시작
+주소도 실행할 때마다 달라질 수 있다.
 
 ```text
 $ gcc -fPIE -pie addresses.c -o addresses-pie
@@ -1503,8 +1502,8 @@ PIE 판정에는 컴파일 옵션, ELF 타입, 동적 재배치 방식을 함께
 > **COMMON MISTAKE · PIC, PIE, ASLR의 역할**
 >
 > PIC는 코드 생성 방식, PIE는 실행 파일 형식과 링크 방식, ASLR은 운영체제가 실행할 때
-> 주소를 고르는 정책이다. PIE는 ASLR이 주 실행 파일의 코드까지 옮길 수 있게 해 주지만,
-> PIE 자체가 무작위화를 수행하지는 않는다.
+> 주소를 고르는 정책이다. PIE는 주 실행 파일의 재배치를 가능하게 하고, ASLR은 실행할
+> 때 기준 주소를 선택한다.
 
 <a id="beyond"></a>
 
@@ -1517,15 +1516,17 @@ PIE 판정에는 컴파일 옵션, ELF 타입, 동적 재배치 방식을 함께
 
 ### 경고를 링크 계약의 일부로 본다
 
-레거시 코드 조사에는 `-Wl,--warn-common`이 숨은 병합을 드러낸다. CI에서는 관련 경고를 무시하지 않는다.
+레거시 코드 조사에는 `-Wl,--warn-common`이 숨은 병합을 드러낸다. CI는 관련 경고를
+실패로 처리한다.
 
 ### weak는 시스템 메커니즘으로 제한한다
 
-기본 구현이나 선택적 hook에는 유용하지만, 애플리케이션 로직을 입력 순서에 의존시키지 않는다.
+weak는 기본 구현이나 선택적 hook에 사용한다. 애플리케이션의 기능 선택은 명시적
+등록 메커니즘으로 구성한다.
 
 ### 도구 출력의 항목을 구분한다
 
-C의 linkage, ELF의 binding, section index, linker의 선택 규칙을 한 단어 “weak”로 뭉개지 않는다.
+C의 linkage, ELF의 binding, section index, linker의 선택 규칙을 각각 확인한다.
 
 ### 5분 디버깅 순서
 

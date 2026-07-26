@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 560" role="img" aria-labelledby="title desc">
   <title id="title">정적 라이브러리에서 필요한 오브젝트 멤버만 선택하는 과정</title>
-  <desc id="desc">main.o의 addvec 미해결 참조 때문에 libvector.a의 addvec.o만 실행 파일에 포함되고 multvec.o는 포함되지 않는 흐름</desc>
+  <desc id="desc">main.o의 addvec 미해결 참조가 libvector.a의 addvec.o를 선택하는 흐름</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
       <path d="M0 0L10 5L0 10Z" fill="#3569b8"/>

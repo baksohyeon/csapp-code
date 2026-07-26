@@ -49,8 +49,7 @@
    - compiler driver → relocatable object → linker 흐름, 전역/지역/외부 심볼의 분류,
      symbol resolution과 relocation의 경계를 교차 확인했다.
 
-강의 슬라이드는 교재를 대체하는 정본으로 사용하지 않고, 설명 순서와 강조점을 검증하는
-보조 1차 자료로 사용했다.
+교재를 정본으로 두고, 강의 슬라이드로 설명 순서와 강조점을 교차 확인했다.
 
 ## 3. C 언어
 
@@ -175,7 +174,7 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
     - 정적 링크를 포함한 musl의 배포 특성
 11. [Apple Developer Forums: Linker](https://developer.apple.com/forums/tags/linker)
     - Apple Developer Technical Support의 library primer
-    - 정적 library archive는 지원하지만 제3자 실행 파일은 표준 동적 링커를 사용해야 한다는 플랫폼 경계
+    - 정적 library archive 지원과 제3자 실행 파일의 표준 동적 링커 사용이라는 플랫폼 경계
 12. [MSVC `/MD`, `/MT`](https://learn.microsoft.com/en-us/cpp/build/reference/md-mt-ld-use-run-time-library)
     - DLL CRT와 정적 CRT 선택
 13. [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
@@ -288,10 +287,9 @@ CSAPP의 전통적 링크 모델은 선택된 입력 전체의 심볼과 재배�
    - 사용자 정의 의존성 해석에서 실패를 `null`로 넘기는 방식
 
 CSAPP 3판의 C++/Java name mangling aside는 오버로딩된 소스 이름이 더 풍부한 링커
-식별자로 바뀐다는 학습 직관에는 도움이 된다. 다만 현대 JVM의 method resolution은
-ELF 정적 링커의 C++ name mangling과 같은 메커니즘이 아니므로 같은 규칙으로 설명하지 않았다.
-Node.js, Python, Ruby, Java, .NET의 선택적 의존성도 ELF undefined weak와 목적만
-비슷하다. 이 언어들은 런타임 모듈 또는 클래스 로딩 실패를 처리한다.
+식별자로 바뀐다는 학습 직관을 제공한다. 현대 JVM은 class file의 이름과 descriptor로
+method resolution을 수행한다. Node.js, Python, Ruby, Java, .NET은 런타임 모듈 또는
+클래스 로딩 실패를 처리해 선택적 의존성을 구현한다.
 
 ## 12. 로컬 재현 환경
 
@@ -327,8 +325,8 @@ Node.js, Python, Ruby, Java, .NET의 선택적 의존성도 ELF undefined weak�
 
 ## 확인하지 못했거나 범위에서 제외한 것
 
-- 특정 GCC 9 바이너리와 GCC 10 바이너리를 나란히 설치한 버전별 실행은 하지 않았다.
-  대신 GCC 공식 변경 문서를 근거로 현재 GCC에서 두 플래그를 명시해 의미를 재현했다.
+- GCC 9와 GCC 10의 기본값은 공식 변경 문서로 확인했다. 실행 결과는 현재 GCC에서
+  `-fcommon`, `-fno-common`을 명시해 재현했다.
 - 서로 다른 아키텍처, 오브젝트 포맷(Mach-O/COFF), 상용 Unix 링커의 선택 규칙은 검증하지
   않았다.
 - 동적 링커의 interposition과 shared object 심볼 lookup은 7.10 이후 범위이므로 설명을

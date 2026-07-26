@@ -1,4 +1,4 @@
-import { readFile, access } from "node:fs/promises";
+import { readFile, access, readdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,11 +7,25 @@ const htmlPath = resolve(here, "chapter-7.6.1.html");
 const markdownPath = resolve(here, "chapter-7.6.1.md");
 const html = await readFile(htmlPath, "utf8");
 const markdown = await readFile(markdownPath, "utf8");
+const readme = await readFile(resolve(here, "README.md"), "utf8");
+const references = await readFile(resolve(here, "references.md"), "utf8");
+const figureNames = (await readdir(resolve(here, "figures")))
+  .filter((name) => name.endsWith(".svg"))
+  .sort();
+const figures = await Promise.all(
+  figureNames.map(async (name) => [
+    `SVG ${name}`,
+    await readFile(resolve(here, "figures", name), "utf8"),
+  ]),
+);
 const failures = [];
 
 for (const [name, document] of [
   ["HTML", html],
   ["Markdown", markdown],
+  ["README", readme],
+  ["References", references],
+  ...figures,
 ]) {
   if (document.includes("\u2014")) {
     failures.push(`${name} contains a forbidden em dash`);
@@ -26,6 +40,15 @@ for (const [name, document] of [
     "GCC에 링커가 내장된 것은 아니다",
     "ld가 부족한 링커라서 실패한 것이 아니다",
     "GCC는 완전한 C 표준 라이브러리 구현을 제공하지 않는다",
+    "실패가 아니라 성공이다",
+    "STB_WEAK가 아니다",
+    "COMMON은 .bss와 같은 입력 섹션이 아니다",
+    "아카이브 전체를 실행 파일에 복사하지 않고",
+    "이해하면 안 된다",
+    "관측을 계약으로 승격하지 말 것",
+    "PIE 자체가 무작위화를 수행하지는 않는다",
+    "한 단어 “weak”로 뭉개지 않는다",
+    "가장 중요한 구분",
   ]) {
     if (document.includes(phrase)) {
       failures.push(`${name} contains removed wording: ${phrase}`);
@@ -116,6 +139,10 @@ for (const requiredText of [
   "증분 컴파일",
   "ThinLTO",
   "CSAPP 링크 모델과 현대 LTO",
+  "CPU는 기계 명령을 실행한다",
+  "weak + weak의 계약 범위",
+  "archive 입력과 오브젝트 입력",
+  "PIE는 주 실행 파일의 재배치를 가능하게",
   "--gc-sections",
   "thin local LTO",
   'lto = "thin"',

@@ -11,7 +11,7 @@
     </style>
   </defs>
   <rect class="bg" width="1100" height="500" rx="24"/>
-  <text class="t" x="44" y="48">가장 위험한 경우는 실패가 아니라 성공이다</text>
+  <text class="t" x="44" y="48">조용한 병합은 오류를 실행 시간까지 숨길 수 있다</text>
   <text class="s" x="44" y="76">즉시 오류는 원인을 가리킨다. 조용한 병합은 문제를 실행 시간까지 숨긴다.</text>
 
   <rect class="panel" x="45" y="116" width="310" height="322" rx="18"/>

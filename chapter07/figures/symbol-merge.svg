@@ -52,6 +52,6 @@
   <rect class="bad" x="758" y="324" width="269" height="52" rx="12"/>
   <text class="mono" x="780" y="356">strong × strong → ERROR</text>
 
-  <text class="s" x="535" y="456" text-anchor="middle">이름만 같다고 모두 합치는 것이 아니다.</text>
+  <text class="s" x="535" y="456" text-anchor="middle">같은 이름의 후보를 심볼 정보로 비교한다.</text>
   <text class="s" x="535" y="482" text-anchor="middle">binding, section index, 정의 여부, 입력 순서를 함께 본다.</text>
 </svg>

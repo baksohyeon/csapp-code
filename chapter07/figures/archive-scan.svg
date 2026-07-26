@@ -15,7 +15,7 @@
   </defs>
   <rect class="bg" width="1100" height="610" rx="24"/>
   <text class="t" x="44" y="50">왼쪽에서 오른쪽으로 입력을 한 번 훑는다</text>
-  <text class="s" x="44" y="78">archive 내부는 새 멤버가 더 선택되지 않을 때까지 반복하지만, 지나간 archive로 자동 복귀하지 않는다.</text>
+  <text class="s" x="44" y="78">archive 내부는 선택이 멈출 때까지 반복하고, 각 archive는 명령줄의 해당 위치에서 처리한다.</text>
 
   <rect class="set" x="45" y="112" width="300" height="114" rx="16"/>
   <text class="t" x="72" y="148">E</text>
