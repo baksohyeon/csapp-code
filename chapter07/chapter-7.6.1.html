@@ -570,6 +570,28 @@
               예제를 현재 GCC에서 그대로 실행하면 기본 설정에서는 링크 오류가 난다.
             </p>
           </div>
+          <h3>교재에서 현재 도구로 옮겨 읽는 기준</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>주제</th><th>CSAPP 3판의 기준</th><th>현재 도구에서 확인할 것</th><th>변하지 않은 원리</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>int x;</code></td><td>weak로 분류하고 COMMON 병합을 설명</td><td>GCC와 Clang의 기본 <code>-fno-common</code>에서는 <code>.bss</code>의 <code>GLOBAL</code> 정의</td><td>C에서는 tentative definition</td></tr>
+                <tr><td>weak라는 말</td><td>초기화하지 않은 전역을 설명하는 학습 분류</td><td>ELF binding의 <code>STB_WEAK</code>와 <code>SHN_COMMON</code>을 분리</td><td>strong 정의가 실제 weak 정의보다 우선</td></tr>
+                <tr><td>중복 전역</td><td>과거 GCC 기본값에서 일부 조용히 병합</td><td>일반 코드는 <code>extern</code> 선언과 단일 정의를 사용</td><td>같은 외부 strong 정의가 둘이면 오류</td></tr>
+                <tr><td>타입 불일치</td><td>이름이 같으면 <code>int</code>와 <code>double</code>도 연결될 수 있음</td><td>일반 링커는 C 타입 전체를 모르며 LTO는 IR로 추가 진단 가능</td><td>선언을 공유 헤더 하나로 통일</td></tr>
+                <tr><td>정적 라이브러리</td><td>GNU ld의 왼쪽부터의 archive 탐색</td><td>GNU ld는 같은 규칙, LLD는 backward reference도 처리</td><td>이식 가능한 명령은 참조 뒤에 라이브러리 배치</td></tr>
+                <tr><td>링크 최적화</td><td>전통적인 컴파일과 링크 분리를 중심으로 설명</td><td>section GC, Full LTO, ThinLTO를 구분</td><td>최종 링크는 선택된 입력 전체를 봄</td></tr>
+                <tr><td>링커 구현</td><td>GNU ld 중심</td><td>GNU ld, LLD, mold의 성능과 호환성 비교</td><td>심볼 해석 뒤 재배치와 최종 ELF 생성</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            교재의 핵심 알고리즘이 모두 폐기된 것은 아니다. 많이 바뀐 부분은 컴파일러
+            기본값, LTO가 링커에 전달하는 정보, archive 탐색의 편의 기능, 링커 구현과
+            성능이다.
+          </p>
           <p class="muted small">
             전체 근거와 조사 한계는 <a href="references.md">references.md</a>,
             전체 검증 로그는 <a href="results/verified-linux-aarch64.txt">verified-linux-aarch64.txt</a>에 있다.
@@ -910,6 +932,13 @@ x = 15212</code></pre>
             strong <code>int</code>가 선택되면, 다른 모듈은 같은 주소에 8바이트 <code>double</code>을
             쓸 수 있다. 인접 객체가 덮일 수 있는 심각한 버그다.
           </p>
+          <p>
+            일반 ELF 링커도 <code>STT_OBJECT</code>, <code>STT_FUNC</code>,
+            <code>st_size</code> 같은 거친 정보는 본다. 그러나 <code>int</code>,
+            <code>double</code>, 함수 매개변수, 구조체 레이아웃 같은 C 타입 체계는 알지
+            못한다. 따라서 “링커는 타입을 모른다”는 말은 “C 타입 전체를 검사하지 않는다”는
+            뜻으로 읽어야 한다.
+          </p>
           <div class="callout warning">
             <div class="label">WARNING · 출력 값은 시스템 의존</div>
             <p>
@@ -1026,14 +1055,39 @@ x = 0x0 y = 0x3b6c</code></pre>
           </div>
           <p>
             <span class="source-tag official">OFFICIAL · GCC 10 PORTING GUIDE</span>
-            GCC 10은 C에서도 <code>-fno-common</code>을 기본으로 바꿨다. 헤더에
-            <code>int x;</code>를 써 여러 파일에서 정의를 만들어 버리는 실수를 링크 오류로
-            드러내고, 일부 target에서는 더 효율적인 전역 접근도 가능하게 한다.
+            2020-05-07에 공개된 GCC 10.1부터 C의 기본값이 <code>-fno-common</code>으로
+            바뀌었다. 헤더에 <code>int x;</code>를 써 여러 파일에서 정의를 만들어 버리는
+            실수를 링크 오류로 드러내고, 일부 target에서는 더 효율적인 전역 접근도 가능하게
+            한다.
           </p>
           <figure class="figure">
             <img src="figures/gcc10-change.svg" alt="GCC 9까지 fcommon으로 두 COMMON을 병합하고 GCC 10부터 fno-common으로 두 bss 정의를 오류 처리하는 비교">
             <figcaption><span class="figure-no">FIGURE N7</span> GCC 10 전후의 기본 정책. 본 실험은 현재 GCC에서 두 플래그를 명시해 같은 의미를 재현했다.</figcaption>
           </figure>
+
+          <h3>기본값이 바뀌기 전에도 <code>-fno-common</code>을 쓴 프로젝트가 있었다</h3>
+          <p>
+            GCC 9까지의 기본값이 <code>-fcommon</code>이었다고 해서 모든 프로젝트가 그
+            기본값에 의존한 것은 아니다. Linux 2.6.12의 2005년 Makefile에도 이미
+            <code>-fno-common</code>이 전역 CFLAGS에 들어 있다. 중복 tentative definition을
+            일찍 오류로 만들고 전역 접근 방식을 명확히 하려는 프로젝트는 컴파일러 기본값이
+            바뀌기 전부터 이 옵션을 명시했다.
+          </p>
+          <p>
+            반대로 “개발자 모두가 <code>-fno-common</code>을 썼다”고 일반화할 근거도 없다.
+            GCC 10 전환 때 여러 프로젝트가 중복 정의를 수정해야 했다는 사실이 이를 보여 준다.
+          </p>
+          <div class="callout gotcha">
+            <div class="label">GOTCHA · <code>-fcommon</code>은 ELF weak를 만드는 옵션이 아니다</div>
+            <p>
+              <code>-fcommon</code>의 <code>int x;</code>는 보통
+              <code>STB_GLOBAL + SHN_COMMON</code>이다. <code>-fno-common</code>의 같은
+              소스는 보통 <code>STB_GLOBAL + .bss</code>다. 교재 모델에서는 앞을 weak,
+              뒤를 strong처럼 분류할 수 있지만, ELF symbol table의 <code>Bind</code> 값은
+              둘 다 <code>GLOBAL</code>이다. 실제 <code>STB_WEAK</code>는 별도의 속성이나
+              오브젝트 도구로 만든다.
+            </p>
+          </div>
 
           <div class="grid two">
             <article class="mini-card">
@@ -1297,6 +1351,8 @@ choice=22</code></pre>
             <div class="term">duplicate symbol name</div><div class="meaning">중복 심볼 이름. 여러 입력 모듈이 같은 외부 이름을 정의한 상태.</div>
             <div class="term">strong symbol</div><div class="meaning">강한 심볼. CSAPP 모델에서 함수와 초기화된 전역. 같은 이름의 strong은 하나만 허용.</div>
             <div class="term">weak symbol</div><div class="meaning">약한 심볼. 문맥을 밝혀야 한다. CSAPP 학습 모델인지 ELF <code>STB_WEAK</code>인지 구분한다.</div>
+            <div class="term">undefined weak symbol</div><div class="meaning">정의가 없는 실제 ELF weak 참조. ELF에서는 링크 오류 없이 0 값으로 남을 수 있으므로 호출하거나 역참조하기 전에 주소를 검사한다.</div>
+            <div class="term">optional dependency</div><div class="meaning">선택적 의존성. 기능이 있으면 사용하지만 없어도 프로그램의 기본 동작을 계속할 수 있는 의존성. ELF weak hook과 런타임 모듈 로딩은 서로 다른 구현이다.</div>
             <div class="term">tentative definition</div><div class="meaning">잠정 정의. 파일 범위에서 initializer 없이 나온 객체 선언의 C 표준 개념.</div>
             <div class="term">common symbol</div><div class="meaning">공통 심볼. ELF relocatable object에서 아직 저장 공간이 배정되지 않은 <code>SHN_COMMON</code> 심볼.</div>
             <div class="term">binding</div><div class="meaning">바인딩. ELF의 <code>STB_LOCAL</code>, <code>STB_GLOBAL</code>, <code>STB_WEAK</code> 같은 가시성·우선순위 속성.</div>
@@ -1406,6 +1462,39 @@ ld: warning: common of `arena' overriding smaller common
             멤버를 꺼내지 않는다. 선택적 hook을 만들 수 있지만, 함수 포인터가 0인지 확인하지 않고
             호출하면 안 된다.
           </p>
+          <p>
+            <code>-fno-common</code>이 기본이어도 실제 ELF weak는 그대로 쓸 수 있다. GCC와
+            Clang에서 가장 직접적인 소스 표현은 <code>__attribute__((weak))</code>다.
+            <code>weakref</code>, <code>#pragma weak</code>, 어셈블러의 <code>.weak</code>,
+            <code>objcopy --weaken</code> 같은 방법도 있으므로 이 attribute만이 유일한 생성
+            방법은 아니다.
+          </p>
+
+          <h4>기본 구현을 strong 정의로 교체</h4>
+          <div class="codeblock">
+            <div class="code-cap"><span>default.c / override.c</span><span>weak function</span></div>
+            <pre><code><span class="cm">/* default.c */</span>
+<span class="ty">int</span> foo(<span class="kw">void</span>) __attribute__((weak));
+<span class="ty">int</span> foo(<span class="kw">void</span>) { <span class="kw">return</span> <span class="num">1</span>; }
+
+<span class="cm">/* override.c */</span>
+<span class="ty">int</span> foo(<span class="kw">void</span>) { <span class="kw">return</span> <span class="num">2</span>; }</code></pre>
+          </div>
+          <div class="codeblock">
+            <div class="code-cap"><span>weak-function</span><span class="observed">OBSERVED</span></div>
+            <pre><code><span class="terminal-line">$ readelf -Ws wf-default.o | grep ' foo$'</span>
+FUNC WEAK DEFAULT ... foo
+<span class="terminal-line">$ ./weak-function-default</span>
+foo() = 1
+<span class="terminal-line">$ ./weak-function-override</span>
+foo() = 2</code></pre>
+          </div>
+          <p>
+            두 구현에 모두 <code>weak</code>를 붙이면 링크 입력 순서에 따라 하나가 관측될
+            수 있지만, 어느 정의가 선택되는지는 프로그램 계약으로 삼으면 안 된다. 기본
+            구현 하나를 weak로 두고 사용자 구현을 strong으로 제공하는 편이 의도가 분명하다.
+          </p>
+
           <div class="codeblock">
             <div class="code-cap"><span>weak-undefined</span><span class="observed">OBSERVED</span></div>
             <pre><code><span class="terminal-line">$ gcc wu-main.o liboptional.a -o weak-archive</span>
@@ -1418,9 +1507,46 @@ optional_hook: absent
 optional_hook: present</code></pre>
           </div>
 
-          <h3>4. LTO는 번역 단위 사이 타입 불일치를 추가로 볼 수 있다</h3>
+          <h4>선택적 의존성을 다루는 층이 다르다</h4>
+          <div class="codeblock">
+            <div class="code-cap"><span>optional hook</span><span>ELF C</span></div>
+            <pre><code><span class="kw">extern</span> <span class="kw">void</span> profiler_init(<span class="kw">void</span>) __attribute__((weak));
+
+<span class="ty">int</span> main(<span class="kw">void</span>)
+{
+    <span class="kw">if</span> (profiler_init != <span class="num">0</span>) {
+        profiler_init();
+    }
+}</code></pre>
+          </div>
           <p>
-            일반 정적 링커는 C 타입 전체를 비교하지 않지만, GCC의
+            ELF C에서는 정의되지 않은 weak 참조가 0이 될 수 있으므로 호출 전에 검사한다.
+            다른 언어의 optional dependency도 목적은 비슷하지만 런타임의 모듈·클래스
+            로더에서 부재를 처리한다.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>환경</th><th>의존성이 없을 때 확인하는 방식</th></tr></thead>
+              <tbody>
+                <tr><td>ELF C</td><td>undefined weak의 주소가 0인지 검사</td></tr>
+                <tr><td>Node.js / npm</td><td><code>optionalDependencies</code> 설치 실패를 허용하고 애플리케이션이 <code>require</code> 실패를 처리</td></tr>
+                <tr><td>Python</td><td><code>import</code>가 <code>ModuleNotFoundError</code>를 내면 필요한 범위에서 처리</td></tr>
+                <tr><td>Ruby</td><td><code>require</code>의 <code>LoadError</code>를 필요한 범위에서 처리</td></tr>
+                <tr><td>Java</td><td><code>Class.forName</code>의 <code>ClassNotFoundException</code> 처리</td></tr>
+                <tr><td>C# / .NET</td><td><code>Assembly.Load</code>의 <code>FileNotFoundException</code> 또는 <code>AssemblyLoadContext</code>의 실패 처리</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            이 방식들은 ELF weak symbol과 같은 구현이 아니다. 의존성 부재를 오류 대신
+            선택 가능한 기능으로 다룬다는 점만 같다.
+          </p>
+
+          <h3>4. 일반 링커와 LTO가 아는 타입 정보는 다르다</h3>
+          <p>
+            일반 정적 링커는 심볼 이름, binding, <code>STT_OBJECT</code>·<code>STT_FUNC</code>,
+            크기, 섹션, 가시성을 본다. <code>int</code>와 <code>double</code>, 함수 원형,
+            구조체 필드 같은 C 타입 전체는 비교하지 않는다. 반면 GCC의
             <strong>link-time optimization(LTO)</strong>은 중간 표현(IR)을 함께 보므로
             <code>-Wlto-type-mismatch</code> 진단을 낼 수 있다. 이 경고는
             <code>-flto</code>가 있을 때만 가능하며, 올바른 해결책은 여전히 선언을 한 헤더로

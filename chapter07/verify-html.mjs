@@ -76,6 +76,11 @@ for (const requiredText of [
   "--gc-sections",
   "thin local LTO",
   'lto = "thin"',
+  "2020-05-07",
+  "Linux 2.6.12",
+  "STB_GLOBAL + SHN_COMMON",
+  "optionalDependencies",
+  "ClassNotFoundException",
 ]) {
   if (!html.includes(requiredText)) failures.push(`missing HTML content: ${requiredText}`);
   if (!markdown.includes(requiredText)) failures.push(`missing Markdown content: ${requiredText}`);

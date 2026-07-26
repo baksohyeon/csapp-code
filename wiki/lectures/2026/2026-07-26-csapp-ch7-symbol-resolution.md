@@ -31,6 +31,10 @@ CSAPP 3판 §7.6 **Symbol Resolution** 강의노트.
 - C tentative definition
 - `.data`, `.bss`, `COMMON`의 관계
 - GCC 10의 `-fno-common` 기본값 변경
+- GCC 10 이전의 명시적 `-fno-common` 사용 사례
+- 교재의 weak 분류와 실제 ELF `STB_WEAK` 생성 방법
+- undefined weak hook과 런타임 optional dependency의 차이
+- 일반 링커의 ELF symbol type과 LTO의 C 타입 진단 범위
 - compiler driver, `cc1`, `ld`, `lld`, `ldd`, libc의 역할
 - GNU ld, gold, LLD, mold의 차이와 `-fuse-ld` 선택
 - 증분 컴파일 이후의 최종 링크 병목

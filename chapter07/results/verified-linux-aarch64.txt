@@ -183,6 +183,19 @@ $ gcc /work/examples/build/wu-main.o /work/examples/build/wu-provider.o -o /work
 $ /work/examples/build/weak-explicit
 optional_hook: present
 
+===== 9c. explicit weak function: default implementation and strong override =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-function/main.c -o /work/examples/build/wf-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-function/default.c -o /work/examples/build/wf-default.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-function/override.c -o /work/examples/build/wf-override.o
+    16: 0000000000000000     8 FUNC    WEAK   DEFAULT    1 foo
+    16: 0000000000000000     8 FUNC    GLOBAL DEFAULT    1 foo
+$ gcc /work/examples/build/wf-main.o /work/examples/build/wf-default.o -o /work/examples/build/weak-function-default
+$ /work/examples/build/weak-function-default
+foo() = 1
+$ gcc /work/examples/build/wf-main.o /work/examples/build/wf-default.o /work/examples/build/wf-override.o -o /work/examples/build/weak-function-override
+$ /work/examples/build/weak-function-override
+foo() = 2
+
 ===== 10. weak + weak: observed link-order choice =====
 $ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-weak/main.c -o /work/examples/build/ww-main.o
 $ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-weak/left.c -o /work/examples/build/ww-left.o
@@ -375,9 +388,9 @@ String dump of section '.comment':
   [    2e]  Linker: Ubuntu LLD 18.1.3
 
 $ ldd /work/examples/build/driver-gcc
-	linux-vdso.so.1 (0x0000ffff9ac1f000)
-	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff9a9e0000)
-	/lib/ld-linux-aarch64.so.1 (0x0000ffff9abd0000)
+	linux-vdso.so.1 (0x0000ffff93e6c000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff93c40000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff93e30000)
 
 ===== 13. glibc also supports static linking =====
 $ gcc -static /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-static
@@ -469,14 +482,14 @@ $ gcc -O0 -g -fno-pie -no-pie /work/examples/aslr-pie/addresses.c -o /work/examp
   Type:                              DYN (Position-Independent Executable file)
   Type:                              EXEC (Executable file)
 $ /work/examples/build/addresses-pie  # run three times
-main=0xaaaacc0008d8 stack=0xffffce03a7bc heap=0xaaaaf79f42a0
-main=0xaaaacc2508d8 stack=0xfffff43c936c heap=0xaaaaed32b2a0
-main=0xaaaae3fa08d8 stack=0xffffc71d009c heap=0xaaab0b1e62a0
+main=0xaaaab3bc08d8 stack=0xfffffb38c25c heap=0xaaaad6bda2a0
+main=0xaaaac36e08d8 stack=0xffffc5e929bc heap=0xaaaaf02822a0
+main=0xaaaab79308d8 stack=0xfffff7fe89ac heap=0xaaaaecc6a2a0
 [main address: varies]
 $ /work/examples/build/addresses-no-pie  # run three times
-main=0x4007e8 stack=0xffffe37e42fc heap=0x36e2f2a0
-main=0x4007e8 stack=0xffffed4d0f4c heap=0x59922a0
-main=0x4007e8 stack=0xfffff861f10c heap=0x2240b2a0
+main=0x4007e8 stack=0xffffc44e219c heap=0x86202a0
+main=0x4007e8 stack=0xffffc24cd95c heap=0x271c22a0
+main=0x4007e8 stack=0xffffd23b976c heap=0x2a34e2a0
 [main address: fixed]
 
 ===== 17. section GC, full LTO, and ThinLTO =====

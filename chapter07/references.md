@@ -82,17 +82,25 @@
 1. [GCC 10 Porting Guide: Default to -fno-common](https://gcc.gnu.org/gcc-10/porting_to.html)
    - 헤더에서 `extern`을 빠뜨린 전역 변수 패턴이 여러 정의를 만든다는 설명
    - GCC 10의 기본값 변경과 `-fcommon` 호환 옵션
-2. [GCC 10 Changes](https://gcc.gnu.org/gcc-10/changes.html)
+2. [GCC 10.1 Release Announcement](https://gcc.gnu.org/pipermail/gcc-announce/2020/000163.html)
+   - GCC 10.1 공개일 2020-05-07
+3. [GCC 10 Changes](https://gcc.gnu.org/gcc-10/changes.html)
    - `-fno-common` 기본값과 여러 tentative definition의 링크 오류
    - 전역 접근의 효율 및 코드 크기 이점
-3. [GCC Code Generation Options: -fcommon](https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html)
+4. [GCC Code Generation Options: -fcommon](https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html)
    - `-fno-common`: 초기화 없는 전역을 오브젝트의 BSS에 배치
    - `-fcommon`: common block에 배치해 링커 병합을 허용
-4. [GCC Variable Attributes](https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html)
+5. [GCC Variable Attributes](https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html)
    - 개별 변수의 `common`, `nocommon` attribute
-5. [GCC Warning Options: `-Wlto-type-mismatch`](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html)
+6. [GCC Function Attributes: `weak`, `weakref`](https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html)
+   - 외부 심볼을 실제 weak symbol로 내보내는 `weak` attribute
+   - 정의가 없어도 되는 weak reference를 만드는 `weakref`
+7. [GCC Warning Options: `-Wlto-type-mismatch`](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html)
    - `-flto`로 여러 번역 단위의 중간 표현을 함께 볼 때 전역 선언의 타입 불일치를 경고
    - 일반 정적 링커의 이름 중심 해석과 LTO 진단을 구분
+8. [Linux 2.6.12 Makefile](https://raw.githubusercontent.com/torvalds/linux/v2.6.12/Makefile)
+   - 2005년 Linux kernel 빌드의 전역 CFLAGS에 이미 `-fno-common`이 명시됨
+   - GCC 10 이전에도 프로젝트가 컴파일러 기본값을 명시적으로 덮어쓴 사례
 
 “GCC 10 전후 실험”은 GCC 13.3에서 `-fcommon`과 `-fno-common`을 명시해 두 정책을
 같은 소스에 재현했다. GCC 9/10 바이너리 자체의 버전 비교가 아니라, 공식 변경 문서에 적힌
@@ -249,7 +257,7 @@ LTO는 compiler IR을 이용해 번역 단위 사이의 인라이닝과 상수 �
       `AS_NEEDED(ld-linux)`를 묶는 구성
     - 일부 환경에서 동적 로더가 `DT_NEEDED`에도 기록될 수 있는 이유
 
-## 11. C++와 JVM 경계
+## 11. 런타임 로딩과 언어 경계
 
 1. [Itanium C++ ABI: External Names](https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangling)
    - 현재 ELF 계열 C++ 구현에서 널리 쓰이는 외부 이름 mangling 문법
@@ -259,10 +267,25 @@ LTO는 compiler IR을 이용해 번역 단위 사이의 인라이닝과 상수 �
    - JVM 명령이 class file constant pool의 symbolic information을 참조
 3. [Java Virtual Machine Specification §5.4.3 Resolution](https://docs.oracle.com/javase/specs/jvms/se26/html/jvms-5.html#jvms-5.4.3)
    - class, field, method 등의 symbolic reference를 런타임에 구체 값으로 해석
+4. [npm package.json: `optionalDependencies`](https://docs.npmjs.com/files/package.json/)
+   - 선택적 의존성 설치 실패를 전체 설치 실패로 처리하지 않는 규칙
+   - 애플리케이션이 해당 모듈의 부재를 직접 처리해야 한다는 경계
+5. [Python Import System](https://docs.python.org/3/reference/import.html)
+   - 모듈을 찾지 못하면 `ModuleNotFoundError`가 발생하는 규칙
+6. [Ruby `LoadError`](https://ruby-doc.org/core-2.5.7/LoadError.html)
+   - `require`가 파일이나 확장 라이브러리를 불러오지 못했을 때의 예외
+7. [Java `Class.forName`](https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/Class.html)
+   - 이름으로 클래스를 찾고 불러오며, 찾지 못하면 `ClassNotFoundException` 발생
+8. [.NET `Assembly.Load`](https://learn.microsoft.com/en-us/dotnet/api/system.reflection.assembly.load)
+   - assembly를 찾지 못했을 때의 `FileNotFoundException`
+9. [.NET `AssemblyLoadContext`](https://learn.microsoft.com/en-us/dotnet/core/dependency-loading/understanding-assemblyloadcontext)
+   - 사용자 정의 의존성 해석에서 실패를 `null`로 넘기는 방식
 
 CSAPP 3판의 C++/Java name mangling aside는 오버로딩된 소스 이름이 더 풍부한 링커
 식별자로 바뀐다는 학습 직관에는 도움이 된다. 다만 현대 JVM의 method resolution은
 ELF 정적 링커의 C++ name mangling과 같은 메커니즘이 아니므로 같은 규칙으로 설명하지 않았다.
+Node.js, Python, Ruby, Java, .NET의 선택적 의존성도 ELF undefined weak와 목적만
+비슷하다. 이 언어들은 런타임 모듈 또는 클래스 로딩 실패를 처리한다.
 
 ## 12. 로컬 재현 환경
 
@@ -280,6 +303,8 @@ ELF 정적 링커의 C++ name mangling과 같은 메커니즘이 아니므로 �
 - `common-size`: `char arena[4]`와 `char arena[32]`의 COMMON을 병합해 최종 크기
   32바이트를 확인
 - `weak-undefined`: unresolved weak가 `w`로 남고 archive member를 꺼내지 않는 동작 확인
+- `weak-function`: 실제 `STB_WEAK` 함수가 기본 구현을 제공하고 strong 함수가 이를
+  교체하는 동작 확인
 - `common-mismatch` + `-flto`: `-Wlto-type-mismatch` 진단 확인
 - `compiler-driver`: GCC, cc, Clang의 컴파일과 링크, raw `ld` 실패, `ldd` 출력,
   glibc 정적 링크 확인

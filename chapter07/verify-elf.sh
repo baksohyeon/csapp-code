@@ -194,6 +194,17 @@ run gcc "${build}/wu-main.o" "${build}/wu-provider.o" -o "${build}/weak-explicit
 run nm "${build}/weak-explicit" | grep -E ' optional_hook$'
 run "${build}/weak-explicit"
 
+heading "9c. explicit weak function: default implementation and strong override"
+run gcc "${common_flags[@]}" -c "${examples}/weak-function/main.c" -o "${build}/wf-main.o"
+run gcc "${common_flags[@]}" -c "${examples}/weak-function/default.c" -o "${build}/wf-default.o"
+run gcc "${common_flags[@]}" -c "${examples}/weak-function/override.c" -o "${build}/wf-override.o"
+run readelf -Ws "${build}/wf-default.o" | grep -E ' foo$'
+run readelf -Ws "${build}/wf-override.o" | grep -E ' foo$'
+run gcc "${build}/wf-main.o" "${build}/wf-default.o" -o "${build}/weak-function-default"
+run "${build}/weak-function-default"
+run gcc "${build}/wf-main.o" "${build}/wf-default.o" "${build}/wf-override.o" -o "${build}/weak-function-override"
+run "${build}/weak-function-override"
+
 heading "10. weak + weak: observed link-order choice"
 run gcc "${common_flags[@]}" -c "${examples}/weak-weak/main.c" -o "${build}/ww-main.o"
 run gcc "${common_flags[@]}" -c "${examples}/weak-weak/left.c" -o "${build}/ww-left.o"

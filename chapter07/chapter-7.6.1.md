@@ -50,6 +50,21 @@
 >
 > 책의 weak 전역 예제는 과거 GCC의 `-fcommon` 기본 동작을 전제로 한다. GCC 10부터 기본값은 `-fno-common`이다. 따라서 책의 “조용히 합쳐진다”는 예제를 현재 GCC에서 그대로 실행하면 기본 설정에서는 링크 오류가 난다.
 
+### 교재에서 현재 도구로 옮겨 읽는 기준
+
+| 주제 | CSAPP 3판의 기준 | 현재 도구에서 확인할 것 | 변하지 않은 원리 |
+| --- | --- | --- | --- |
+| `int x;` | weak로 분류하고 COMMON 병합을 설명 | GCC와 Clang의 기본 `-fno-common`에서는 `.bss`의 `GLOBAL` 정의 | C에서는 tentative definition |
+| weak라는 말 | 초기화하지 않은 전역을 설명하는 학습 분류 | ELF binding의 `STB_WEAK`와 `SHN_COMMON`을 분리 | strong 정의가 실제 weak 정의보다 우선 |
+| 중복 전역 | 과거 GCC 기본값에서 일부 조용히 병합 | 일반 코드는 `extern` 선언과 단일 정의를 사용 | 같은 외부 strong 정의가 둘이면 오류 |
+| 타입 불일치 | 이름이 같으면 `int`와 `double`도 연결될 수 있음 | 일반 링커는 C 타입 전체를 모르며 LTO는 IR로 추가 진단 가능 | 선언을 공유 헤더 하나로 통일 |
+| 정적 라이브러리 | GNU ld의 왼쪽부터의 archive 탐색 | GNU ld는 같은 규칙, LLD는 backward reference도 처리 | 이식 가능한 명령은 참조 뒤에 라이브러리 배치 |
+| 링크 최적화 | 전통적인 컴파일과 링크 분리를 중심으로 설명 | section GC, Full LTO, ThinLTO를 구분 | 최종 링크는 선택된 입력 전체를 봄 |
+| 링커 구현 | GNU ld 중심 | GNU ld, LLD, mold의 성능과 호환성 비교 | 심볼 해석 뒤 재배치와 최종 ELF 생성 |
+
+교재의 핵심 알고리즘이 모두 폐기된 것은 아니다. 많이 바뀐 부분은 컴파일러 기본값,
+LTO가 링커에 전달하는 정보, archive 탐색의 편의 기능, 링커 구현과 성능이다.
+
 전체 근거와 조사 한계는 [references.md](references.md), 전체 검증 로그는 [verified-linux-aarch64.txt](results/verified-linux-aarch64.txt)에 있다.
 
 <a id="eli5"></a>
@@ -272,6 +287,11 @@ x = 15212
 
 한 모듈은 `int x`, 다른 모듈은 `double x`라고 믿는다. 링커의 주된 해석 키는 C 타입이 아니라 심볼 이름과 오브젝트 메타데이터다. `-fcommon`에서 strong `int`가 선택되면, 다른 모듈은 같은 주소에 8바이트 `double`을 쓸 수 있다. 인접 객체가 덮일 수 있는 심각한 버그다.
 
+일반 ELF 링커도 `STT_OBJECT`, `STT_FUNC`, `st_size` 같은 거친 정보는 본다. 그러나
+`int`, `double`, 함수 매개변수, 구조체 레이아웃 같은 C 타입 체계는 알지 못한다.
+따라서 “링커는 타입을 모른다”는 말은 “C 타입 전체를 검사하지 않는다”는 뜻으로 읽어야
+한다.
+
 > **WARNING · 출력 값은 시스템 의존**
 >
 > 책의 x86-64 예시는 `x`와 바로 다음 `y`가 함께 손상되는 한 배치를 보여 준다. CSAPP 공식 정오표는 정확한 손상 값이 시스템 의존이라고 명시한다. 본 aarch64 실험에서는 `x=0`이 되었지만 `y`는 유지됐다. 어느 쪽도 프로그램이 의존할 수 있는 결과가 아니다.
@@ -321,11 +341,30 @@ x = 0x0 y = 0x3b6c
 
 ## GCC 10: 실수를 허용하던 기본값을 뒤집다
 
-**[OFFICIAL · GCC 10 PORTING GUIDE]** GCC 10은 C에서도 `-fno-common`을 기본으로 바꿨다. 헤더에 `int x;`를 써 여러 파일에서 정의를 만들어 버리는 실수를 링크 오류로 드러내고, 일부 target에서는 더 효율적인 전역 접근도 가능하게 한다.
+**[OFFICIAL · GCC 10 PORTING GUIDE]** 2020-05-07에 공개된 GCC 10.1부터 C의 기본값이
+`-fno-common`으로 바뀌었다. 헤더에 `int x;`를 써 여러 파일에서 정의를 만들어 버리는
+실수를 링크 오류로 드러내고, 일부 target에서는 더 효율적인 전역 접근도 가능하게 한다.
 
 ![GCC 9까지 fcommon으로 두 COMMON을 병합하고 GCC 10부터 fno-common으로 두 bss 정의를 오류 처리하는 비교](figures/gcc10-change.svg)
 
 **FIGURE N7** GCC 10 전후의 기본 정책. 본 실험은 현재 GCC에서 두 플래그를 명시해 같은 의미를 재현했다.
+
+### 기본값이 바뀌기 전에도 `-fno-common`을 쓴 프로젝트가 있었다
+
+GCC 9까지의 기본값이 `-fcommon`이었다고 해서 모든 프로젝트가 그 기본값에 의존한 것은
+아니다. Linux 2.6.12의 2005년 Makefile에도 이미 `-fno-common`이 전역 CFLAGS에 들어
+있다. 중복 tentative definition을 일찍 오류로 만들고 전역 접근 방식을 명확히 하려는
+프로젝트는 컴파일러 기본값이 바뀌기 전부터 이 옵션을 명시했다.
+
+반대로 “개발자 모두가 `-fno-common`을 썼다”고 일반화할 근거도 없다. GCC 10 전환 때
+여러 프로젝트가 중복 정의를 수정해야 했다는 사실이 이를 보여 준다.
+
+> **GOTCHA · `-fcommon`은 ELF weak를 만드는 옵션이 아니다**
+>
+> `-fcommon`의 `int x;`는 보통 `STB_GLOBAL + SHN_COMMON`이다.
+> `-fno-common`의 같은 소스는 보통 `STB_GLOBAL + .bss`다. 교재 모델에서는 앞을 weak,
+> 뒤를 strong처럼 분류할 수 있지만, ELF symbol table의 `Bind` 값은 둘 다 `GLOBAL`이다.
+> 실제 `STB_WEAK`는 별도의 속성이나 오브젝트 도구로 만든다.
 
 ### 과거 의미 재현
 
@@ -627,6 +666,16 @@ GNU ld와 lld 공식 문서는 이 옵션을 주면 여러 정의를 오류로 �
 
 약한 심볼. 문맥을 밝혀야 한다. CSAPP 학습 모델인지 ELF `STB_WEAK`인지 구분한다.
 
+**undefined weak symbol**
+
+정의가 없는 실제 ELF weak 참조. ELF에서는 링크 오류 없이 0 값으로 남을 수 있으므로
+호출하거나 역참조하기 전에 주소를 검사한다.
+
+**optional dependency**
+
+선택적 의존성. 기능이 있으면 사용하지만 없어도 프로그램의 기본 동작을 계속할 수 있는
+의존성. ELF weak hook과 런타임 모듈 로딩은 서로 다른 구현이다.
+
 **tentative definition**
 
 잠정 정의. 파일 범위에서 initializer 없이 나온 객체 선언의 C 표준 개념.
@@ -796,6 +845,35 @@ System V ELF ABI에서 해결되지 않은 `STB_WEAK` 참조는 링크 오류가
 또한 undefined weak 하나만 만족시키기 위해 정적 라이브러리의 멤버를 꺼내지 않는다.
 선택적 hook을 만들 수 있지만, 함수 포인터가 0인지 확인하지 않고 호출하면 안 된다.
 
+`-fno-common`이 기본이어도 실제 ELF weak는 그대로 쓸 수 있다. GCC와 Clang에서 가장
+직접적인 소스 표현은 `__attribute__((weak))`다. `weakref`, `#pragma weak`, 어셈블러의
+`.weak`, `objcopy --weaken` 같은 방법도 있으므로 이 attribute만이 유일한 생성 방법은
+아니다.
+
+#### 기본 구현을 strong 정의로 교체
+
+```c
+/* default.c */
+int foo(void) __attribute__((weak));
+int foo(void) { return 1; }
+
+/* override.c */
+int foo(void) { return 2; }
+```
+
+```text
+$ readelf -Ws wf-default.o | grep ' foo$'
+FUNC WEAK DEFAULT ... foo
+$ ./weak-function-default
+foo() = 1
+$ ./weak-function-override
+foo() = 2
+```
+
+두 구현에 모두 `weak`를 붙이면 링크 입력 순서에 따라 하나가 관측될 수 있지만, 어느
+정의가 선택되는지는 프로그램 계약으로 삼으면 안 된다. 기본 구현 하나를 weak로 두고
+사용자 구현을 strong으로 제공하는 편이 의도가 분명하다.
+
 **weak-undefined · OBSERVED**
 
 ```text
@@ -809,9 +887,40 @@ $ gcc wu-main.o wu-provider.o -o weak-explicit && ./weak-explicit
 optional_hook: present
 ```
 
-### 4. LTO는 번역 단위 사이 타입 불일치를 추가로 볼 수 있다
+#### 선택적 의존성을 다루는 층이 다르다
 
-일반 정적 링커는 C 타입 전체를 비교하지 않지만, GCC의
+```c
+extern void profiler_init(void) __attribute__((weak));
+
+int main(void)
+{
+    if (profiler_init != 0) {
+        profiler_init();
+    }
+}
+```
+
+ELF C에서는 정의되지 않은 weak 참조가 0이 될 수 있으므로 호출 전에 검사한다. 다른
+언어의 optional dependency도 목적은 비슷하지만 런타임의 모듈·클래스 로더에서 부재를
+처리한다.
+
+| 환경 | 의존성이 없을 때 확인하는 방식 |
+| --- | --- |
+| ELF C | undefined weak의 주소가 0인지 검사 |
+| Node.js / npm | `optionalDependencies` 설치 실패를 허용하고 애플리케이션이 `require` 실패를 처리 |
+| Python | `import`가 `ModuleNotFoundError`를 내면 필요한 범위에서 처리 |
+| Ruby | `require`의 `LoadError`를 필요한 범위에서 처리 |
+| Java | `Class.forName`의 `ClassNotFoundException` 처리 |
+| C# / .NET | `Assembly.Load`의 `FileNotFoundException` 또는 `AssemblyLoadContext`의 실패 처리 |
+
+이 방식들은 ELF weak symbol과 같은 구현이 아니다. 의존성 부재를 오류 대신 선택 가능한
+기능으로 다룬다는 점만 같다.
+
+### 4. 일반 링커와 LTO가 아는 타입 정보는 다르다
+
+일반 정적 링커는 심볼 이름, binding, `STT_OBJECT`·`STT_FUNC`, 크기, 섹션, 가시성을
+본다. `int`와 `double`, 함수 원형, 구조체 필드 같은 C 타입 전체는 비교하지 않는다.
+반면 GCC의
 **link-time optimization(LTO)**은 중간 표현(IR)을 함께 보므로 `-Wlto-type-mismatch`
 진단을 낼 수 있다. 이 경고는 `-flto`가 있을 때만 가능하며, 올바른 해결책은 여전히
 선언을 한 헤더로 통일하고 정의를 하나만 두는 것이다.
