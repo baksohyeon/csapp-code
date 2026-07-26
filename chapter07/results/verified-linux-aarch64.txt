@@ -1,0 +1,177 @@
+
+===== toolchain =====
+Linux 7.0.11-orbstack-00360-gc9bc4d96ac70 aarch64
+gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+Ubuntu clang version 18.1.3 (1ubuntu1)
+GNU ld (GNU Binutils for Ubuntu) 2.42
+Ubuntu LLD 18.1.3 (compatible with GNU linkers)
+GNU readelf (GNU Binutils for Ubuntu) 2.42
+
+===== 1. strong + strong: duplicate initialized global =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/strong-strong/main.c -o /work/examples/build/ss-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/strong-strong/other.c -o /work/examples/build/ss-other.o
+0000000000000000 0000000000000004 D conflict
+                 U from_other
+0000000000000000 0000000000000040 T main
+0000000000000000 0000000000000004 D conflict
+0000000000000000 0000000000000010 T from_other
+$ gcc /work/examples/build/ss-main.o /work/examples/build/ss-other.o -o /work/examples/build/strong-strong
+/usr/bin/ld: /work/examples/build/ss-other.o:/work/examples/strong-strong/other.c:1: multiple definition of `conflict'; /work/examples/build/ss-main.o:/work/examples/strong-strong/main.c:3: first defined here
+collect2: error: ld returned 1 exit status
+[exit=1, expected non-zero]
+
+===== 2. strong + COMMON: legacy quiet override with -fcommon =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/strong-common/main.c -o /work/examples/build/sc-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/strong-common/worker.c -o /work/examples/build/sc-worker.o
+0000000000000000 0000000000000004 D x
+0000000000000004 0000000000000004 C x
+    16: 0000000000000004     4 OBJECT  GLOBAL DEFAULT  COM x
+$ gcc /work/examples/build/sc-main.o /work/examples/build/sc-worker.o -o /work/examples/build/strong-common
+$ /work/examples/build/strong-common
+x = 15212
+
+===== 3. COMMON + COMMON: legacy merge with -fcommon =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-common/main.c -o /work/examples/build/cc-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-common/worker.c -o /work/examples/build/cc-worker.o
+0000000000000004 0000000000000004 C x
+0000000000000004 0000000000000004 C x
+$ gcc -Wl\,--warn-common /work/examples/build/cc-main.o /work/examples/build/cc-worker.o -o /work/examples/build/common-common
+/usr/bin/ld: /work/examples/build/cc-worker.o and /work/examples/build/cc-main.o: warning: multiple common of `x'
+$ /work/examples/build/common-common
+x = 15212
+
+===== 4. duplicate function: strong + strong =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/duplicate-function/main.c -o /work/examples/build/df-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/duplicate-function/other.c -o /work/examples/build/df-other.o
+0000000000000000 T helper
+0000000000000000 T helper
+$ gcc /work/examples/build/df-main.o /work/examples/build/df-other.o -o /work/examples/build/duplicate-function
+/usr/bin/ld: /work/examples/build/df-other.o: in function `helper':
+/work/examples/duplicate-function/other.c:3: multiple definition of `helper'; /work/examples/build/df-main.o:/work/examples/duplicate-function/main.c:3: first defined here
+collect2: error: ld returned 1 exit status
+[exit=1, expected non-zero]
+
+===== 5. tentative definition placement: -fcommon vs -fno-common =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/storage-layout/symbols.c -o /work/examples/build/layout-common.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fno-common -c /work/examples/storage-layout/symbols.c -o /work/examples/build/layout-nocommon.o
+0000000000000000 0000000000000004 D initialized
+0000000000000004 0000000000000004 C tentative
+0000000000000000 0000000000000004 B zero
+0000000000000000 0000000000000004 D initialized
+0000000000000000 0000000000000004 B tentative
+0000000000000004 0000000000000004 B zero
+    20: 0000000000000004     4 OBJECT  GLOBAL DEFAULT  COM tentative
+    21: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    4 zero
+    22: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    3 initialized
+    20: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    4 tentative
+    21: 0000000000000004     4 OBJECT  GLOBAL DEFAULT    4 zero
+    22: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    3 initialized
+Idx Name          Size      VMA               LMA               File off  Algn
+  1 .data         00000008  0000000000000000  0000000000000000  00000060  2**2
+  2 .bss          0000000c  0000000000000000  0000000000000000  00000068  2**2
+
+===== 6. GCC 10 semantic boundary: same source, different flags =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-common/main.c -o /work/examples/build/gcc-before-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-common/worker.c -o /work/examples/build/gcc-before-worker.o
+$ gcc /work/examples/build/gcc-before-main.o /work/examples/build/gcc-before-worker.o -o /work/examples/build/gcc-before
+$ /work/examples/build/gcc-before
+x = 15212
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fno-common -c /work/examples/common-common/main.c -o /work/examples/build/gcc-after-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fno-common -c /work/examples/common-common/worker.c -o /work/examples/build/gcc-after-worker.o
+$ gcc /work/examples/build/gcc-after-main.o /work/examples/build/gcc-after-worker.o -o /work/examples/build/gcc-after
+/usr/bin/ld: /work/examples/build/gcc-after-worker.o:/work/examples/common-common/worker.c:1: multiple definition of `x'; /work/examples/build/gcc-after-main.o:/work/examples/common-common/main.c:3: first defined here
+collect2: error: ld returned 1 exit status
+[exit=1, expected non-zero]
+
+===== 6b. Clang 18: default, -fcommon, and -fno-common =====
+$ clang -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/common-common/main.c -o /work/examples/build/clang-default-main.o
+$ clang -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/common-common/worker.c -o /work/examples/build/clang-default-worker.o
+    23: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    4 x
+$ clang -fuse-ld=lld /work/examples/build/clang-default-main.o /work/examples/build/clang-default-worker.o -o /work/examples/build/clang-default
+ld.lld: error: duplicate symbol: x
+>>> defined at main.c:3 (examples/common-common/main.c:3)
+>>>            /work/examples/build/clang-default-main.o:(x)
+>>> defined at worker.c:1 (examples/common-common/worker.c:1)
+>>>            /work/examples/build/clang-default-worker.o:(.bss+0x0)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+[exit=1, expected non-zero]
+$ clang -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-common/main.c -o /work/examples/build/clang-common-main.o
+$ clang -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-common/worker.c -o /work/examples/build/clang-common-worker.o
+    22: 0000000000000004     4 OBJECT  GLOBAL DEFAULT  COM x
+$ clang -fuse-ld=lld /work/examples/build/clang-common-main.o /work/examples/build/clang-common-worker.o -o /work/examples/build/clang-common
+$ /work/examples/build/clang-common
+x = 15212
+$ clang -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fno-common -c /work/examples/common-common/main.c -o /work/examples/build/clang-nocommon-main.o
+$ clang -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fno-common -c /work/examples/common-common/worker.c -o /work/examples/build/clang-nocommon-worker.o
+$ clang -fuse-ld=lld /work/examples/build/clang-nocommon-main.o /work/examples/build/clang-nocommon-worker.o -o /work/examples/build/clang-nocommon
+ld.lld: error: duplicate symbol: x
+>>> defined at main.c:3 (examples/common-common/main.c:3)
+>>>            /work/examples/build/clang-nocommon-main.o:(x)
+>>> defined at worker.c:1 (examples/common-common/worker.c:1)
+>>>            /work/examples/build/clang-nocommon-worker.o:(.bss+0x0)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+[exit=1, expected non-zero]
+
+===== 7. type mismatch: strong int + COMMON double =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-mismatch/main.c -o /work/examples/build/cm-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-mismatch/worker.c -o /work/examples/build/cm-worker.o
+    19: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    3 y
+    20: 0000000000000004     4 OBJECT  GLOBAL DEFAULT    3 x
+    16: 0000000000000008     8 OBJECT  GLOBAL DEFAULT  COM x
+$ gcc -Wl\,--warn-common /work/examples/build/cm-main.o /work/examples/build/cm-worker.o -o /work/examples/build/common-mismatch
+/usr/bin/ld: /work/examples/build/cm-worker.o: warning: common of `x' overridden by definition from /work/examples/build/cm-main.o
+/usr/bin/ld: warning: alignment 4 of normal symbol `x' in /work/examples/build/cm-main.o is smaller than 8 used by the common definition in /work/examples/build/cm-worker.o
+/usr/bin/ld: warning: NOTE: alignment discrepancies can cause real problems.  Investigation is advised.
+$ /work/examples/build/common-mismatch
+x = 0x0 y = 0x3b6c
+
+===== 8. static internal linkage: same source name, no collision =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g /work/examples/static-internal/main.c /work/examples/static-internal/other.c -o /work/examples/build/static-internal
+$ /work/examples/build/static-internal
+main.x=11 other.x=22
+0000000000020010 d x
+0000000000020014 d x
+
+===== 9. actual ELF STB_WEAK: explicit attribute =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/explicit-weak/main.c -o /work/examples/build/ew-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/explicit-weak/provider.c -o /work/examples/build/ew-provider.o
+0000000000000000 0000000000000004 D hook
+0000000000000000 0000000000000004 V hook
+    17: 0000000000000000     4 OBJECT  WEAK   DEFAULT    3 hook
+$ gcc /work/examples/build/ew-main.o /work/examples/build/ew-provider.o -o /work/examples/build/explicit-weak
+$ /work/examples/build/explicit-weak
+hook=7 provider-sees=7
+
+===== 10. weak + weak: observed link-order choice =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-weak/main.c -o /work/examples/build/ww-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-weak/left.c -o /work/examples/build/ww-left.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-weak/right.c -o /work/examples/build/ww-right.o
+$ gcc /work/examples/build/ww-main.o /work/examples/build/ww-left.o /work/examples/build/ww-right.o -o /work/examples/build/ww-left-first
+$ gcc /work/examples/build/ww-main.o /work/examples/build/ww-right.o /work/examples/build/ww-left.o -o /work/examples/build/ww-right-first
+$ /work/examples/build/ww-left-first
+choice=11
+$ /work/examples/build/ww-right-first
+choice=22
+$ clang -fuse-ld=lld /work/examples/build/ww-main.o /work/examples/build/ww-left.o /work/examples/build/ww-right.o -o /work/examples/build/ww-lld-left-first
+$ clang -fuse-ld=lld /work/examples/build/ww-main.o /work/examples/build/ww-right.o /work/examples/build/ww-left.o -o /work/examples/build/ww-lld-right-first
+$ /work/examples/build/ww-lld-left-first
+choice=11
+$ /work/examples/build/ww-lld-right-first
+choice=22
+
+===== 11. GNU ld vs lld duplicate diagnostics =====
+$ gcc -fuse-ld=bfd /work/examples/build/ss-main.o /work/examples/build/ss-other.o -o /work/examples/build/dup-bfd
+/usr/bin/ld.bfd: /work/examples/build/ss-other.o:/work/examples/strong-strong/other.c:1: multiple definition of `conflict'; /work/examples/build/ss-main.o:/work/examples/strong-strong/main.c:3: first defined here
+collect2: error: ld returned 1 exit status
+[exit=1, expected non-zero]
+$ clang -fuse-ld=lld /work/examples/build/ss-main.o /work/examples/build/ss-other.o -o /work/examples/build/dup-lld
+ld.lld: error: duplicate symbol: conflict
+>>> defined at main.c:3 (/work/examples/strong-strong/main.c:3)
+>>>            /work/examples/build/ss-main.o:(conflict)
+>>> defined at other.c:1 (/work/examples/strong-strong/other.c:1)
+>>>            /work/examples/build/ss-other.o:(.data+0x0)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+[exit=1, expected non-zero]
+
+===== all checks passed =====
+ELF experiments completed successfully.
