@@ -16,8 +16,10 @@ source_url: https://csapp.cs.cmu.edu/3e/errata.html
 
 CSAPP 3판 §7.6.1 **How Linkers Resolve Duplicate Symbol Names** 강의노트.
 
-1차 HTML:
-[chapter07/chapter-7.6.1.html](../../../chapter07/chapter-7.6.1.html)
+- Markdown:
+  [chapter07/chapter-7.6.1.md](../../../chapter07/chapter-7.6.1.md)
+- 반응형 HTML:
+  [chapter07/chapter-7.6.1.html](../../../chapter07/chapter-7.6.1.html)
 
 ## 다루는 내용
 

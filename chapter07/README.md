@@ -6,13 +6,15 @@ ELF 관점에서 다시 검증한다.
 
 ## 읽는 순서
 
-1. [chapter-7.6.1.html](chapter-7.6.1.html) — 본 강의노트
-2. [references.md](references.md) — 정본과 공식 문서, 조사 범위
-3. [examples/](examples/) — 사례별 C 소스
-4. [results/verified-linux-aarch64.txt](results/verified-linux-aarch64.txt) — 실제 검증 출력
+1. [chapter-7.6.1.md](chapter-7.6.1.md) — GitHub에서 읽는 Markdown 강의노트
+2. [chapter-7.6.1.html](chapter-7.6.1.html) — 반응형·다크 모드 HTML 강의노트
+3. [references.md](references.md) — 정본과 공식 문서, 조사 범위
+4. [examples/](examples/) — 사례별 C 소스
+5. [results/verified-linux-aarch64.txt](results/verified-linux-aarch64.txt) — 실제 검증 출력
 
 `figures/`에는 강의노트용 SVG 원본이 있다. 외부 CDN이나 네트워크 요청 없이 HTML과
-로컬 자산만으로 열 수 있다.
+로컬 자산만으로 열 수 있다. Markdown은 HTML과 같은 학습 내용을 유지하면서 GitHub의
+목차·표·코드 블록·접이식 정답 형식으로 다시 구성했다.
 
 ## 핵심 결론
 
@@ -52,14 +54,14 @@ cd chapter07
 `results/verified-linux-aarch64.txt`에 기록한다. `.o` 파일은 CPU/플랫폼 의존 산출물이므로
 추적하지 않고 위 명령으로 재생성한다.
 
-## HTML 구조 검사
+## 문서 구조 검사
 
 ```bash
 node chapter07/verify-html.mjs
 ```
 
-필수 학습 블록, 내부 fragment link, 로컬 자산, 이미지 대체 텍스트, 외부 CSS/JS 의존성
-여부를 검사한다.
+HTML과 Markdown의 필수 학습 블록, 내부 fragment link, 로컬 자산, 이미지 대체 텍스트,
+코드 fence 및 외부 CSS/JS 의존성 여부를 검사한다.
 
 ## 문서 상태
 
