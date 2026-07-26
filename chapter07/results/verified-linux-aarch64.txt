@@ -358,7 +358,16 @@ ld: /work/examples/compiler-driver/main.c:15:(.text+0x64): undefined reference t
 ld: /work/examples/compiler-driver/main.c:15:(.text+0x68): undefined reference to `__stack_chk_guard'
 ld: /work/examples/compiler-driver/main.c:15:(.text+0x80): undefined reference to `__stack_chk_fail'
 [exit=1, expected non-zero]
-$ clang -fuse-ld=lld /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-lld
+$ gcc -fuse-ld=bfd /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-bfd
+$ gcc -fuse-ld=lld /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-lld
+$ bash -c printf\ \'5\\n\'\ \|\ \'/work/examples/build/driver-bfd\'
+output is 125
+$ bash -c printf\ \'5\\n\'\ \|\ \'/work/examples/build/driver-lld\'
+output is 125
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-aarch64.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-aarch64.so.1]
 $ readelf -p .comment /work/examples/build/driver-lld
 
 String dump of section '.comment':
@@ -366,9 +375,9 @@ String dump of section '.comment':
   [    2e]  Linker: Ubuntu LLD 18.1.3
 
 $ ldd /work/examples/build/driver-gcc
-	linux-vdso.so.1 (0x0000ffff95bcc000)
-	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff959a0000)
-	/lib/ld-linux-aarch64.so.1 (0x0000ffff95b90000)
+	linux-vdso.so.1 (0x0000ffff95868000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff95630000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff95820000)
 
 ===== 13. glibc also supports static linking =====
 $ gcc -static /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-static
@@ -460,14 +469,14 @@ $ gcc -O0 -g -fno-pie -no-pie /work/examples/aslr-pie/addresses.c -o /work/examp
   Type:                              DYN (Position-Independent Executable file)
   Type:                              EXEC (Executable file)
 $ /work/examples/build/addresses-pie  # run three times
-main=0xaaaabe3708d8 stack=0xffffcb60248c heap=0xaaaac6cfb2a0
-main=0xaaaaab3d08d8 stack=0xffffe9a7b43c heap=0xaaaad5c7d2a0
-main=0xaaaab7e008d8 stack=0xffffcf05940c heap=0xaaaac508d2a0
+main=0xaaaad82e08d8 stack=0xffffef7c61cc heap=0xaaaafaa182a0
+main=0xaaaabd3a08d8 stack=0xfffff2fc2d9c heap=0xaaaac0fea2a0
+main=0xaaaad6e508d8 stack=0xfffff171b0bc heap=0xaaab134682a0
 [main address: varies]
 $ /work/examples/build/addresses-no-pie  # run three times
-main=0x4007e8 stack=0xfffffd97486c heap=0x43072a0
-main=0x4007e8 stack=0xffffdf67f25c heap=0x3de022a0
-main=0x4007e8 stack=0xffffc1ec351c heap=0x230132a0
+main=0x4007e8 stack=0xffffc30bc59c heap=0x48632a0
+main=0x4007e8 stack=0xffffc2f8acbc heap=0x3470e2a0
+main=0x4007e8 stack=0xfffffa1dad5c heap=0x1715b2a0
 [main address: fixed]
 
 ===== all checks passed =====

@@ -53,6 +53,8 @@ cd chapter07
 - LTO의 번역 단위 간 타입 불일치 진단
 - GNU ld와 lld의 진단 및 입력 순서 관찰
 - compiler driver, raw `ld`, `lld`, `ldd`, glibc 정적 링크
+- GNU ld, gold, LLD, mold의 위치와 `-fuse-ld` 선택
+- Rust 증분 컴파일 뒤의 최종 링크 병목과 대규모 링크 시간 비교
 - `PT_INTERP`, `DT_NEEDED`, 동적 로더의 실행 순서
 - ASLR 적용 범위와 명시적 PIE, 비 PIE 주소 비교
 - PIC, PIE, ASLR의 역할 구분

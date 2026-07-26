@@ -658,6 +658,11 @@ GNU ld와 lld 공식 문서는 이 옵션을 주면 여러 정의를 오류로 �
 
 컴파일러 드라이버. 전처리, 컴파일, 어셈블, 링크 단계와 관련 도구를 조정하는 프로그램.
 
+**static linker**
+
+정적 링커. 오브젝트와 라이브러리를 읽어 실행 파일이나 공유 오브젝트를 만드는 프로그램.
+GNU ld, LLD, mold가 여기에 해당한다.
+
 **dynamic linker / loader**
 
 동적 링커 / 로더. 프로그램 시작 시 공유 오브젝트를 적재하고 동적 재배치를 처리한 뒤
@@ -896,6 +901,74 @@ musl은 대안이지 모든 Linux 배포의 필수 선택은 아니다.
 - **ldd**: 이미 만들어진 동적 실행 파일의 공유 라이브러리 의존성을 표시한다. 링크 작업을
   하지 않는다. 신뢰할 수 없는 실행 파일에는 직접 실행하지 않는 편이 안전하다.
 
+### 링커는 교체할 수 있다
+
+GCC에 링커가 내장된 것은 아니다. GCC 드라이버가 기본 링커를 찾아 실행한다. 많은 Linux
+GCC 구성에서 기본값은 GNU Binutils의 **GNU ld**, 정확히는 BFD 링커인 `ld.bfd`다.
+실제 선택은 다음 명령으로 확인한다.
+
+```text
+$ gcc -print-prog-name=ld
+ld
+$ gcc -### main.o utils.o -o app
+... collect2 ... -dynamic-linker ... -lc ...
+```
+
+`gcc -###` 출력에는 GCC 드라이버가 링커 앞에 배치하는 시작 코드, 라이브러리 검색 경로,
+`libgcc`, libc, 프로그램 인터프리터 관련 인수가 나타난다. 그중 심볼 해석과 재배치,
+최종 ELF 출력을 담당하는 프로그램만 바꿀 수 있다.
+
+```bash
+gcc -fuse-ld=bfd  main.o utils.o -o app-bfd
+gcc -fuse-ld=lld  main.o utils.o -o app-lld
+gcc -fuse-ld=mold main.o utils.o -o app-mold
+```
+
+`gcc -fuse-ld=mold`도 GCC 드라이버를 거친다. GCC는 평소처럼 시작 코드와 기본
+라이브러리를 고르고, 최종 정적 링커로 mold를 호출한다. 따라서 mold가 libc를 제공하는
+것은 아니지만, 결과 파일에는 드라이버가 선택한 libc와 런타임이 연결된다.
+
+| 링커 | 현재 위치 | 선택할 때 확인할 점 |
+| --- | --- | --- |
+| GNU ld, `ld.bfd` | GNU Binutils의 범용 링커. 많은 Linux GCC 구성의 기본값 | 지원 대상과 링커 스크립트 호환 범위가 넓지만 대규모 ELF 링크에서는 시간이 길어질 수 있음 |
+| GNU gold, `ld.gold` | BFD보다 빠른 ELF 링크를 목표로 개발됨. Binutils 2.44부터 사용 중단 예정(deprecated) | 기존 빌드 호환 때문에 남아 있을 수 있으나 새 구성의 기본 선택으로 권하기 어려움 |
+| LLVM LLD, `ld.lld` | LLVM의 링커. GNU 링커와 호환되는 명령행을 넓게 지원 | 빠르고 여러 오브젝트 형식을 지원하지만 프로젝트의 특수 링커 스크립트와 옵션은 확인 필요 |
+| mold | 빠른 ELF 링크와 병렬 처리를 목표로 개발 | 플랫폼 지원, 링커 스크립트, LTO와 빌드 시스템 호환성을 실제 프로젝트에서 확인 |
+
+### 증분 컴파일 뒤에는 최종 링크가 남는다
+
+Rust의 증분 컴파일은 바뀌지 않은 컴파일 질의와 오브젝트 결과를 재사용한다. Cargo도 이미
+빌드된 의존성을 매번 다시 컴파일하지 않는다. 그러나 실행 파일에 들어갈 크레이트가
+바뀌면 최종 링커는 많은 오브젝트와 라이브러리의 심볼, 섹션, 재배치 정보를 다시 읽어
+결과 파일을 만들어야 한다. Cargo 공식 문서도 증분 빌드에서 최종 링크가 빌드 시간의
+대부분을 차지할 수 있다고 설명한다.
+
+전통적인 ELF 최종 링크는 컴파일러의 증분 질의 캐시처럼 변경된 함수 하나만 고치는
+방식이 아니다. 링크 단위가 크고 디버그 정보가 많을수록 입력 처리와 출력 기록 비용이
+커진다. 그래서 Rust, Chromium, Clang 같은 큰 프로그램에서는 링커 교체만으로
+수정 후 재빌드 시간이 줄어들 수 있다.
+
+Cargo에서는 프로젝트 설정으로 링커 인수를 지정할 수 있다.
+
+```toml
+# .cargo/config.toml
+[target.'cfg(target_os = "linux")']
+rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+```
+
+빌드 도구가 항상 최적의 링커를 자동으로 고르는 것은 아니다. 운영체제, Rust target,
+배포판 도구 체인, 프로젝트 설정에 따라 기본값이 다르므로 실제 링크 명령과 CI 환경을
+확인해야 한다.
+
+![GNU ld, GNU gold, LLVM LLD, mold의 대규모 프로그램 링크 시간 비교](figures/linker-performance.svg)
+
+**FIGURE N8** mold 프로젝트가 공개한 대규모 프로그램 최종 링크 시간.
+
+이 수치는 mold 프로젝트가 debuginfo를 포함한 실행 파일을 16코어 32스레드 환경을
+모사해 측정한 결과다. MySQL 8.3, Clang 19, Chromium 124라는 특정 입력과 당시 링커
+버전에 대한 값이며, 모든 환경에서 같은 비율이 나온다는 뜻은 아니다. 링커 성능은
+CPU, 메모리, 저장 장치, 디버그 정보, LTO, 출력 크기와 링커 옵션에 따라 달라진다.
+
 <a id="loader-aslr"></a>
 
 ## 동적 로더, ASLR, PIC, PIE
@@ -940,7 +1013,7 @@ x86-64 glibc 환경에서는 인터프리터 경로가 흔히
 
 ![ELF의 PT_INTERP가 동적 로더를 지정하고 비 PIE와 PIE에서 ASLR 적용 범위가 달라지는 흐름](figures/dynamic-loader-aslr.svg)
 
-**FIGURE N10** 동적 로더의 실행 순서와 ASLR 적용 범위.
+**FIGURE N9** 동적 로더의 실행 순서와 ASLR 적용 범위.
 
 ### ASLR은 주소 예측을 어렵게 만든다
 
@@ -1054,7 +1127,7 @@ nm -s libvector.a
 
 ![main.o의 addvec 참조 때문에 libvector.a에서 addvec.o만 선택되고 multvec.o는 제외되는 흐름](figures/static-library-selection.svg)
 
-**FIGURE N8** 정적 라이브러리의 멤버 선택.
+**FIGURE N10** 정적 라이브러리의 멤버 선택.
 
 다음 두 표기는 같은 라이브러리를 지정할 수 있다.
 
@@ -1098,7 +1171,7 @@ GNU ld의 기본 모델에서는 입력을 왼쪽에서 오른쪽으로 한 번 
 
 ![일반 오브젝트가 U와 D를 갱신하고 아카이브가 U를 만족하는 멤버만 E에 추가하는 순서](figures/archive-scan.svg)
 
-**FIGURE N9** GNU ld의 왼쪽에서 오른쪽으로 진행하는 아카이브 탐색.
+**FIGURE N11** GNU ld의 왼쪽에서 오른쪽으로 진행하는 아카이브 탐색.
 
 ### 입력 순서
 

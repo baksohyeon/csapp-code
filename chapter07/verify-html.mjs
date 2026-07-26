@@ -68,6 +68,9 @@ for (const requiredText of [
   "DT_NEEDED",
   "randomize_va_space",
   "Position Independent Executable",
+  "-fuse-ld=mold",
+  "GNU gold",
+  "증분 컴파일",
 ]) {
   if (!html.includes(requiredText)) failures.push(`missing HTML content: ${requiredText}`);
   if (!markdown.includes(requiredText)) failures.push(`missing Markdown content: ${requiredText}`);
@@ -114,8 +117,8 @@ for (const match of markdown.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
 }
 
 const markdownFigures = [...markdown.matchAll(/!\[[^\]]+\]\(([^)]+)\)/g)];
-if (markdownFigures.length !== 10) {
-  failures.push(`expected 10 Markdown figures, found ${markdownFigures.length}`);
+if (markdownFigures.length !== 11) {
+  failures.push(`expected 11 Markdown figures, found ${markdownFigures.length}`);
 }
 
 const codeFences = [...markdown.matchAll(/^```/gm)].length;

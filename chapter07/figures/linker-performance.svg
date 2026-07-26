@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">GNU ld, GNU gold, LLVM LLD, mold 링크 시간 비교</title>
+  <desc id="desc">mold 프로젝트가 16코어 32스레드 환경을 모사하여 측정한 MySQL 8.3, Clang 19, Chromium 124의 링크 시간이다.</desc>
+  <style>
+    text { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #16243a; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .title { font-size: 28px; font-weight: 750; }
+    .sub { font-size: 17px; fill: #5a687c; }
+    .label { font-size: 18px; font-weight: 700; }
+    .tick { font-size: 14px; fill: #6b778a; }
+    .value { font-size: 14px; font-weight: 700; }
+    .legend { font-size: 15px; font-weight: 650; }
+  </style>
+
+  <rect x="1" y="1" width="1198" height="718" fill="#fbfcfe" stroke="#cad4e2" stroke-width="2"/>
+  <text x="50" y="55" class="title">대규모 프로그램의 최종 링크 시간</text>
+  <text x="50" y="84" class="sub">단위: 초, 낮을수록 빠름, debuginfo 포함, 16코어 32스레드 환경 모사</text>
+
+  <rect x="635" y="37" width="16" height="16" fill="#687386"/>
+  <text x="659" y="51" class="legend">GNU ld 2.42</text>
+  <rect x="775" y="37" width="16" height="16" fill="#8b7658"/>
+  <text x="799" y="51" class="legend">gold 2.38</text>
+  <rect x="890" y="37" width="16" height="16" fill="#607fa3"/>
+  <text x="914" y="51" class="legend">LLD 19.0.0</text>
+  <rect x="1025" y="37" width="16" height="16" fill="#4f8465"/>
+  <text x="1049" y="51" class="legend">mold 2.4.0</text>
+
+  <g stroke="#d8e0ea" stroke-width="1">
+    <line x1="250" y1="115" x2="250" y2="650"/>
+    <line x1="430" y1="115" x2="430" y2="650"/>
+    <line x1="610" y1="115" x2="610" y2="650"/>
+    <line x1="790" y1="115" x2="790" y2="650"/>
+    <line x1="970" y1="115" x2="970" y2="650"/>
+    <line x1="1150" y1="115" x2="1150" y2="650"/>
+  </g>
+  <g class="tick" text-anchor="middle">
+    <text x="250" y="680">0</text>
+    <text x="430" y="680">10</text>
+    <text x="610" y="680">20</text>
+    <text x="790" y="680">30</text>
+    <text x="970" y="680">40</text>
+    <text x="1150" y="680">50초</text>
+  </g>
+
+  <text x="50" y="158" class="label">MySQL 8.3</text>
+  <text x="50" y="181" class="sub">0.47 GiB</text>
+  <rect x="250" y="125" width="195.1" height="22" fill="#687386"/>
+  <text x="453" y="142" class="value mono">10.84</text>
+  <rect x="250" y="155" width="134.5" height="22" fill="#8b7658"/>
+  <text x="392" y="172" class="value mono">7.47</text>
+  <rect x="250" y="185" width="29.5" height="22" fill="#607fa3"/>
+  <text x="287" y="202" class="value mono">1.64</text>
+  <rect x="250" y="215" width="8.3" height="22" fill="#4f8465"/>
+  <text x="266" y="232" class="value mono">0.46</text>
+
+  <line x1="50" y1="270" x2="1150" y2="270" stroke="#cbd5e1"/>
+  <text x="50" y="318" class="label">Clang 19</text>
+  <text x="50" y="341" class="sub">1.56 GiB</text>
+  <rect x="250" y="285" width="757.3" height="22" fill="#687386"/>
+  <text x="1015" y="302" class="value mono">42.07</text>
+  <rect x="250" y="315" width="596.3" height="22" fill="#8b7658"/>
+  <text x="854" y="332" class="value mono">33.13</text>
+  <rect x="250" y="345" width="93.6" height="22" fill="#607fa3"/>
+  <text x="351" y="362" class="value mono">5.20</text>
+  <rect x="250" y="375" width="24.3" height="22" fill="#4f8465"/>
+  <text x="282" y="392" class="value mono">1.35</text>
+
+  <line x1="50" y1="430" x2="1150" y2="430" stroke="#cbd5e1"/>
+  <text x="50" y="478" class="label">Chromium 124</text>
+  <text x="50" y="501" class="sub">1.35 GiB</text>
+  <text x="250" y="467" class="tick">GNU ld: N/A</text>
+  <rect x="250" y="485" width="493.2" height="22" fill="#8b7658"/>
+  <text x="751" y="502" class="value mono">27.40</text>
+  <rect x="250" y="515" width="109.8" height="22" fill="#607fa3"/>
+  <text x="368" y="532" class="value mono">6.10</text>
+  <rect x="250" y="545" width="27.4" height="22" fill="#4f8465"/>
+  <text x="285" y="562" class="value mono">1.52</text>
+
+  <rect x="50" y="610" width="1100" height="40" fill="#eef3f8"/>
+  <text x="70" y="636" class="sub">출처: mold 프로젝트 README. 하드웨어, 입력 파일, 옵션, 링커 버전에 따라 결과가 달라진다.</text>
+</svg>

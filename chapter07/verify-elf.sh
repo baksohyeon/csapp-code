@@ -227,7 +227,12 @@ run cc "${build}/driver-main-gcc.o" "${build}/driver-utils-cc.o" -o "${build}/dr
 run clang "${build}/driver-main-gcc.o" "${build}/driver-utils-clang.o" -o "${build}/driver-clang"
 run bash -c "printf '4\\n' | '${build}/driver-gcc'"
 expect_failure ld "${build}/driver-main-gcc.o" "${build}/driver-utils-gcc.o" -o "${build}/driver-raw-ld"
-run clang -fuse-ld=lld "${build}/driver-main-gcc.o" "${build}/driver-utils-gcc.o" -o "${build}/driver-lld"
+run gcc -fuse-ld=bfd "${build}/driver-main-gcc.o" "${build}/driver-utils-gcc.o" -o "${build}/driver-bfd"
+run gcc -fuse-ld=lld "${build}/driver-main-gcc.o" "${build}/driver-utils-gcc.o" -o "${build}/driver-lld"
+run bash -c "printf '5\\n' | '${build}/driver-bfd'"
+run bash -c "printf '5\\n' | '${build}/driver-lld'"
+run readelf -d "${build}/driver-bfd" | grep -E 'NEEDED'
+run readelf -d "${build}/driver-lld" | grep -E 'NEEDED'
 run readelf -p .comment "${build}/driver-lld"
 run ldd "${build}/driver-gcc"
 

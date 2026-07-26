@@ -140,6 +140,7 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
 2. [GCC Link Options](https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html)
    - GCC 드라이버가 시작 파일과 기본 라이브러리를 링크 명령에 추가
    - `-l`, `-L`, `-static`, `-nostartfiles`, `-nodefaultlibs`, `-nostdlib`
+   - `-fuse-ld=bfd`, `-fuse-ld=gold`, `-fuse-ld=lld`, `-fuse-ld=mold`
 3. [GCC Standard Libraries](https://gcc.gnu.org/onlinedocs/gcc/Standard-Libraries.html)
    - GCC가 완전한 C 표준 라이브러리 구현을 제공하지 않으며 운영체제나 공급자의
      라이브러리를 사용한다는 경계
@@ -168,6 +169,18 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
     - 동적 Visual C++ 런타임 배포 패키지의 적용 범위
 14. [glibc compatibility guidance](https://sourceware.org/pipermail/libc-alpha/2023-July/150165.html)
     - 지원할 가장 오래된 운영체제나 buildroot에서 빌드하는 배포 방식
+15. [LLVM LLD](https://lld.llvm.org/)
+    - GNU 링커와 호환되는 명령행을 제공하는 LLVM 링커
+    - 대규모 프로그램에서 GNU gold보다 빠를 수 있다는 프로젝트 설명과 적용 범위
+16. [mold](https://github.com/rui314/mold)
+    - MySQL 8.3, Clang 19, Chromium 124 링크 시간과 벤치마크 조건
+    - GCC, Clang, Rust에서 mold를 선택하는 설정
+    - 병렬 처리와 빠른 자료 구조를 사용하는 설계 목표
+17. [Cargo: Optimizing Build Performance](https://doc.rust-lang.org/nightly/cargo/guide/build-performance.html)
+    - 증분 빌드에서도 최종 링크가 빌드 시간의 대부분을 차지할 수 있다는 설명
+    - LLD, mold, wild 같은 대체 링커 설정
+18. [GNU Binutils 2.44 release](https://sourceware.org/pipermail/binutils/2025-February/139195.html)
+    - GNU gold의 사용 중단 예정 상태와 향후 제거 계획
 
 ## 9. 동적 로더, ASLR, PIC, PIE
 
