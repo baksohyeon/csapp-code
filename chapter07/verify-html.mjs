@@ -47,6 +47,7 @@ for (const required of [
 
 for (const requiredId of [
   "driver-libc",
+  "loader-aslr",
   "static-libraries",
   "archive-search",
 ]) {
@@ -63,6 +64,10 @@ for (const requiredText of [
   "libvector.a",
   "--warn-backrefs",
   "not a dynamic executable",
+  "PT_INTERP",
+  "DT_NEEDED",
+  "randomize_va_space",
+  "Position Independent Executable",
 ]) {
   if (!html.includes(requiredText)) failures.push(`missing HTML content: ${requiredText}`);
   if (!markdown.includes(requiredText)) failures.push(`missing Markdown content: ${requiredText}`);
@@ -109,8 +114,8 @@ for (const match of markdown.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
 }
 
 const markdownFigures = [...markdown.matchAll(/!\[[^\]]+\]\(([^)]+)\)/g)];
-if (markdownFigures.length !== 9) {
-  failures.push(`expected 9 Markdown figures, found ${markdownFigures.length}`);
+if (markdownFigures.length !== 10) {
+  failures.push(`expected 10 Markdown figures, found ${markdownFigures.length}`);
 }
 
 const codeFences = [...markdown.matchAll(/^```/gm)].length;

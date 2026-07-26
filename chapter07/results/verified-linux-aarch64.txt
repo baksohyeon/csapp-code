@@ -366,9 +366,9 @@ String dump of section '.comment':
   [    2e]  Linker: Ubuntu LLD 18.1.3
 
 $ ldd /work/examples/build/driver-gcc
-	linux-vdso.so.1 (0x0000ffffa090c000)
-	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffffa06e0000)
-	/lib/ld-linux-aarch64.so.1 (0x0000ffffa08d0000)
+	linux-vdso.so.1 (0x0000ffff95bcc000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff959a0000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff95b90000)
 
 ===== 13. glibc also supports static linking =====
 $ gcc -static /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-static
@@ -447,6 +447,28 @@ x(3) = 17
 $ clang -fuse-ld=lld /work/examples/build/cycle-main.o /work/examples/build/libx.a /work/examples/build/liby.a -o /work/examples/build/cycle-lld
 $ /work/examples/build/cycle-lld
 x(3) = 17
+
+===== 16. dynamic loader, ASLR, PIC, and PIE =====
+$ cat /proc/sys/kernel/randomize_va_space
+2
+  INTERP         0x0000000000000238 0x0000000000000238 0x0000000000000238
+      [Requesting program interpreter: /lib/ld-linux-aarch64.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-aarch64.so.1]
+$ gcc -O0 -g -fPIE -pie /work/examples/aslr-pie/addresses.c -o /work/examples/build/addresses-pie
+$ gcc -O0 -g -fno-pie -no-pie /work/examples/aslr-pie/addresses.c -o /work/examples/build/addresses-no-pie
+  Type:                              DYN (Position-Independent Executable file)
+  Type:                              EXEC (Executable file)
+$ /work/examples/build/addresses-pie  # run three times
+main=0xaaaabe3708d8 stack=0xffffcb60248c heap=0xaaaac6cfb2a0
+main=0xaaaaab3d08d8 stack=0xffffe9a7b43c heap=0xaaaad5c7d2a0
+main=0xaaaab7e008d8 stack=0xffffcf05940c heap=0xaaaac508d2a0
+[main address: varies]
+$ /work/examples/build/addresses-no-pie  # run three times
+main=0x4007e8 stack=0xfffffd97486c heap=0x43072a0
+main=0x4007e8 stack=0xffffdf67f25c heap=0x3de022a0
+main=0x4007e8 stack=0xffffc1ec351c heap=0x230132a0
+[main address: fixed]
 
 ===== all checks passed =====
 ELF experiments completed successfully.

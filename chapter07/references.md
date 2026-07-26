@@ -169,7 +169,39 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
 14. [glibc compatibility guidance](https://sourceware.org/pipermail/libc-alpha/2023-July/150165.html)
     - 지원할 가장 오래된 운영체제나 buildroot에서 빌드하는 배포 방식
 
-## 9. C++와 JVM 경계
+## 9. 동적 로더, ASLR, PIC, PIE
+
+1. [System V ELF ABI: Dynamic Linking](https://refspecs.linuxfoundation.org/elf/gabi4%2B/ch5.dynamic.html)
+   - 동적 링크 실행 파일의 `PT_INTERP` 프로그램 헤더
+   - 프로그램 인터프리터가 공유 오브젝트를 적재하고 재배치를 처리한 뒤 프로그램에
+     제어를 넘기는 순서
+2. [System V ELF ABI: Program Header](https://refspecs.linuxfoundation.org/elf/gabi4%2B/ch5.pheader.html)
+   - `PT_INTERP`, `PT_LOAD`, `PT_DYNAMIC`의 역할
+3. [glibc ld.so(8)](https://man7.org/linux/man-pages/man8/ld.so.8.html)
+   - ELF `.interp`에 기록된 동적 로더가 공유 오브젝트를 찾아 적재하는 동작
+4. [Linux ldd(1)](https://man7.org/linux/man-pages/man1/ldd.1.html)
+   - `ldd`가 일반적으로 동적 로더의 trace 기능으로 의존성을 표시한다는 설명
+   - `ldd` 출력만으로 `PT_INTERP`와 `DT_NEEDED`를 구분할 수 없다는 점
+5. [Linux kernel: `randomize_va_space`](https://www.kernel.org/doc/html/v6.9/admin-guide/sysctl/kernel.html#randomize-va-space)
+   - 값 `0`, `1`, `2`의 ASLR 범위
+   - PIE 코드 시작 주소, `mmap`, 공유 라이브러리, 스택, VDSO, 힙의 무작위화
+6. [Linux `/proc/pid/maps`](https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html)
+   - 실행 파일, 공유 라이브러리, 힙, 스택의 실제 메모리 매핑 확인 방법
+7. [GCC Link Options](https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html)
+   - `-pie`, `-no-pie`, `-static-pie`의 의미
+8. [GCC Code Generation Options](https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html)
+   - 공유 라이브러리용 `-fpic`, `-fPIC`
+   - 실행 파일용 `-fpie`, `-fPIE`
+   - GOT와 위치 독립 코드의 관계
+9. [OSTEP: Complete Virtual Memory Systems](https://pages.cs.wisc.edu/~remzi/OSTEP/vm-complete.pdf)
+   - 고정된 주소를 이용하는 return-to-libc와 ROP 공격을 어렵게 만드는 ASLR의 역할
+   - 스택 주소가 실행마다 달라지는 관찰 예제
+10. [GNU binutils: glibc `libc.so`의 `GROUP` 사용 설명](https://sourceware.org/pipermail/binutils/2023-November/130741.html)
+    - glibc의 `libc.so` 링크 스크립트가 `libc.so.6`, `libc_nonshared.a`,
+      `AS_NEEDED(ld-linux)`를 묶는 구성
+    - 일부 환경에서 동적 로더가 `DT_NEEDED`에도 기록될 수 있는 이유
+
+## 10. C++와 JVM 경계
 
 1. [Itanium C++ ABI: External Names](https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangling)
    - 현재 ELF 계열 C++ 구현에서 널리 쓰이는 외부 이름 mangling 문법
@@ -184,7 +216,7 @@ CSAPP 3판의 C++/Java name mangling aside는 오버로딩된 소스 이름이 �
 식별자로 바뀐다는 학습 직관에는 도움이 된다. 다만 현대 JVM의 method resolution은
 ELF 정적 링커의 C++ name mangling과 같은 메커니즘이 아니므로 같은 규칙으로 설명하지 않았다.
 
-## 10. 로컬 재현 환경
+## 11. 로컬 재현 환경
 
 검증 출력: [results/verified-linux-aarch64.txt](results/verified-linux-aarch64.txt)
 
@@ -206,6 +238,8 @@ ELF 정적 링커의 C++ name mangling과 같은 메커니즘이 아니므로 �
 - `static-library`: archive member 선택, 명시적 오브젝트와의 차이, 잘못된 GNU ld
   입력 순서 확인
 - `archive-cycle`: archive 반복, GNU ld group, LLD의 재탐색 확인
+- `aslr-pie`: 명시적 PIE와 비 PIE의 ELF 타입, `PT_INTERP`, `DT_NEEDED`,
+  세 번 실행한 `main`, 스택, 힙 주소 비교
 
 명령은 [verify-elf.sh](verify-elf.sh), 컨테이너 실행은
 [verify-in-docker.sh](verify-in-docker.sh)에 기록했다.

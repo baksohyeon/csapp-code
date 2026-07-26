@@ -53,6 +53,9 @@ cd chapter07
 - LTO의 번역 단위 간 타입 불일치 진단
 - GNU ld와 lld의 진단 및 입력 순서 관찰
 - compiler driver, raw `ld`, `lld`, `ldd`, glibc 정적 링크
+- `PT_INTERP`, `DT_NEEDED`, 동적 로더의 실행 순서
+- ASLR 적용 범위와 명시적 PIE, 비 PIE 주소 비교
+- PIC, PIE, ASLR의 역할 구분
 - 정적 archive에서 참조된 멤버만 선택하는 동작
 - GNU ld의 왼쪽부터의 탐색, 순환 archive의 반복과 그룹 처리
 - LLD의 backward reference와 `--warn-backrefs`

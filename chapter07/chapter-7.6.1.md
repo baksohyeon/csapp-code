@@ -32,9 +32,10 @@
 13. [책의 절·예제·그림 대응표](#mapping)
 14. [보충 규칙 4가지](#beyond-book)
 15. [컴파일러 드라이버와 libc](#driver-libc)
-16. [7.6.2 정적 라이브러리](#static-libraries)
-17. [7.6.3 아카이브 탐색](#archive-search)
-18. [적용 원칙](#beyond)
+16. [동적 로더, ASLR, PIC, PIE](#loader-aslr)
+17. [7.6.2 정적 라이브러리](#static-libraries)
+18. [7.6.3 아카이브 탐색](#archive-search)
+19. [적용 원칙](#beyond)
 
 <a id="reading"></a>
 
@@ -657,6 +658,34 @@ GNU ld와 lld 공식 문서는 이 옵션을 주면 여러 정의를 오류로 �
 
 컴파일러 드라이버. 전처리, 컴파일, 어셈블, 링크 단계와 관련 도구를 조정하는 프로그램.
 
+**dynamic linker / loader**
+
+동적 링커 / 로더. 프로그램 시작 시 공유 오브젝트를 적재하고 동적 재배치를 처리한 뒤
+프로그램 시작점으로 제어를 넘기는 프로그램.
+
+**PT_INTERP**
+
+동적 실행 파일이 사용할 프로그램 인터프리터의 경로를 담은 ELF 프로그램 헤더 항목.
+
+**DT_NEEDED**
+
+동적 로더가 찾아야 할 공유 오브젝트 이름을 담은 ELF 동적 섹션 항목.
+
+**position-independent code (PIC)**
+
+위치 독립 코드. 특정 절대 적재 주소에 묶이지 않도록 PC 상대 주소, GOT, PLT,
+동적 재배치 등을 사용하는 코드.
+
+**position-independent executable (PIE)**
+
+위치 독립 실행 파일. 운영체제가 주 실행 파일을 다른 기준 주소에 적재할 수 있는
+실행 파일.
+
+**address space layout randomization (ASLR)**
+
+주소 공간 배치 무작위화. 실행할 때 코드, 공유 라이브러리, 스택, 힙 등의 주소 예측을
+어렵게 만드는 운영체제 보안 정책.
+
 **static library / archive**
 
 정적 라이브러리 / 아카이브. 여러 `.o`와 심볼 인덱스를 묶은 파일. 링커가 필요한 멤버만
@@ -866,6 +895,132 @@ musl은 대안이지 모든 Linux 배포의 필수 선택은 아니다.
   `clang -fuse-ld=lld`로 선택한다.
 - **ldd**: 이미 만들어진 동적 실행 파일의 공유 라이브러리 의존성을 표시한다. 링크 작업을
   하지 않는다. 신뢰할 수 없는 실행 파일에는 직접 실행하지 않는 편이 안전하다.
+
+<a id="loader-aslr"></a>
+
+## 동적 로더, ASLR, PIC, PIE
+
+### `ld-linux`의 핵심 역할은 프로그램 인터프리터다
+
+`gcc main.o utils.o`가 성공하는 직접적인 이유는 GCC 드라이버가 시작 코드와 기본
+라이브러리, 동적 로더 정보를 링크 명령에 추가하기 때문이다. Linux에서 동적 링크
+실행 파일을 만들면 ELF에는 보통 다음 두 정보가 들어간다.
+
+- `PT_INTERP`: 실행할 **프로그램 인터프리터(program interpreter)** 경로
+- `DT_NEEDED`: 실행에 필요한 공유 오브젝트 이름
+
+```text
+$ readelf -l driver-gcc | grep -E 'INTERP|Requesting'
+INTERP
+    [Requesting program interpreter: /lib/ld-linux-aarch64.so.1]
+
+$ readelf -d driver-gcc | grep NEEDED
+Shared library: [libc.so.6]
+Shared library: [ld-linux-aarch64.so.1]
+```
+
+x86-64 glibc 환경에서는 인터프리터 경로가 흔히
+`/lib64/ld-linux-x86-64.so.2`다. 이 경로는 CPU 아키텍처와 배포판 구성에 따라
+달라진다. `ldd` 출력만으로는 프로그램 인터프리터와 일반 공유 라이브러리 의존성을
+구분할 수 없다. `readelf -l`의 `PT_INTERP`와 `readelf -d`의 `DT_NEEDED`를 따로
+확인해야 한다.
+
+위 AArch64 실험에서는 동적 로더가 `PT_INTERP`와 `DT_NEEDED`에 모두 나타났다. glibc가
+설치하는 `libc.so`는 실제 공유 오브젝트가 아니라 `libc.so.6`, `libc_nonshared.a`,
+동적 로더를 묶는 GNU ld 스크립트일 수 있다. 이 스크립트의 `AS_NEEDED` 처리 결과로
+동적 로더가 `DT_NEEDED`에도 남을 수 있다. 반면 다른 glibc 환경에서는
+`DT_NEEDED`에 `libc.so.6`만 나타나기도 한다. 실행 시작 시 사용할 로더를 정하는
+정보는 두 경우 모두 `PT_INTERP`다.
+
+프로그램을 실행하면 커널은 `PT_INTERP`에 적힌 동적 로더를 함께 적재하고 로더에 먼저
+제어를 넘긴다. 동적 로더는 `DT_NEEDED` 항목을 따라 `libc.so.6` 같은 공유 오브젝트를
+찾아 메모리에 매핑하고 동적 재배치를 처리한다. 그다음 프로그램의 시작점 `_start`로
+제어를 넘기며, C 런타임 초기화가 끝난 뒤 `main`이 호출된다. 따라서 `main`이 프로세스에서
+가장 먼저 실행되는 함수는 아니다.
+
+![ELF의 PT_INTERP가 동적 로더를 지정하고 비 PIE와 PIE에서 ASLR 적용 범위가 달라지는 흐름](figures/dynamic-loader-aslr.svg)
+
+**FIGURE N10** 동적 로더의 실행 순서와 ASLR 적용 범위.
+
+### ASLR은 주소 예측을 어렵게 만든다
+
+**ASLR(Address Space Layout Randomization)**은 프로세스 주소 공간의 배치를
+무작위화하는 보안 완화책이다. OSTEP은 고정된 주소에 의존하는 return-to-libc와 ROP
+공격을 어렵게 만드는 방어로 ASLR을 설명한다.
+
+Linux의 `/proc/sys/kernel/randomize_va_space` 값은 일반적으로 다음 범위를 제어한다.
+
+| 값 | 무작위화 범위 |
+| --- | --- |
+| `0` | ASLR 비활성화 |
+| `1` | `mmap` 기준 주소, 공유 라이브러리, 스택, VDSO. PIE 실행 파일의 코드 시작 주소도 포함 |
+| `2` | 값 `1`의 범위와 힙 |
+
+과거 시스템의 메인 실행 파일 코드, 스택, 힙이 모두 링커가 정한 하나의 절대 주소에
+고정되어 있었다고 설명하면 부정확하다. 전통적인 `ET_EXEC` 파일의 코드와 데이터는
+링크 시 정한 가상 주소에 적재되는 경우가 많았고, 스택과 힙은 운영체제가 관례적인
+위치에 비교적 예측 가능하게 배치했다.
+
+ASLR은 취약점을 없애지 않는다. 주소를 알아내는 정보 누출이 있거나 무작위화 범위가
+좁으면 우회될 수 있다. 메모리 안전성 검사, 스택 보호, NX, 제어 흐름 보호 같은 기법과
+함께 쓰는 완화책이다.
+
+### 비 PIE 프로그램도 ASLR 전체가 꺼지는 것은 아니다
+
+오래된 비 PIE 실행 파일을 실행하기 위해 ASLR을 전부 꺼야 한다는 설명은 틀리다.
+ASLR이 켜진 Linux에서도 비 PIE 실행 파일의 스택, `mmap` 영역, 공유 라이브러리는
+무작위화될 수 있다. 보통 고정되는 부분은 주 실행 파일의 코드 주소다.
+
+반면 **PIE(Position Independent Executable)**는 주 실행 파일도 다른 기준 주소에
+적재할 수 있게 만든 실행 파일이다. ASLR과 함께 사용하면 `main`을 포함한 실행 파일의
+코드 시작 주소도 실행할 때마다 달라질 수 있다.
+
+```text
+$ gcc -fPIE -pie addresses.c -o addresses-pie
+$ gcc -fno-pie -no-pie addresses.c -o addresses-no-pie
+
+$ readelf -h addresses-pie | grep Type
+Type: DYN (Position-Independent Executable file)
+$ readelf -h addresses-no-pie | grep Type
+Type: EXEC (Executable file)
+
+$ ./addresses-pie
+main=0xaaaabe3708d8 stack=0xffffcb60248c heap=0xaaaac6cfb2a0
+$ ./addresses-pie
+main=0xaaaaab3d08d8 stack=0xffffe9a7b43c heap=0xaaaad5c7d2a0
+
+$ ./addresses-no-pie
+main=0x4007e8 stack=0xfffffd97486c heap=0x43072a0
+$ ./addresses-no-pie
+main=0x4007e8 stack=0xffffdf67f25c heap=0x3de022a0
+```
+
+`-fPIE`는 실행 파일용 위치 독립 코드를 생성하는 컴파일 옵션이고, `-pie`는 PIE 실행
+파일을 만드는 링크 옵션이다. 배포판 GCC가 PIE를 기본값으로 설정할 수 있으므로 실험에서는
+두 옵션을 명시한다. 비 PIE 비교도 `-fno-pie -no-pie`를 함께 명시한다. 위 실험에서
+PIE의 `main` 주소는 실행마다 달라졌다. 비 PIE의 `main` 주소는 고정되었지만 스택과 힙
+주소는 달라졌다.
+
+### PIC와 PIE
+
+**PIC(Position Independent Code)**는 특정 절대 적재 주소에 묶이지 않도록 만든 코드다.
+단순히 모든 주소를 상대 주소로 바꾼다는 뜻은 아니다.
+
+- 같은 모듈 안의 코드와 데이터는 ISA가 지원하면 PC 상대 주소를 사용할 수 있다.
+- 외부 데이터와 함수 주소는 GOT(Global Offset Table), PLT(Procedure Linkage Table),
+  동적 재배치를 사용할 수 있다.
+- `-fPIC`는 주로 공유 라이브러리용, `-fPIE`는 실행 파일용 코드를 만든다.
+- PIE는 위치 독립 코드만 뜻하지 않는다. 링크 결과가 위치 독립 실행 파일 형식이어야 한다.
+
+반대로 상대 주소 명령이 하나 보인다고 그 프로그램이 PIE인 것은 아니다. 예를 들어
+x86-64의 비 PIE 코드도 같은 모듈 안의 참조에 RIP 상대 주소를 사용할 수 있다. 최종
+판정은 명령어 하나가 아니라 컴파일 옵션, ELF 타입, 동적 재배치 방식을 함께 확인한다.
+
+> **COMMON MISTAKE · PIC, PIE, ASLR은 같은 말이 아니다**
+>
+> PIC는 코드 생성 방식, PIE는 실행 파일 형식과 링크 방식, ASLR은 운영체제가 실행할 때
+> 주소를 고르는 정책이다. PIE는 ASLR이 주 실행 파일의 코드까지 옮길 수 있게 해 주지만,
+> PIE 자체가 무작위화를 수행하지는 않는다.
 
 <a id="static-libraries"></a>
 

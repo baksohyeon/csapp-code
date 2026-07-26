@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="690" viewBox="0 0 1200 690" role="img" aria-labelledby="title desc">
+  <title id="title">동적 실행 파일의 시작 과정과 ASLR 적용 범위</title>
+  <desc id="desc">ELF의 PT_INTERP가 동적 로더를 지정하고, 동적 로더가 공유 라이브러리를 적재하고 재배치한 뒤 프로그램 시작 코드로 제어를 넘긴다. 비 PIE와 PIE에서 주 실행 파일 코드의 주소가 달라지는 범위를 비교한다.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f7f9fc}.box{fill:#fff;stroke:#a8b8cc;stroke-width:2}.soft{fill:#eaf1fa;stroke:#7e9fc6;stroke-width:2}
+      .dark{fill:#203d66;stroke:#376fae;stroke-width:2}.ok{fill:#e5f3e9;stroke:#5a9d6d;stroke-width:2}
+      .muted{fill:#eef2f7;stroke:#a9b6c7;stroke-width:2}.arrow{fill:none;stroke:#587797;stroke-width:3;marker-end:url(#arrow)}
+      .dash{fill:none;stroke:#8094aa;stroke-width:2;stroke-dasharray:7 7}.title{font:700 25px system-ui,sans-serif;fill:#17253a}
+      .head{font:700 21px system-ui,sans-serif;fill:#17253a}.body{font:500 17px system-ui,sans-serif;fill:#4d6077}
+      .mono{font:650 16px ui-monospace,monospace;fill:#244a75}.light{fill:#fff}.small{font:500 15px system-ui,sans-serif;fill:#5b6d82}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#587797"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1200" height="690" rx="22"/>
+  <text class="title" x="55" y="52">동적 링크 실행 파일이 main까지 가는 순서</text>
+
+  <rect class="soft" x="55" y="82" width="205" height="120" rx="15"/>
+  <text class="head" x="158" y="120" text-anchor="middle">최종 링크</text>
+  <text class="mono" x="158" y="153" text-anchor="middle">gcc main.o utils.o</text>
+  <text class="body" x="158" y="181" text-anchor="middle">드라이버가 ld 호출</text>
+
+  <path class="arrow" d="M260 142 H315"/>
+  <rect class="box" x="315" y="82" width="230" height="120" rx="15"/>
+  <text class="head" x="430" y="120" text-anchor="middle">ELF 실행 파일</text>
+  <text class="mono" x="430" y="153" text-anchor="middle">PT_INTERP: ld-linux</text>
+  <text class="mono" x="430" y="181" text-anchor="middle">DT_NEEDED: libc.so.6</text>
+
+  <path class="arrow" d="M545 142 H600"/>
+  <rect class="dark" x="600" y="82" width="230" height="120" rx="15"/>
+  <text class="head light" x="715" y="120" text-anchor="middle">execve와 커널</text>
+  <text class="body light" x="715" y="153" text-anchor="middle">PT_INTERP 경로를 읽고</text>
+  <text class="body light" x="715" y="181" text-anchor="middle">동적 로더에 제어 전달</text>
+
+  <path class="arrow" d="M830 142 H885"/>
+  <rect class="ok" x="885" y="82" width="260" height="120" rx="15"/>
+  <text class="head" x="1015" y="120" text-anchor="middle">동적 로더</text>
+  <text class="body" x="1015" y="153" text-anchor="middle">libc 적재, 동적 재배치</text>
+  <text class="mono" x="1015" y="181" text-anchor="middle">_start → main</text>
+
+  <path class="dash" d="M55 242 H1145"/>
+  <text class="title" x="55" y="290">ASLR 정책이 켜진 Linux에서의 주소 배치</text>
+
+  <rect class="box" x="55" y="320" width="520" height="305" rx="18"/>
+  <text class="head" x="85" y="360">비 PIE 실행 파일</text>
+  <text class="small" x="85" y="388">ELF Type: EXEC</text>
+  <rect class="muted" x="85" y="420" width="205" height="70" rx="11"/>
+  <text class="mono" x="188" y="450" text-anchor="middle">main executable</text>
+  <text class="body" x="188" y="477" text-anchor="middle">코드 주소 고정</text>
+  <rect class="soft" x="320" y="420" width="225" height="70" rx="11"/>
+  <text class="mono" x="433" y="450" text-anchor="middle">libc / mmap</text>
+  <text class="body" x="433" y="477" text-anchor="middle">주소 무작위화</text>
+  <rect class="soft" x="85" y="515" width="205" height="70" rx="11"/>
+  <text class="mono" x="188" y="545" text-anchor="middle">stack / VDSO</text>
+  <text class="body" x="188" y="572" text-anchor="middle">주소 무작위화</text>
+  <rect class="soft" x="320" y="515" width="225" height="70" rx="11"/>
+  <text class="mono" x="433" y="545" text-anchor="middle">heap</text>
+  <text class="body" x="433" y="572" text-anchor="middle">정책 값 2에서 무작위화</text>
+
+  <rect class="box" x="625" y="320" width="520" height="305" rx="18"/>
+  <text class="head" x="655" y="360">PIE 실행 파일</text>
+  <text class="small" x="655" y="388">ELF Type: DYN</text>
+  <rect class="ok" x="655" y="420" width="205" height="70" rx="11"/>
+  <text class="mono" x="758" y="450" text-anchor="middle">main executable</text>
+  <text class="body" x="758" y="477" text-anchor="middle">코드 주소 무작위화</text>
+  <rect class="soft" x="890" y="420" width="225" height="70" rx="11"/>
+  <text class="mono" x="1003" y="450" text-anchor="middle">libc / mmap</text>
+  <text class="body" x="1003" y="477" text-anchor="middle">주소 무작위화</text>
+  <rect class="soft" x="655" y="515" width="205" height="70" rx="11"/>
+  <text class="mono" x="758" y="545" text-anchor="middle">stack / VDSO</text>
+  <text class="body" x="758" y="572" text-anchor="middle">주소 무작위화</text>
+  <rect class="soft" x="890" y="515" width="225" height="70" rx="11"/>
+  <text class="mono" x="1003" y="545" text-anchor="middle">heap</text>
+  <text class="body" x="1003" y="572" text-anchor="middle">정책 값 2에서 무작위화</text>
+
+  <text class="small" x="55" y="662">ASLR은 취약점을 제거하지 않는다. 공격자가 주소를 예측하기 어렵게 만드는 완화책이다.</text>
+</svg>

@@ -32,6 +32,8 @@ CSAPP 3판 §7.6 **Symbol Resolution** 강의노트.
 - `.data`, `.bss`, `COMMON`의 관계
 - GCC 10의 `-fno-common` 기본값 변경
 - compiler driver, `cc1`, `ld`, `lld`, `ldd`, libc의 역할
+- `PT_INTERP`와 `DT_NEEDED`, 동적 로더의 실행 순서
+- ASLR, PIC, PIE의 차이와 PIE, 비 PIE 주소 비교
 - 7.6.2 정적 라이브러리와 필요한 archive member의 선택
 - 7.6.3 `E`, `U`, `D` 집합과 라이브러리 입력 순서
 - GNU ld와 LLD의 archive 탐색 차이

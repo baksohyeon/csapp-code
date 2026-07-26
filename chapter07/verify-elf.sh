@@ -47,6 +47,39 @@ expect_absent_symbol() {
     printf '[symbol absent, as expected]\n'
 }
 
+check_main_address() {
+    local file=$1
+    local expected=$2
+    local first_main=
+    local current_main=
+    local changed=0
+    local output=
+    local index=
+
+    printf '$ %q  # run three times\n' "${file}"
+    for index in 1 2 3; do
+        output=$("${file}")
+        printf '%s\n' "${output}"
+        current_main=${output#main=}
+        current_main=${current_main%% *}
+        if [[ -z ${first_main} ]]; then
+            first_main=${current_main}
+        elif [[ ${current_main} != "${first_main}" ]]; then
+            changed=1
+        fi
+    done
+
+    if [[ ${expected} == varies && ${changed} -ne 1 ]]; then
+        printf 'EXPECTED main address to vary\n' >&2
+        exit 1
+    fi
+    if [[ ${expected} == fixed && ${changed} -ne 0 ]]; then
+        printf 'EXPECTED main address to stay fixed\n' >&2
+        exit 1
+    fi
+    printf '[main address: %s]\n' "${expected}"
+}
+
 heading "toolchain"
 uname -srm
 gcc --version | head -n 1
@@ -236,6 +269,21 @@ run gcc "${build}/cycle-main.o" -Wl,--start-group "${build}/libx.a" "${build}/li
 run "${build}/cycle-group"
 run clang -fuse-ld=lld "${build}/cycle-main.o" "${build}/libx.a" "${build}/liby.a" -o "${build}/cycle-lld"
 run "${build}/cycle-lld"
+
+heading "16. dynamic loader, ASLR, PIC, and PIE"
+run cat /proc/sys/kernel/randomize_va_space
+run readelf -l "${build}/driver-gcc" | grep -E 'INTERP|Requesting program interpreter'
+run readelf -d "${build}/driver-gcc" | grep -E 'NEEDED'
+run gcc -O0 -g -fPIE -pie "${examples}/aslr-pie/addresses.c" -o "${build}/addresses-pie"
+run gcc -O0 -g -fno-pie -no-pie "${examples}/aslr-pie/addresses.c" -o "${build}/addresses-no-pie"
+run readelf -h "${build}/addresses-pie" | grep -E 'Type:'
+run readelf -h "${build}/addresses-no-pie" | grep -E 'Type:'
+if [[ $(cat /proc/sys/kernel/randomize_va_space) == 0 ]]; then
+    printf '[ASLR disabled, address variation checks skipped]\n'
+else
+    check_main_address "${build}/addresses-pie" varies
+    check_main_address "${build}/addresses-no-pie" fixed
+fi
 
 heading "all checks passed"
 printf 'ELF experiments completed successfully.\n'
