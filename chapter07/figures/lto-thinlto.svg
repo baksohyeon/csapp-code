@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">일반 컴파일, Full LTO, ThinLTO의 분석 범위 비교</title>
+  <desc id="desc">일반 컴파일은 번역 단위별로 최적화하고, Full LTO는 IR을 하나로 합치며, ThinLTO는 요약 인덱스와 병렬 백엔드를 사용한다.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .box { fill: #eef4fb; stroke: #7895b8; stroke-width: 2; }
+      .green { fill: #edf6f0; stroke: #739681; stroke-width: 2; }
+      .gray { fill: #f2f4f7; stroke: #98a2b3; stroke-width: 2; }
+      .line { fill: none; stroke: #667b95; stroke-width: 3; marker-end: url(#arrow); }
+      .title { fill: #172033; font: 700 25px system-ui, sans-serif; }
+      .label { fill: #172033; font: 650 19px system-ui, sans-serif; text-anchor: middle; }
+      .small { fill: #506078; font: 16px system-ui, sans-serif; text-anchor: middle; }
+      .note { fill: #506078; font: 16px system-ui, sans-serif; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#667b95"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="760" rx="18"/>
+
+  <rect class="panel" x="32" y="32" width="1136" height="190" rx="16"/>
+  <text class="title" x="58" y="72">일반 컴파일</text>
+  <rect class="gray" x="80" y="105" width="130" height="70" rx="10"/>
+  <text class="label" x="145" y="147">a.c</text>
+  <path class="line" d="M210 140 H300"/>
+  <rect class="box" x="300" y="105" width="220" height="70" rx="10"/>
+  <text class="label" x="410" y="135">a.o</text>
+  <text class="small" x="410" y="159">native code</text>
+  <rect class="gray" x="620" y="105" width="130" height="70" rx="10"/>
+  <text class="label" x="685" y="147">b.c</text>
+  <path class="line" d="M750 140 H840"/>
+  <rect class="box" x="840" y="105" width="220" height="70" rx="10"/>
+  <text class="label" x="950" y="135">b.o</text>
+  <text class="small" x="950" y="159">native code</text>
+  <text class="note" x="80" y="204">컴파일러는 각 번역 단위 안에서 인라이닝과 죽은 코드 제거를 수행한다.</text>
+
+  <rect class="panel" x="32" y="246" width="1136" height="190" rx="16"/>
+  <text class="title" x="58" y="286">Full LTO</text>
+  <rect class="box" x="75" y="320" width="170" height="70" rx="10"/>
+  <text class="label" x="160" y="350">a.o</text>
+  <text class="small" x="160" y="374">compiler IR</text>
+  <rect class="box" x="275" y="320" width="170" height="70" rx="10"/>
+  <text class="label" x="360" y="350">b.o</text>
+  <text class="small" x="360" y="374">compiler IR</text>
+  <path class="line" d="M445 355 H525"/>
+  <rect class="green" x="525" y="310" width="240" height="90" rx="10"/>
+  <text class="label" x="645" y="346">하나로 합친 IR</text>
+  <text class="small" x="645" y="374">whole program view</text>
+  <path class="line" d="M765 355 H845"/>
+  <rect class="gray" x="845" y="320" width="230" height="70" rx="10"/>
+  <text class="label" x="960" y="350">최종 코드</text>
+  <text class="small" x="960" y="374">native output</text>
+  <text class="note" x="80" y="418">번역 단위 사이를 최적화할 수 있지만 링크 단계의 시간과 최대 메모리 사용량이 커질 수 있다.</text>
+
+  <rect class="panel" x="32" y="460" width="1136" height="268" rx="16"/>
+  <text class="title" x="58" y="500">ThinLTO</text>
+  <rect class="box" x="70" y="535" width="205" height="72" rx="10"/>
+  <text class="label" x="172" y="565">모듈 요약</text>
+  <text class="small" x="172" y="589">a.o, b.o, c.o</text>
+  <path class="line" d="M275 571 H355"/>
+  <rect class="green" x="355" y="525" width="240" height="92" rx="10"/>
+  <text class="label" x="475" y="562">통합 요약 인덱스</text>
+  <text class="small" x="475" y="589">combined index</text>
+  <path class="line" d="M595 571 H675"/>
+  <rect class="box" x="675" y="515" width="170" height="56" rx="10"/>
+  <text class="label" x="760" y="550">backend A</text>
+  <rect class="box" x="675" y="579" width="170" height="56" rx="10"/>
+  <text class="label" x="760" y="614">backend B</text>
+  <rect class="box" x="675" y="643" width="170" height="56" rx="10"/>
+  <text class="label" x="760" y="678">backend C</text>
+  <path class="line" d="M845 543 H930 V575"/>
+  <path class="line" d="M845 607 H930"/>
+  <path class="line" d="M845 671 H930 V639"/>
+  <rect class="gray" x="930" y="560" width="190" height="94" rx="10"/>
+  <text class="label" x="1025" y="599">링커</text>
+  <text class="small" x="1025" y="626">final output</text>
+  <text class="note" x="80" y="700">요약 분석 뒤 모듈별 백엔드를 병렬 실행하고, 바뀌지 않은 모듈 결과를 캐시할 수 있다.</text>
+</svg>

@@ -290,5 +290,34 @@ else
     check_main_address "${build}/addresses-no-pie" fixed
 fi
 
+heading "17. section GC, full LTO, and ThinLTO"
+run gcc -O2 -c "${examples}/lto-dead-code/main.c" -o "${build}/lto-main-plain.o"
+run gcc -O2 -c "${examples}/lto-dead-code/math.c" -o "${build}/lto-math-plain.o"
+run gcc -O2 "${build}/lto-main-plain.o" "${build}/lto-math-plain.o" -o "${build}/lto-plain"
+run "${build}/lto-plain"
+run nm -g --defined-only "${build}/lto-plain" | grep -E ' (cube|unused_helper)$'
+
+run gcc -O2 -ffunction-sections -fdata-sections -c "${examples}/lto-dead-code/main.c" -o "${build}/lto-main-gc.o"
+run gcc -O2 -ffunction-sections -fdata-sections -c "${examples}/lto-dead-code/math.c" -o "${build}/lto-math-gc.o"
+run gcc -O2 -Wl,--gc-sections -Wl,--print-gc-sections "${build}/lto-main-gc.o" "${build}/lto-math-gc.o" -o "${build}/lto-gc"
+run "${build}/lto-gc"
+run nm -g --defined-only "${build}/lto-gc" | grep -E ' cube$'
+expect_absent_symbol "${build}/lto-gc" unused_helper
+
+run gcc -O2 -flto -c "${examples}/lto-dead-code/main.c" -o "${build}/lto-main-full.o"
+run gcc -O2 -flto -c "${examples}/lto-dead-code/math.c" -o "${build}/lto-math-full.o"
+run gcc -O2 -flto "${build}/lto-main-full.o" "${build}/lto-math-full.o" -o "${build}/lto-full"
+run "${build}/lto-full"
+expect_absent_symbol "${build}/lto-full" cube
+expect_absent_symbol "${build}/lto-full" unused_helper
+
+mkdir -p "${build}/thinlto-cache"
+run clang -O2 -flto=thin -c "${examples}/lto-dead-code/main.c" -o "${build}/lto-main-thin.o"
+run clang -O2 -flto=thin -c "${examples}/lto-dead-code/math.c" -o "${build}/lto-math-thin.o"
+run clang -O2 -flto=thin -fuse-ld=lld -Wl,--thinlto-cache-dir="${build}/thinlto-cache" "${build}/lto-main-thin.o" "${build}/lto-math-thin.o" -o "${build}/lto-thin"
+run "${build}/lto-thin"
+run nm -g --defined-only "${build}/lto-thin" | grep -E ' cube$'
+expect_absent_symbol "${build}/lto-thin" unused_helper
+
 heading "all checks passed"
 printf 'ELF experiments completed successfully.\n'

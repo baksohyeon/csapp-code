@@ -32,10 +32,11 @@
 13. [책의 절·예제·그림 대응표](#mapping)
 14. [보충 규칙 4가지](#beyond-book)
 15. [컴파일러 드라이버와 libc](#driver-libc)
-16. [동적 로더, ASLR, PIC, PIE](#loader-aslr)
-17. [7.6.2 정적 라이브러리](#static-libraries)
-18. [7.6.3 아카이브 탐색](#archive-search)
-19. [적용 원칙](#beyond)
+16. [링크 시점 최적화와 ThinLTO](#lto-thinlto)
+17. [동적 로더, ASLR, PIC, PIE](#loader-aslr)
+18. [7.6.2 정적 라이브러리](#static-libraries)
+19. [7.6.3 아카이브 탐색](#archive-search)
+20. [적용 원칙](#beyond)
 
 <a id="reading"></a>
 
@@ -668,6 +669,26 @@ GNU ld, LLD, mold가 여기에 해당한다.
 동적 링커 / 로더. 프로그램 시작 시 공유 오브젝트를 적재하고 동적 재배치를 처리한 뒤
 프로그램 시작점으로 제어를 넘기는 프로그램.
 
+**link-time optimization (LTO)**
+
+링크 시점 최적화. 여러 번역 단위의 컴파일러 중간 표현을 최종 링크 단계에서 함께 분석하고
+최적화하는 방식.
+
+**ThinLTO**
+
+모듈 전체를 하나의 중간 표현으로 합치지 않고, 모듈 요약과 통합 인덱스를 이용해 분석한 뒤
+모듈별 백엔드를 병렬 실행하는 LTO 방식.
+
+**section garbage collection**
+
+섹션 가비지 컬렉션. 링커가 시작점과 보존 심볼에서 도달할 수 없는 입력 섹션을 최종 결과에서
+제외하는 기능. GNU ld의 대표 옵션은 `--gc-sections`다.
+
+**dead code elimination (DCE)**
+
+죽은 코드 제거. 실행 결과에 영향을 주지 않는 코드나 데이터가 최종 결과에 남지 않게 하는
+최적화의 일반 명칭.
+
 **PT_INTERP**
 
 동적 실행 파일이 사용할 프로그램 인터프리터의 경로를 담은 ELF 프로그램 헤더 항목.
@@ -969,6 +990,127 @@ rustflags = ["-C", "link-arg=-fuse-ld=mold"]
 버전에 대한 값이며, 모든 환경에서 같은 비율이 나온다는 뜻은 아니다. 링커 성능은
 CPU, 메모리, 저장 장치, 디버그 정보, LTO, 출력 크기와 링커 옵션에 따라 달라진다.
 
+<a id="lto-thinlto"></a>
+
+## 링크 시점 최적화와 ThinLTO
+
+일반 컴파일은 한 번역 단위만 본다. 다른 `.c` 파일에 정의된 함수의 본문이나 최종적으로
+어떤 심볼이 외부에 공개되는지는 알 수 없다. 최종 링크에서는 선택된 모든 입력과 심볼
+해석 결과를 알 수 있으므로 번역 단위를 넘는 최적화가 가능하다.
+
+> **REMIND · `static`과 인라이닝**
+>
+> 파일 범위의 함수나 전역에 `static`을 붙이면 내부 연결이 된다. 컴파일러는 다른 번역
+> 단위가 그 이름을 참조하지 못한다는 사실을 알기 때문에 현재 번역 단위 안에서 인라이닝하거나
+> 사용하지 않는 정의를 제거하기 쉽다. LTO는 컴파일러 중간 표현을 링크 단계까지 보존해 이
+> 분석 범위를 여러 번역 단위로 넓힌다.
+
+### tree shaking과 같은 점, 다른 점
+
+웹 번들러의 tree shaking은 진입점에서 실제로 도달하는 모듈과 export만 결과에 남긴다.
+네이티브 빌드에서도 사용하지 않는 코드와 데이터를 제외할 수 있지만, 구현 층을 구분해야
+한다.
+
+| 방식 | 분석 입력 | 가능한 일 |
+| --- | --- | --- |
+| 일반 컴파일 최적화 | 한 번역 단위의 compiler IR | 번역 단위 안의 인라이닝, 상수 전파, 죽은 코드 제거 |
+| 링커 section GC | 심볼, 재배치, 입력 섹션 | 시작점에서 도달할 수 없는 함수별·데이터별 섹션 제외 |
+| LTO | 여러 번역 단위의 compiler IR | 번역 단위 사이의 인라이닝, 상수 전파, 내부화, 죽은 코드 제거 |
+
+**dead code elimination(DCE)**은 LTO 전용 명칭이 아니다. 컴파일러도 한 번역 단위 안에서
+DCE를 수행한다. GNU ld의 `--gc-sections`는 compiler IR을 해석하지 않고 심볼과 재배치
+관계로 도달 가능한 입력 섹션을 표시한다. 함수와 데이터를 개별 섹션으로 나누려면 보통
+컴파일할 때 `-ffunction-sections -fdata-sections`를 함께 쓴다.
+
+```bash
+# 링커 section GC
+gcc -O2 -ffunction-sections -fdata-sections -c main.c math.c
+gcc main.o math.o -Wl,--gc-sections -o app-gc
+
+# GCC Full LTO
+gcc -O2 -flto -c main.c math.c
+gcc -O2 -flto main.o math.o -o app-lto
+
+# Clang ThinLTO와 LLD 캐시
+clang -O2 -flto=thin -c main.c math.c
+clang -O2 -flto=thin -fuse-ld=lld \
+  -Wl,--thinlto-cache-dir=.thinlto-cache main.o math.o -o app-thin
+```
+
+실습의 `math.c`에는 호출되는 `cube`와 호출되지 않는 `unused_helper`가 있다. Ubuntu
+24.04에서 `nm -g --defined-only`로 확인한 결과는 다음과 같았다.
+
+| 빌드 | `cube` | `unused_helper` | 관찰 |
+| --- | --- | --- | --- |
+| 일반 `-O2` | 있음 | 있음 | 다른 번역 단위의 외부 정의를 유지 |
+| `--gc-sections` | 있음 | 없음 | 참조되지 않는 함수 섹션만 제외 |
+| GCC `-flto` | 없음 | 없음 | `cube(3)`을 호출 지점에 반영하고 외부 함수 심볼을 남기지 않음 |
+| Clang `-flto=thin` | 있음 | 없음 | 호출되지 않는 함수는 없어졌지만 `cube`는 별도 심볼로 유지 |
+
+심볼이 보이지 않는다는 사실만으로 모든 기계어가 삭제되었다고 단정할 수는 없다. 함수가
+인라인되거나 계산 결과가 상수로 바뀌어 별도 외부 심볼이 필요 없어졌을 수 있다.
+Full LTO와 ThinLTO도 항상 같은 결정을 내리지 않는다. 이 실험에서 Clang ThinLTO는
+외부에 보이는 `cube`를 유지했다.
+
+### LTO로 가능한 최적화
+
+LTO는 프로그램과 옵션에 따라 다음 최적화를 가능하게 한다.
+
+- 번역 단위 사이의 함수 인라이닝
+- 함수 사이 상수 전파와 특수화
+- 외부에서 쓰이지 않는 심볼의 내부화와 죽은 코드 제거
+- C++ 가상 호출 대상이 정해질 때 devirtualization
+- 같은 구현을 가진 함수의 병합
+- 함수가 읽고 쓰는 메모리 범위를 이용한 호출 간 분석
+
+항상 이 최적화가 적용되는 것은 아니다. 주소가 외부로 노출되거나 동적 링크, 가시성,
+언어 규칙 때문에 정의를 보존해야 할 수 있다.
+
+### Full LTO와 ThinLTO
+
+Full LTO는 입력 모듈의 IR을 하나로 합쳐 전체 프로그램을 분석한다. 분석 범위는 넓지만
+입력이 커질수록 링크 단계의 시간과 최대 메모리 사용량이 커지고, 작은 수정 뒤에도 큰
+단위를 다시 처리하기 쉽다.
+
+ThinLTO는 각 모듈에 함수와 참조 관계를 요약한 정보를 넣는다. 링크 단계는 전체 IR 대신
+요약을 모아 통합 인덱스를 만들고, 필요한 함수만 다른 모듈에서 가져오도록 정한다. 실제
+최적화와 코드 생성은 모듈별 백엔드에서 병렬로 수행한다. 바뀌지 않은 모듈의 결과는
+캐시에 보관할 수 있다.
+
+![일반 컴파일, Full LTO, ThinLTO의 분석 범위와 처리 구조 비교](figures/lto-thinlto.svg)
+
+**FIGURE N9** 일반 컴파일, Full LTO, ThinLTO의 처리 범위.
+
+> **GOTCHA · LTO 전체를 하나의 시간 복잡도로 단정하지 않는다**
+>
+> “링크 시간은 항상 O(N²)”라고 말할 수는 없다. 분석 패스와 구현마다 복잡도가 다르다.
+> Full LTO의 핵심 부담은 모든 IR을 합친 큰 단위와 전역 분석의 시간·메모리 규모다.
+> ThinLTO는 요약 분석과 병렬 백엔드로 이 병목을 줄인다.
+
+현재 GCC에는 `-flto-incremental=경로`로 LTO 결과를 재사용하는 기능도 있다. 따라서
+“LTO는 캐시할 수 없다”는 설명도 현재 도구 전체에 적용되지 않는다. ThinLTO는 처음부터
+요약 기반 분석, 병렬 백엔드, 증분 빌드 통합을 주요 목표로 설계되었다는 점이 핵심이다.
+
+Google의 ThinLTO 논문은 전체 IR을 읽고 쓰지 않는 빠른 요약 분석을 직렬 단계로 두고,
+모듈별 최적화를 병렬화하는 구조를 설명한다. 논문의 결론은 Full LTO와 완전히 같은
+최적화를 보장한다는 뜻이 아니라, 대부분의 번역 단위 간 최적화를 유지하면서 비 LTO에
+가까운 확장성을 얻는다는 것이다.
+
+### Rust의 기본값 범위
+
+Rust가 항상 전체 프로그램에 ThinLTO를 적용하는 것은 아니다. 최적화가 켜지고 codegen
+unit이 여러 개인 빌드에서는 같은 크레이트 안의 **thin local LTO**를 기본으로 시도한다.
+기본 개발 프로필은 `opt-level = 0`이므로 이 동작이 비활성화된다. 의존 크레이트까지
+분석하는 cross-crate ThinLTO는 Cargo 프로필에서 따로 설정한다.
+
+```toml
+[profile.release]
+lto = "thin"
+```
+
+Cargo에서 `lto = false`는 LTO가 완전히 꺼졌다는 뜻이 아니라 thin local LTO를 허용한다.
+완전히 끄려면 `lto = "off"`를 사용한다.
+
 <a id="loader-aslr"></a>
 
 ## 동적 로더, ASLR, PIC, PIE
@@ -1013,7 +1155,7 @@ x86-64 glibc 환경에서는 인터프리터 경로가 흔히
 
 ![ELF의 PT_INTERP가 동적 로더를 지정하고 비 PIE와 PIE에서 ASLR 적용 범위가 달라지는 흐름](figures/dynamic-loader-aslr.svg)
 
-**FIGURE N9** 동적 로더의 실행 순서와 ASLR 적용 범위.
+**FIGURE N10** 동적 로더의 실행 순서와 ASLR 적용 범위.
 
 ### ASLR은 주소 예측을 어렵게 만든다
 
@@ -1127,7 +1269,7 @@ nm -s libvector.a
 
 ![main.o의 addvec 참조 때문에 libvector.a에서 addvec.o만 선택되고 multvec.o는 제외되는 흐름](figures/static-library-selection.svg)
 
-**FIGURE N10** 정적 라이브러리의 멤버 선택.
+**FIGURE N11** 정적 라이브러리의 멤버 선택.
 
 다음 두 표기는 같은 라이브러리를 지정할 수 있다.
 
@@ -1171,7 +1313,7 @@ GNU ld의 기본 모델에서는 입력을 왼쪽에서 오른쪽으로 한 번 
 
 ![일반 오브젝트가 U와 D를 갱신하고 아카이브가 U를 만족하는 멤버만 E에 추가하는 순서](figures/archive-scan.svg)
 
-**FIGURE N11** GNU ld의 왼쪽에서 오른쪽으로 진행하는 아카이브 탐색.
+**FIGURE N12** GNU ld의 왼쪽에서 오른쪽으로 진행하는 아카이브 탐색.
 
 ### 입력 순서
 
@@ -1263,4 +1405,4 @@ C의 linkage, ELF의 binding, section index, linker의 선택 규칙을 한 단�
 
 ---
 
-공식 문서: [CSAPP 정오표](https://csapp.cs.cmu.edu/3e/errata.html), [System V ELF ABI](https://refspecs.linuxfoundation.org/elf/gabi4%2B/ch4.symtab.html), [GCC 10 Porting Guide](https://gcc.gnu.org/gcc-10/porting_to.html), [GNU ld](https://sourceware.org/binutils/docs/ld/Options.html), [Clang](https://clang.llvm.org/docs/CommandGuide/clang.html).
+공식 문서: [CSAPP 정오표](https://csapp.cs.cmu.edu/3e/errata.html), [System V ELF ABI](https://refspecs.linuxfoundation.org/elf/gabi4%2B/ch4.symtab.html), [GCC 최적화 옵션](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html), [GNU ld](https://sourceware.org/binutils/docs/ld/Options.html), [Clang ThinLTO](https://clang.llvm.org/docs/ThinLTO.html), [Rust codegen 옵션](https://doc.rust-lang.org/rustc/codegen-options/index.html), [Cargo 프로필](https://doc.rust-lang.org/cargo/reference/profiles.html), [ThinLTO 논문](https://research.google/pubs/thinlto-scalable-and-incremental-lto/).

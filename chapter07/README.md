@@ -55,12 +55,17 @@ cd chapter07
 - compiler driver, raw `ld`, `lld`, `ldd`, glibc 정적 링크
 - GNU ld, gold, LLD, mold의 위치와 `-fuse-ld` 선택
 - Rust 증분 컴파일 뒤의 최종 링크 병목과 대규모 링크 시간 비교
+- linker section GC와 LTO의 차이
+- 번역 단위 사이 인라이닝, 상수 전파, 죽은 코드 제거
+- Full LTO와 ThinLTO의 처리 구조, 병렬 백엔드와 캐시
+- Rust의 thin local LTO 기본 범위와 cross-crate ThinLTO 설정
 - `PT_INTERP`, `DT_NEEDED`, 동적 로더의 실행 순서
 - ASLR 적용 범위와 명시적 PIE, 비 PIE 주소 비교
 - PIC, PIE, ASLR의 역할 구분
 - 정적 archive에서 참조된 멤버만 선택하는 동작
 - GNU ld의 왼쪽부터의 탐색, 순환 archive의 반복과 그룹 처리
 - LLD의 backward reference와 `--warn-backrefs`
+- 일반 컴파일, `--gc-sections`, GCC Full LTO, Clang ThinLTO의 심볼 비교
 
 빌드 산출물은 `examples/build/`에 생성되며 Git에서 제외한다. 검증 환경과 텍스트 출력은
 `results/verified-linux-aarch64.txt`에 기록한다. `.o` 파일은 CPU/플랫폼 의존 산출물이므로

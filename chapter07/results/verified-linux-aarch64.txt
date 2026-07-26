@@ -375,9 +375,9 @@ String dump of section '.comment':
   [    2e]  Linker: Ubuntu LLD 18.1.3
 
 $ ldd /work/examples/build/driver-gcc
-	linux-vdso.so.1 (0x0000ffff95868000)
-	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff95630000)
-	/lib/ld-linux-aarch64.so.1 (0x0000ffff95820000)
+	linux-vdso.so.1 (0x0000ffff9ac1f000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff9a9e0000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff9abd0000)
 
 ===== 13. glibc also supports static linking =====
 $ gcc -static /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-static
@@ -469,15 +469,52 @@ $ gcc -O0 -g -fno-pie -no-pie /work/examples/aslr-pie/addresses.c -o /work/examp
   Type:                              DYN (Position-Independent Executable file)
   Type:                              EXEC (Executable file)
 $ /work/examples/build/addresses-pie  # run three times
-main=0xaaaad82e08d8 stack=0xffffef7c61cc heap=0xaaaafaa182a0
-main=0xaaaabd3a08d8 stack=0xfffff2fc2d9c heap=0xaaaac0fea2a0
-main=0xaaaad6e508d8 stack=0xfffff171b0bc heap=0xaaab134682a0
+main=0xaaaacc0008d8 stack=0xffffce03a7bc heap=0xaaaaf79f42a0
+main=0xaaaacc2508d8 stack=0xfffff43c936c heap=0xaaaaed32b2a0
+main=0xaaaae3fa08d8 stack=0xffffc71d009c heap=0xaaab0b1e62a0
 [main address: varies]
 $ /work/examples/build/addresses-no-pie  # run three times
-main=0x4007e8 stack=0xffffc30bc59c heap=0x48632a0
-main=0x4007e8 stack=0xffffc2f8acbc heap=0x3470e2a0
-main=0x4007e8 stack=0xfffffa1dad5c heap=0x1715b2a0
+main=0x4007e8 stack=0xffffe37e42fc heap=0x36e2f2a0
+main=0x4007e8 stack=0xffffed4d0f4c heap=0x59922a0
+main=0x4007e8 stack=0xfffff861f10c heap=0x2240b2a0
 [main address: fixed]
+
+===== 17. section GC, full LTO, and ThinLTO =====
+$ gcc -O2 -c /work/examples/lto-dead-code/main.c -o /work/examples/build/lto-main-plain.o
+$ gcc -O2 -c /work/examples/lto-dead-code/math.c -o /work/examples/build/lto-math-plain.o
+$ gcc -O2 /work/examples/build/lto-main-plain.o /work/examples/build/lto-math-plain.o -o /work/examples/build/lto-plain
+$ /work/examples/build/lto-plain
+cube(3) = 27
+00000000000007e0 T cube
+00000000000007f0 T unused_helper
+$ gcc -O2 -ffunction-sections -fdata-sections -c /work/examples/lto-dead-code/main.c -o /work/examples/build/lto-main-gc.o
+$ gcc -O2 -ffunction-sections -fdata-sections -c /work/examples/lto-dead-code/math.c -o /work/examples/build/lto-math-gc.o
+$ gcc -O2 -Wl\,--gc-sections -Wl\,--print-gc-sections /work/examples/build/lto-main-gc.o /work/examples/build/lto-math-gc.o -o /work/examples/build/lto-gc
+/usr/bin/ld: removing unused section '.rodata.cst4' in file '/usr/lib/gcc/aarch64-linux-gnu/13/../../../aarch64-linux-gnu/Scrt1.o'
+/usr/bin/ld: removing unused section '.data' in file '/usr/lib/gcc/aarch64-linux-gnu/13/../../../aarch64-linux-gnu/Scrt1.o'
+/usr/bin/ld: removing unused section '.text.unused_helper' in file '/work/examples/build/lto-math-gc.o'
+$ /work/examples/build/lto-gc
+cube(3) = 27
+00000000000007e0 T cube
+$ nm -g --defined-only /work/examples/build/lto-gc | grep unused_helper
+[symbol absent, as expected]
+$ gcc -O2 -flto -c /work/examples/lto-dead-code/main.c -o /work/examples/build/lto-main-full.o
+$ gcc -O2 -flto -c /work/examples/lto-dead-code/math.c -o /work/examples/build/lto-math-full.o
+$ gcc -O2 -flto /work/examples/build/lto-main-full.o /work/examples/build/lto-math-full.o -o /work/examples/build/lto-full
+$ /work/examples/build/lto-full
+cube(3) = 27
+$ nm -g --defined-only /work/examples/build/lto-full | grep cube
+[symbol absent, as expected]
+$ nm -g --defined-only /work/examples/build/lto-full | grep unused_helper
+[symbol absent, as expected]
+$ clang -O2 -flto=thin -c /work/examples/lto-dead-code/main.c -o /work/examples/build/lto-main-thin.o
+$ clang -O2 -flto=thin -c /work/examples/lto-dead-code/math.c -o /work/examples/build/lto-math-thin.o
+$ clang -O2 -flto=thin -fuse-ld=lld -Wl\,--thinlto-cache-dir=/work/examples/build/thinlto-cache /work/examples/build/lto-main-thin.o /work/examples/build/lto-math-thin.o -o /work/examples/build/lto-thin
+$ /work/examples/build/lto-thin
+cube(3) = 27
+000000000001087c T cube
+$ nm -g --defined-only /work/examples/build/lto-thin | grep unused_helper
+[symbol absent, as expected]
 
 ===== all checks passed =====
 ELF experiments completed successfully.

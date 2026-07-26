@@ -34,6 +34,9 @@ CSAPP 3판 §7.6 **Symbol Resolution** 강의노트.
 - compiler driver, `cc1`, `ld`, `lld`, `ldd`, libc의 역할
 - GNU ld, gold, LLD, mold의 차이와 `-fuse-ld` 선택
 - 증분 컴파일 이후의 최종 링크 병목
+- linker section GC와 LTO의 차이
+- Full LTO와 ThinLTO, 병렬 백엔드와 캐시
+- Rust thin local LTO와 cross-crate ThinLTO 설정
 - `PT_INTERP`와 `DT_NEEDED`, 동적 로더의 실행 순서
 - ASLR, PIC, PIE의 차이와 PIE, 비 PIE 주소 비교
 - 7.6.2 정적 라이브러리와 필요한 archive member의 선택

@@ -182,7 +182,42 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
 18. [GNU Binutils 2.44 release](https://sourceware.org/pipermail/binutils/2025-February/139195.html)
     - GNU gold의 사용 중단 예정 상태와 향후 제거 계획
 
-## 9. 동적 로더, ASLR, PIC, PIE
+## 9. LTO, ThinLTO, section GC
+
+1. [GCC Optimize Options](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html)
+   - `-flto`를 컴파일과 최종 링크에 함께 적용하는 방식
+   - 번역 단위 사이 인라이닝, 상수 전파 등 interprocedural optimization
+   - 현재 GCC의 `-flto-incremental=경로` 캐시
+2. [GNU ld Options: `--gc-sections`](https://sourceware.org/binutils/docs/ld/Options.html)
+   - 시작점과 보존 심볼에서 도달 가능한 입력 섹션을 재배치 관계로 표시하는 방식
+   - 제거된 섹션을 확인하는 `--print-gc-sections`
+3. [Clang ThinLTO](https://clang.llvm.org/docs/ThinLTO.html)
+   - Full LTO의 단일 모듈 병합과 시간·메모리 확장성 한계
+   - 모듈 요약, 통합 인덱스, 병렬 백엔드로 이루어진 ThinLTO 구조
+   - LLD의 `--thinlto-cache-dir` 캐시
+4. [Clang Command Guide](https://clang.llvm.org/docs/CommandGuide/clang.html)
+   - `-flto=full`, `-flto=thin` 선택
+5. [ThinLTO: Scalable and Incremental LTO](https://research.google/pubs/thinlto-scalable-and-incremental-lto/)
+   - 전체 IR을 읽고 쓰지 않는 요약 기반 분석
+   - 병렬 백엔드와 분산·증분 빌드 통합 목표
+   - Full LTO의 번역 단위 간 최적화 대부분을 유지하면서 비 LTO에 가까운 확장성을
+     목표로 한 설계와 실험 결과
+6. [rustc Codegen Options: LTO](https://doc.rust-lang.org/rustc/codegen-options/index.html)
+   - `-C lto=thin`의 cross-crate ThinLTO
+   - 최적화된 다중 codegen unit 빌드에서 기본으로 시도하는 thin local LTO
+7. [Cargo Profiles](https://doc.rust-lang.org/cargo/reference/profiles.html)
+   - `lto = false`, `lto = "off"`, `lto = "thin"`의 차이
+   - 기본 개발·릴리스 프로필의 `opt-level`, `codegen-units`
+
+`dead code elimination`은 LTO 전용 용어가 아니다. 일반 컴파일러 최적화에도 해당한다.
+링커의 section GC는 compiler IR이 아니라 심볼, 재배치, 입력 섹션의 도달 가능성을 본다.
+LTO는 compiler IR을 이용해 번역 단위 사이의 인라이닝과 상수 전파까지 수행할 수 있다.
+
+“링크 시간은 O(N²)”라는 설명은 일반화하지 않았다. 분석 패스와 구현마다 복잡도가 다르며,
+공식 자료가 지적하는 핵심은 Full LTO의 단일 모듈 병합과 전역 분석이 큰 입력에서 시간과
+메모리 확장성을 제한한다는 점이다.
+
+## 10. 동적 로더, ASLR, PIC, PIE
 
 1. [System V ELF ABI: Dynamic Linking](https://refspecs.linuxfoundation.org/elf/gabi4%2B/ch5.dynamic.html)
    - 동적 링크 실행 파일의 `PT_INTERP` 프로그램 헤더
@@ -214,7 +249,7 @@ GLOBAL 정의로 내보내 중복 링크를 거부했고, 명시적 `-fcommon`�
       `AS_NEEDED(ld-linux)`를 묶는 구성
     - 일부 환경에서 동적 로더가 `DT_NEEDED`에도 기록될 수 있는 이유
 
-## 10. C++와 JVM 경계
+## 11. C++와 JVM 경계
 
 1. [Itanium C++ ABI: External Names](https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangling)
    - 현재 ELF 계열 C++ 구현에서 널리 쓰이는 외부 이름 mangling 문법
@@ -229,7 +264,7 @@ CSAPP 3판의 C++/Java name mangling aside는 오버로딩된 소스 이름이 �
 식별자로 바뀐다는 학습 직관에는 도움이 된다. 다만 현대 JVM의 method resolution은
 ELF 정적 링커의 C++ name mangling과 같은 메커니즘이 아니므로 같은 규칙으로 설명하지 않았다.
 
-## 11. 로컬 재현 환경
+## 12. 로컬 재현 환경
 
 검증 출력: [results/verified-linux-aarch64.txt](results/verified-linux-aarch64.txt)
 
@@ -253,6 +288,8 @@ ELF 정적 링커의 C++ name mangling과 같은 메커니즘이 아니므로 �
 - `archive-cycle`: archive 반복, GNU ld group, LLD의 재탐색 확인
 - `aslr-pie`: 명시적 PIE와 비 PIE의 ELF 타입, `PT_INTERP`, `DT_NEEDED`,
   세 번 실행한 `main`, 스택, 힙 주소 비교
+- `lto-dead-code`: 일반 컴파일, GNU ld section GC, GCC Full LTO, Clang ThinLTO의
+  심볼 보존 차이와 실행 결과 확인
 
 명령은 [verify-elf.sh](verify-elf.sh), 컨테이너 실행은
 [verify-in-docker.sh](verify-in-docker.sh)에 기록했다.

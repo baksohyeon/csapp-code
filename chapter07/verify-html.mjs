@@ -47,6 +47,7 @@ for (const required of [
 
 for (const requiredId of [
   "driver-libc",
+  "lto-thinlto",
   "loader-aslr",
   "static-libraries",
   "archive-search",
@@ -71,6 +72,10 @@ for (const requiredText of [
   "-fuse-ld=mold",
   "GNU gold",
   "증분 컴파일",
+  "ThinLTO",
+  "--gc-sections",
+  "thin local LTO",
+  'lto = "thin"',
 ]) {
   if (!html.includes(requiredText)) failures.push(`missing HTML content: ${requiredText}`);
   if (!markdown.includes(requiredText)) failures.push(`missing Markdown content: ${requiredText}`);
@@ -117,8 +122,8 @@ for (const match of markdown.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
 }
 
 const markdownFigures = [...markdown.matchAll(/!\[[^\]]+\]\(([^)]+)\)/g)];
-if (markdownFigures.length !== 11) {
-  failures.push(`expected 11 Markdown figures, found ${markdownFigures.length}`);
+if (markdownFigures.length !== 12) {
+  failures.push(`expected 12 Markdown figures, found ${markdownFigures.length}`);
 }
 
 const codeFences = [...markdown.matchAll(/^```/gm)].length;
