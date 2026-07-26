@@ -7,6 +7,7 @@ RUN apt-get update \
         binutils \
         build-essential \
         clang \
+        file \
         lld \
     && rm -rf /var/lib/apt/lists/*
 

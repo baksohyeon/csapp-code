@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 560" role="img" aria-labelledby="title desc">
+  <title id="title">정적 라이브러리에서 필요한 오브젝트 멤버만 선택하는 과정</title>
+  <desc id="desc">main.o의 addvec 미해결 참조 때문에 libvector.a의 addvec.o만 실행 파일에 포함되고 multvec.o는 포함되지 않는 흐름</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#3569b8"/>
+    </marker>
+    <style>
+      .bg{fill:#f7f9fc}.panel{fill:#fff;stroke:#c8d4e5;stroke-width:2}.head{fill:#e8f0fe}
+      .selected{fill:#e6f4ea;stroke:#58a16b;stroke-width:2}.unused{fill:#f1f4f8;stroke:#b8c4d3;stroke-width:2}
+      .output{fill:#18355d;stroke:#0b57d0;stroke-width:2}.line{stroke:#3569b8;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .dash{stroke:#8da2bd;stroke-width:2;stroke-dasharray:7 7;fill:none}.t{font:700 22px system-ui,sans-serif;fill:#152033}
+      .s{font:500 15px system-ui,sans-serif;fill:#506078}.mono{font:650 16px ui-monospace,monospace;fill:#18355d}
+      .light{fill:#fff}.muted{fill:#7b899a}
+    </style>
+  </defs>
+  <rect class="bg" width="1100" height="560" rx="24"/>
+  <text class="t" x="44" y="50">archive는 필요한 멤버만 꺼낸다</text>
+  <text class="s" x="44" y="78">일반 오브젝트는 항상 입력에 들어가지만, archive 멤버는 미해결 참조를 만족할 때만 선택된다.</text>
+
+  <rect class="panel" x="45" y="128" width="225" height="150" rx="16"/>
+  <path class="head" d="M61 128H254Q270 128 270 144V174H45V144Q45 128 61 128Z"/>
+  <text class="t" x="158" y="160" text-anchor="middle">main.o</text>
+  <text class="s" x="72" y="211">정의</text>
+  <text class="mono" x="142" y="211">main</text>
+  <text class="s" x="72" y="245">미해결</text>
+  <text class="mono" x="142" y="245">addvec</text>
+
+  <path class="line" d="M270 203H345"/>
+
+  <rect class="panel" x="345" y="108" width="390" height="240" rx="18"/>
+  <path class="head" d="M363 108H717Q735 108 735 126V158H345V126Q345 108 363 108Z"/>
+  <text class="t" x="540" y="143" text-anchor="middle">libvector.a</text>
+  <rect class="selected" x="375" y="184" width="330" height="62" rx="12"/>
+  <text class="mono" x="400" y="211">addvec.o</text>
+  <text class="s" x="400" y="234">addvec 정의, E에 추가</text>
+  <rect class="unused" x="375" y="263" width="330" height="62" rx="12"/>
+  <text class="mono muted" x="400" y="290">multvec.o</text>
+  <text class="s muted" x="400" y="313">참조되지 않음, 선택하지 않음</text>
+
+  <path class="line" d="M735 228H815"/>
+  <rect class="output" x="815" y="157" width="240" height="142" rx="18"/>
+  <text class="t light" x="935" y="196" text-anchor="middle">실행 파일</text>
+  <text class="mono light" x="850" y="236">main.o</text>
+  <text class="mono light" x="850" y="267">addvec.o</text>
+
+  <path class="dash" d="M45 397H1055"/>
+  <text class="t" x="45" y="442">오브젝트를 직접 나열하면 결과가 달라질 수 있다</text>
+  <text class="mono" x="45" y="480">gcc main.o addvec.o multvec.o -o program</text>
+  <text class="s" x="45" y="516">직접 적은 addvec.o와 multvec.o는 둘 다 입력 집합 E에 들어간다.</text>
+</svg>

@@ -14,7 +14,7 @@
     </style>
   </defs>
   <rect class="bg" width="1100" height="430" rx="24"/>
-  <text class="t" x="44" y="48">gcc는 지휘자, ld는 결합 담당자</text>
+  <text class="t" x="44" y="48">gcc는 단계를 조정하고, ld는 입력을 결합한다</text>
   <text class="s" x="44" y="76">각 번역 단위는 따로 오브젝트가 된 뒤 링크 단계에서 처음 만난다.</text>
 
   <rect class="card" x="45" y="118" width="140" height="70" rx="12"/>
@@ -26,10 +26,10 @@
   <path class="line" d="M185 280H235"/>
   <rect class="stage" x="235" y="110" width="210" height="86" rx="14"/>
   <text class="t" x="340" y="145" text-anchor="middle">번역기</text>
-  <text class="s" x="340" y="173" text-anchor="middle">cpp → cc1 → as</text>
+  <text class="s" x="340" y="173" text-anchor="middle">전처리 → cc1 → as</text>
   <rect class="stage" x="235" y="237" width="210" height="86" rx="14"/>
   <text class="t" x="340" y="272" text-anchor="middle">번역기</text>
-  <text class="s" x="340" y="300" text-anchor="middle">cpp → cc1 → as</text>
+  <text class="s" x="340" y="300" text-anchor="middle">전처리 → cc1 → as</text>
 
   <path class="line" d="M445 153H495"/>
   <path class="line" d="M445 280H495"/>
@@ -52,5 +52,5 @@
   <text class="s" x="1013" y="235" text-anchor="middle">executable</text>
 
   <path class="dash" d="M495 354H915"/>
-  <text class="s" x="705" y="387" text-anchor="middle">7.6.1의 질문: 같은 이름의 전역 정의가 여러 .o에 있으면 누구를 선택하는가?</text>
+  <text class="s" x="705" y="387" text-anchor="middle">7.6의 질문: 참조를 어느 정의에 연결하고 어떤 archive 멤버를 선택하는가?</text>
 </svg>

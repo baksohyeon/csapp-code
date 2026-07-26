@@ -125,6 +125,34 @@ $ gcc -Wl\,--warn-common /work/examples/build/cm-main.o /work/examples/build/cm-
 $ /work/examples/build/common-mismatch
 x = 0x0 y = 0x3b6c
 
+===== 7b. LTO sees the cross-translation-unit type mismatch =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -flto -fcommon -c /work/examples/common-mismatch/main.c -o /work/examples/build/lto-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -flto -fcommon -c /work/examples/common-mismatch/worker.c -o /work/examples/build/lto-worker.o
+$ gcc -flto -Wl\,--warn-common /work/examples/build/lto-main.o /work/examples/build/lto-worker.o -o /work/examples/build/lto-mismatch
+/usr/bin/ld: /work/examples/build/lto-worker.o (symbol from plugin): warning: common of `x' overridden by definition from /work/examples/build/lto-main.o (symbol from plugin)
+/work/examples/common-mismatch/worker.c:1:8: warning: type of 'x' does not match original declaration [-Wlto-type-mismatch]
+    1 | double x;
+      |        ^
+/work/examples/common-mismatch/main.c:4:5: note: type 'int' should match type 'double'
+    4 | int x = 0x3b6d;
+      |     ^
+/work/examples/common-mismatch/main.c:4:5: note: 'x' was previously declared here
+/work/examples/common-mismatch/main.c:4:5: note: code may be misoptimized unless '-fno-strict-aliasing' is used
+$ /work/examples/build/lto-mismatch
+x = 0x0 y = 0x3b6c
+
+===== 7c. different COMMON sizes: largest allocation wins =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-size/main.c -o /work/examples/build/cs-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-size/small.c -o /work/examples/build/cs-small.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -fcommon -c /work/examples/common-size/large.c -o /work/examples/build/cs-large.o
+0000000000000004 0000000000000004 C arena
+0000000000000020 0000000000000020 C arena
+$ gcc -Wl\,--warn-common /work/examples/build/cs-main.o /work/examples/build/cs-small.o /work/examples/build/cs-large.o -o /work/examples/build/common-size
+/usr/bin/ld: /work/examples/build/cs-large.o: warning: common of `arena' overriding smaller common from /work/examples/build/cs-small.o
+0000000000020018 0000000000000020 B arena
+$ /work/examples/build/common-size
+arena[31]=42
+
 ===== 8. static internal linkage: same source name, no collision =====
 $ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g /work/examples/static-internal/main.c /work/examples/static-internal/other.c -o /work/examples/build/static-internal
 $ /work/examples/build/static-internal
@@ -141,6 +169,19 @@ $ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/explicit-weak/p
 $ gcc /work/examples/build/ew-main.o /work/examples/build/ew-provider.o -o /work/examples/build/explicit-weak
 $ /work/examples/build/explicit-weak
 hook=7 provider-sees=7
+
+===== 9b. undefined ELF weak: zero value and no archive extraction =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-undefined/main.c -o /work/examples/build/wu-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-undefined/provider.c -o /work/examples/build/wu-provider.o
+$ ar rcs /work/examples/build/liboptional.a /work/examples/build/wu-provider.o
+$ gcc /work/examples/build/wu-main.o /work/examples/build/liboptional.a -o /work/examples/build/weak-archive
+                 w optional_hook
+$ /work/examples/build/weak-archive
+optional_hook: absent
+$ gcc /work/examples/build/wu-main.o /work/examples/build/wu-provider.o -o /work/examples/build/weak-explicit
+00000000000007d0 T optional_hook
+$ /work/examples/build/weak-explicit
+optional_hook: present
 
 ===== 10. weak + weak: observed link-order choice =====
 $ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/weak-weak/main.c -o /work/examples/build/ww-main.o
@@ -172,6 +213,240 @@ ld.lld: error: duplicate symbol: conflict
 >>>            /work/examples/build/ss-other.o:(.data+0x0)
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 [exit=1, expected non-zero]
+
+===== 12. compiler driver: gcc, cc, clang, raw ld, lld, and ldd =====
+$ gcc -print-prog-name=cc1
+/usr/libexec/gcc/aarch64-linux-gnu/13/cc1
+$ gcc -print-prog-name=ld
+ld
+$ gcc -print-file-name=crt1.o
+/usr/lib/gcc/aarch64-linux-gnu/13/../../../aarch64-linux-gnu/crt1.o
+$ gcc -print-file-name=libc.a
+/usr/lib/gcc/aarch64-linux-gnu/13/../../../aarch64-linux-gnu/libc.a
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/compiler-driver/main.c -o /work/examples/build/driver-main-gcc.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/compiler-driver/utils.c -o /work/examples/build/driver-utils-gcc.o
+$ cc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/compiler-driver/utils.c -o /work/examples/build/driver-utils-cc.o
+$ clang -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/compiler-driver/utils.c -o /work/examples/build/driver-utils-clang.o
+$ readelf -Wr /work/examples/build/driver-main-gcc.o
+
+Relocation section '.rela.text' at offset 0x7c0 contains 12 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+000000000000000c  0000001300000137 R_AARCH64_ADR_GOT_PAGE 0000000000000000 __stack_chk_guard + 0
+0000000000000010  0000001300000138 R_AARCH64_LD64_GOT_LO12_NC 0000000000000000 __stack_chk_guard + 0
+0000000000000028  0000000500000113 R_AARCH64_ADR_PREL_PG_HI21 0000000000000000 .rodata + 0
+000000000000002c  0000000500000115 R_AARCH64_ADD_ABS_LO12_NC 0000000000000000 .rodata + 0
+0000000000000030  000000140000011b R_AARCH64_CALL26       0000000000000000 __isoc99_scanf + 0
+0000000000000048  000000150000011b R_AARCH64_CALL26       0000000000000000 foo + 0
+0000000000000050  0000000500000113 R_AARCH64_ADR_PREL_PG_HI21 0000000000000000 .rodata + 8
+0000000000000054  0000000500000115 R_AARCH64_ADD_ABS_LO12_NC 0000000000000000 .rodata + 8
+0000000000000058  000000160000011b R_AARCH64_CALL26       0000000000000000 printf + 0
+0000000000000064  0000001300000137 R_AARCH64_ADR_GOT_PAGE 0000000000000000 __stack_chk_guard + 0
+0000000000000068  0000001300000138 R_AARCH64_LD64_GOT_LO12_NC 0000000000000000 __stack_chk_guard + 0
+0000000000000080  000000170000011b R_AARCH64_CALL26       0000000000000000 __stack_chk_fail + 0
+
+Relocation section '.rela.debug_info' at offset 0x8e0 contains 20 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000000008  0000000900000102 R_AARCH64_ABS32        0000000000000000 .debug_abbrev + 0
+000000000000000d  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 5b
+0000000000000012  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 6
+0000000000000016  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 0
+000000000000001a  0000000200000101 R_AARCH64_ABS64        0000000000000000 .text + 0
+000000000000002a  0000000b00000102 R_AARCH64_ABS32        0000000000000000 .debug_line + 0
+0000000000000031  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 19
+000000000000003f  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 3f
+0000000000000046  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + e4
+000000000000004d  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 6
+0000000000000054  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 108
+000000000000005b  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + fe
+0000000000000062  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 52
+0000000000000069  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 2b
+0000000000000073  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + f7
+00000000000000a7  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 0
+00000000000000af  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 30
+00000000000000c3  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 4d
+00000000000000ce  0000000200000101 R_AARCH64_ABS64        0000000000000000 .text + 0
+00000000000000e1  0000000c00000102 R_AARCH64_ABS32        0000000000000000 .debug_str + 13
+
+Relocation section '.rela.debug_aranges' at offset 0xac0 contains 2 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000000006  0000000800000102 R_AARCH64_ABS32        0000000000000000 .debug_info + 0
+0000000000000010  0000000200000101 R_AARCH64_ABS64        0000000000000000 .text + 0
+
+Relocation section '.rela.debug_line' at offset 0xaf0 contains 7 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000000022  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 2c
+0000000000000026  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 32
+000000000000002a  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 51
+0000000000000034  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 5e
+0000000000000039  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 65
+000000000000003e  0000000d00000102 R_AARCH64_ABS32        0000000000000000 .debug_line_str + 6c
+0000000000000048  0000000200000101 R_AARCH64_ABS64        0000000000000000 .text + 0
+
+Relocation section '.rela.eh_frame' at offset 0xb98 contains 1 entry:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+000000000000001c  0000000200000105 R_AARCH64_PREL32       0000000000000000 .text + 0
+$ objdump -dr /work/examples/build/driver-main-gcc.o
+
+/work/examples/build/driver-main-gcc.o:     file format elf64-littleaarch64
+
+
+Disassembly of section .text:
+
+0000000000000000 <main>:
+   0:	d10083ff 	sub	sp, sp, #0x20
+   4:	a9017bfd 	stp	x29, x30, [sp, #16]
+   8:	910043fd 	add	x29, sp, #0x10
+   c:	90000000 	adrp	x0, 0 <__stack_chk_guard>
+			c: R_AARCH64_ADR_GOT_PAGE	__stack_chk_guard
+  10:	f9400000 	ldr	x0, [x0]
+			10: R_AARCH64_LD64_GOT_LO12_NC	__stack_chk_guard
+  14:	f9400001 	ldr	x1, [x0]
+  18:	f90007e1 	str	x1, [sp, #8]
+  1c:	d2800001 	mov	x1, #0x0                   	// #0
+  20:	910013e0 	add	x0, sp, #0x4
+  24:	aa0003e1 	mov	x1, x0
+  28:	90000000 	adrp	x0, 0 <main>
+			28: R_AARCH64_ADR_PREL_PG_HI21	.rodata
+  2c:	91000000 	add	x0, x0, #0x0
+			2c: R_AARCH64_ADD_ABS_LO12_NC	.rodata
+  30:	94000000 	bl	0 <__isoc99_scanf>
+			30: R_AARCH64_CALL26	__isoc99_scanf
+  34:	7100041f 	cmp	w0, #0x1
+  38:	54000060 	b.eq	44 <main+0x44>  // b.none
+  3c:	52800020 	mov	w0, #0x1                   	// #1
+  40:	14000008 	b	60 <main+0x60>
+  44:	b94007e0 	ldr	w0, [sp, #4]
+  48:	94000000 	bl	0 <foo>
+			48: R_AARCH64_CALL26	foo
+  4c:	2a0003e1 	mov	w1, w0
+  50:	90000000 	adrp	x0, 0 <main>
+			50: R_AARCH64_ADR_PREL_PG_HI21	.rodata+0x8
+  54:	91000000 	add	x0, x0, #0x0
+			54: R_AARCH64_ADD_ABS_LO12_NC	.rodata+0x8
+  58:	94000000 	bl	0 <printf>
+			58: R_AARCH64_CALL26	printf
+  5c:	52800000 	mov	w0, #0x0                   	// #0
+  60:	2a0003e1 	mov	w1, w0
+  64:	90000000 	adrp	x0, 0 <__stack_chk_guard>
+			64: R_AARCH64_ADR_GOT_PAGE	__stack_chk_guard
+  68:	f9400000 	ldr	x0, [x0]
+			68: R_AARCH64_LD64_GOT_LO12_NC	__stack_chk_guard
+  6c:	f94007e3 	ldr	x3, [sp, #8]
+  70:	f9400002 	ldr	x2, [x0]
+  74:	eb020063 	subs	x3, x3, x2
+  78:	d2800002 	mov	x2, #0x0                   	// #0
+  7c:	54000040 	b.eq	84 <main+0x84>  // b.none
+  80:	94000000 	bl	0 <__stack_chk_fail>
+			80: R_AARCH64_CALL26	__stack_chk_fail
+  84:	2a0103e0 	mov	w0, w1
+  88:	a9417bfd 	ldp	x29, x30, [sp, #16]
+  8c:	910083ff 	add	sp, sp, #0x20
+  90:	d65f03c0 	ret
+$ gcc /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-gcc
+$ cc /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-cc.o -o /work/examples/build/driver-cc
+$ clang /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-clang.o -o /work/examples/build/driver-clang
+$ bash -c printf\ \'4\\n\'\ \|\ \'/work/examples/build/driver-gcc\'
+output is 64
+$ ld /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-raw-ld
+ld: warning: cannot find entry symbol _start; defaulting to 0000000000400120
+ld: /work/examples/build/driver-main-gcc.o: in function `main':
+/work/examples/compiler-driver/main.c:6:(.text+0xc): undefined reference to `__stack_chk_guard'
+ld: /work/examples/compiler-driver/main.c:6:(.text+0x10): undefined reference to `__stack_chk_guard'
+ld: /work/examples/compiler-driver/main.c:9:(.text+0x30): undefined reference to `__isoc99_scanf'
+ld: /work/examples/compiler-driver/main.c:13:(.text+0x58): undefined reference to `printf'
+ld: /work/examples/compiler-driver/main.c:15:(.text+0x64): undefined reference to `__stack_chk_guard'
+ld: /work/examples/compiler-driver/main.c:15:(.text+0x68): undefined reference to `__stack_chk_guard'
+ld: /work/examples/compiler-driver/main.c:15:(.text+0x80): undefined reference to `__stack_chk_fail'
+[exit=1, expected non-zero]
+$ clang -fuse-ld=lld /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-lld
+$ readelf -p .comment /work/examples/build/driver-lld
+
+String dump of section '.comment':
+  [     1]  GCC: (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+  [    2e]  Linker: Ubuntu LLD 18.1.3
+
+$ ldd /work/examples/build/driver-gcc
+	linux-vdso.so.1 (0x0000ffffa090c000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffffa06e0000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffffa08d0000)
+
+===== 13. glibc also supports static linking =====
+$ gcc -static /work/examples/build/driver-main-gcc.o /work/examples/build/driver-utils-gcc.o -o /work/examples/build/driver-static
+$ file /work/examples/build/driver-static
+/work/examples/build/driver-static: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), statically linked, BuildID[sha1]=1c16cc1940fb788a8b7a5ea489cccbbd95c0a7d0, for GNU/Linux 3.7.0, with debug_info, not stripped
+$ ldd /work/examples/build/driver-static
+	not a dynamic executable
+[exit=1, expected non-zero]
+$ bash -c printf\ \'3\\n\'\ \|\ \'/work/examples/build/driver-static\'
+output is 27
+
+===== 14. static archive: select referenced members only =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -I/work/examples/static-library -c /work/examples/static-library/main.c -o /work/examples/build/sl-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -I/work/examples/static-library -c /work/examples/static-library/addvec.c -o /work/examples/build/sl-addvec.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -I/work/examples/static-library -c /work/examples/static-library/multvec.c -o /work/examples/build/sl-multvec.o
+$ ar rcs /work/examples/build/libvector.a /work/examples/build/sl-addvec.o /work/examples/build/sl-multvec.o
+$ ar t /work/examples/build/libvector.a
+sl-addvec.o
+sl-multvec.o
+$ nm -s /work/examples/build/libvector.a
+
+Archive index:
+addvec_calls in sl-addvec.o
+addvec in sl-addvec.o
+multvec_calls in sl-multvec.o
+multvec in sl-multvec.o
+
+sl-addvec.o:
+0000000000000000 T addvec
+0000000000000000 B addvec_calls
+
+sl-multvec.o:
+0000000000000000 T multvec
+0000000000000000 B multvec_calls
+$ gcc /work/examples/build/sl-main.o /work/examples/build/libvector.a -o /work/examples/build/vector-archive
+$ /work/examples/build/vector-archive
+result = [4, 6]
+0000000000000900 T addvec
+0000000000020014 B addvec_calls
+$ nm -g --defined-only /work/examples/build/vector-archive | grep multvec
+[symbol absent, as expected]
+$ gcc /work/examples/build/sl-main.o /work/examples/build/sl-addvec.o /work/examples/build/sl-multvec.o -o /work/examples/build/vector-objects
+0000000000000900 T addvec
+0000000000020014 B addvec_calls
+00000000000009a4 T multvec
+0000000000020018 B multvec_calls
+$ gcc /work/examples/build/libvector.a /work/examples/build/sl-main.o -o /work/examples/build/vector-wrong-order
+/usr/bin/ld: /work/examples/build/sl-main.o: in function `main':
+/work/examples/static-library/main.c:11:(.text+0x50): undefined reference to `addvec'
+collect2: error: ld returned 1 exit status
+[exit=1, expected non-zero]
+$ clang -fuse-ld=lld /work/examples/build/libvector.a /work/examples/build/sl-main.o -o /work/examples/build/vector-lld-backref
+$ /work/examples/build/vector-lld-backref
+result = [4, 6]
+$ clang -fuse-ld=lld -Wl\,--warn-backrefs /work/examples/build/libvector.a /work/examples/build/sl-main.o -o /work/examples/build/vector-lld-warn-backref
+ld.lld: warning: backward reference detected: addvec in /work/examples/build/sl-main.o refers to /work/examples/build/libvector.a(sl-addvec.o)
+
+===== 15. circular archive dependency: repeat or group =====
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/archive-cycle/main.c -o /work/examples/build/cycle-main.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/archive-cycle/x.c -o /work/examples/build/cycle-x.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/archive-cycle/x_helper.c -o /work/examples/build/cycle-x-helper.o
+$ gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g -c /work/examples/archive-cycle/y.c -o /work/examples/build/cycle-y.o
+$ ar rcs /work/examples/build/libx.a /work/examples/build/cycle-x.o /work/examples/build/cycle-x-helper.o
+$ ar rcs /work/examples/build/liby.a /work/examples/build/cycle-y.o
+$ gcc /work/examples/build/cycle-main.o /work/examples/build/libx.a /work/examples/build/liby.a -o /work/examples/build/cycle-once
+/usr/bin/ld: /work/examples/build/liby.a(cycle-y.o): in function `y':
+/work/examples/archive-cycle/y.c:5:(.text+0x10): undefined reference to `x_helper'
+collect2: error: ld returned 1 exit status
+[exit=1, expected non-zero]
+$ gcc /work/examples/build/cycle-main.o /work/examples/build/libx.a /work/examples/build/liby.a /work/examples/build/libx.a -o /work/examples/build/cycle-repeat
+$ /work/examples/build/cycle-repeat
+x(3) = 17
+$ gcc /work/examples/build/cycle-main.o -Wl\,--start-group /work/examples/build/libx.a /work/examples/build/liby.a -Wl\,--end-group -o /work/examples/build/cycle-group
+$ /work/examples/build/cycle-group
+x(3) = 17
+$ clang -fuse-ld=lld /work/examples/build/cycle-main.o /work/examples/build/libx.a /work/examples/build/liby.a -o /work/examples/build/cycle-lld
+$ /work/examples/build/cycle-lld
+x(3) = 17
 
 ===== all checks passed =====
 ELF experiments completed successfully.

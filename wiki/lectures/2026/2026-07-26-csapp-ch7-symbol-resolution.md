@@ -8,13 +8,15 @@ related_to:
   - 0001-compile-linking
 has:
   - chapter-7.6.1
+  - chapter-7.6.2
+  - chapter-7.6.3
 artifact_path: chapter07/chapter-7.6.1.html
 source_url: https://csapp.cs.cmu.edu/3e/errata.html
 ---
 
-# 2026-07-26 CSAPP Ch7.6.1 Duplicate Symbol Names
+# 2026-07-26 CSAPP Ch7.6 Symbol Resolution
 
-CSAPP 3판 §7.6.1 **How Linkers Resolve Duplicate Symbol Names** 강의노트.
+CSAPP 3판 §7.6 **Symbol Resolution** 강의노트.
 
 - Markdown:
   [chapter07/chapter-7.6.1.md](../../../chapter07/chapter-7.6.1.md)
@@ -29,7 +31,11 @@ CSAPP 3판 §7.6.1 **How Linkers Resolve Duplicate Symbol Names** 강의노트.
 - C tentative definition
 - `.data`, `.bss`, `COMMON`의 관계
 - GCC 10의 `-fno-common` 기본값 변경
-- GNU ld와 lld의 실제 진단
+- compiler driver, `cc1`, `ld`, `lld`, `ldd`, libc의 역할
+- 7.6.2 정적 라이브러리와 필요한 archive member의 선택
+- 7.6.3 `E`, `U`, `D` 집합과 라이브러리 입력 순서
+- GNU ld와 LLD의 archive 탐색 차이
+- 7.7 재배치로 이어지는 섹션 주소 배정과 참조 수정
 - `gcc`, `clang`, `nm`, `readelf`, `objdump` 재현 실습
 
 ## 관련

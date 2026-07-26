@@ -9,6 +9,23 @@ const html = await readFile(htmlPath, "utf8");
 const markdown = await readFile(markdownPath, "utf8");
 const failures = [];
 
+for (const [name, document] of [
+  ["HTML", html],
+  ["Markdown", markdown],
+]) {
+  if (document.includes("\u2014")) {
+    failures.push(`${name} contains a forbidden em dash`);
+  }
+  for (const phrase of [
+    ["면접", "질문"].join(" "),
+    ["이", "문서에서", "새로", "제작한", "설명용", "SVG"].join(" "),
+  ]) {
+    if (document.includes(phrase)) {
+      failures.push(`${name} contains removed wording: ${phrase}`);
+    }
+  }
+}
+
 if (/https?:\/\/[^"' )]+(?:\.css|\.js)/i.test(html)) {
   failures.push("external CSS/JS dependency found");
 }
@@ -26,6 +43,29 @@ for (const required of [
   if (!markdown.includes(required)) {
     failures.push(`missing Markdown label: ${required}`);
   }
+}
+
+for (const requiredId of [
+  "driver-libc",
+  "static-libraries",
+  "archive-search",
+]) {
+  if (!html.includes(`id="${requiredId}"`)) {
+    failures.push(`missing HTML section: ${requiredId}`);
+  }
+  if (!markdown.includes(`<a id="${requiredId}"></a>`)) {
+    failures.push(`missing Markdown section: ${requiredId}`);
+  }
+}
+
+for (const requiredText of [
+  "relocation entry",
+  "libvector.a",
+  "--warn-backrefs",
+  "not a dynamic executable",
+]) {
+  if (!html.includes(requiredText)) failures.push(`missing HTML content: ${requiredText}`);
+  if (!markdown.includes(requiredText)) failures.push(`missing Markdown content: ${requiredText}`);
 }
 
 const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
@@ -69,8 +109,8 @@ for (const match of markdown.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
 }
 
 const markdownFigures = [...markdown.matchAll(/!\[[^\]]+\]\(([^)]+)\)/g)];
-if (markdownFigures.length !== 6) {
-  failures.push(`expected 6 Markdown figures, found ${markdownFigures.length}`);
+if (markdownFigures.length !== 9) {
+  failures.push(`expected 9 Markdown figures, found ${markdownFigures.length}`);
 }
 
 const codeFences = [...markdown.matchAll(/^```/gm)].length;

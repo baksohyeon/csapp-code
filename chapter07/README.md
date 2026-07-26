@@ -1,16 +1,16 @@
-# CSAPP Chapter 7.6.1 — Duplicate Symbol Names
+# CSAPP Chapter 7.6: Symbol Resolution
 
-2026-07-26 스터디용 강의노트와 재현 실습이다. CSAPP 3판의 정확한 절 제목은
-**7.6.1 How Linkers Resolve Duplicate Symbol Names**이며, 교재의 설명을 현대 GCC와
-ELF 관점에서 다시 검증한다.
+2026-07-26 스터디용 강의노트와 재현 실습이다. CSAPP 3판 §7.6의 중복 심볼 이름,
+정적 라이브러리, 아카이브 탐색을 현대 GCC와 ELF 도구로 확인한다.
+CSAPP 3판의 §7.6은 §7.6.3에서 끝나며 다음 절은 §7.7 Relocation이다.
 
 ## 읽는 순서
 
-1. [chapter-7.6.1.md](chapter-7.6.1.md) — GitHub에서 읽는 Markdown 강의노트
-2. [chapter-7.6.1.html](chapter-7.6.1.html) — 반응형·다크 모드 HTML 강의노트
-3. [references.md](references.md) — 정본과 공식 문서, 조사 범위
-4. [examples/](examples/) — 사례별 C 소스
-5. [results/verified-linux-aarch64.txt](results/verified-linux-aarch64.txt) — 실제 검증 출력
+1. [chapter-7.6.1.md](chapter-7.6.1.md): GitHub에서 읽는 Markdown 강의노트
+2. [chapter-7.6.1.html](chapter-7.6.1.html): 반응형·다크 모드 HTML 강의노트
+3. [references.md](references.md): 정본과 공식 문서, 조사 범위
+4. [examples/](examples/): 사례별 C 소스
+5. [results/verified-linux-aarch64.txt](results/verified-linux-aarch64.txt): 실제 검증 출력
 
 `figures/`에는 강의노트용 SVG 원본이 있다. 외부 CDN이나 네트워크 요청 없이 HTML과
 로컬 자산만으로 열 수 있다. Markdown은 HTML과 같은 학습 내용을 유지하면서 GitHub의
@@ -46,9 +46,16 @@ cd chapter07
 - tentative definition의 `COMMON`/`.bss` 배치
 - GCC 10 이전/이후 의미를 재현하는 `-fcommon`/`-fno-common`
 - 서로 다른 타입의 중복 이름
+- 크기가 다른 COMMON의 최대 크기·정렬 병합
 - `static` 내부 연결
 - 실제 ELF `STB_WEAK`
+- unresolved weak의 0 값과 정적 라이브러리 미추출
+- LTO의 번역 단위 간 타입 불일치 진단
 - GNU ld와 lld의 진단 및 입력 순서 관찰
+- compiler driver, raw `ld`, `lld`, `ldd`, glibc 정적 링크
+- 정적 archive에서 참조된 멤버만 선택하는 동작
+- GNU ld의 왼쪽부터의 탐색, 순환 archive의 반복과 그룹 처리
+- LLD의 backward reference와 `--warn-backrefs`
 
 빌드 산출물은 `examples/build/`에 생성되며 Git에서 제외한다. 검증 환경과 텍스트 출력은
 `results/verified-linux-aarch64.txt`에 기록한다. `.o` 파일은 CPU/플랫폼 의존 산출물이므로
@@ -63,7 +70,4 @@ node chapter07/verify-html.mjs
 HTML과 Markdown의 필수 학습 블록, 내부 fragment link, 로컬 자산, 이미지 대체 텍스트,
 코드 fence 및 외부 CSS/JS 의존성 여부를 검사한다.
 
-## 문서 상태
-
-이 문서는 Chapter 7 전체 시리즈의 첫 초안이다. 7.1–7.5의 선행 개념은 `REMIND`로 필요한
-만큼만 복원하고, 다음 절인 7.6.2 정적 라이브러리 탐색은 범위 밖으로 남겨 두었다.
+7.1~7.5의 선행 개념과 7.7 재배치로 넘어가는 흐름은 `REMIND`에서 다룬다.

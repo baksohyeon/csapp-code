@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 610" role="img" aria-labelledby="title desc">
+  <title id="title">정적 라이브러리 해석의 E U D 집합과 입력 순서</title>
+  <desc id="desc">링커가 입력을 왼쪽에서 오른쪽으로 처리하면서 E에는 포함할 오브젝트를, U에는 미해결 심볼을, D에는 이미 찾은 정의를 기록하는 과정</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#3569b8"/>
+    </marker>
+    <style>
+      .bg{fill:#f7f9fc}.panel{fill:#fff;stroke:#c8d4e5;stroke-width:2}.set{fill:#e8f0fe;stroke:#7ba4df;stroke-width:2}
+      .archive{fill:#f1f4f8;stroke:#aab8ca;stroke-width:2}.ok{fill:#e6f4ea;stroke:#58a16b;stroke-width:2}
+      .warn{fill:#fff5d6;stroke:#c79932;stroke-width:2}.line{stroke:#3569b8;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .t{font:700 22px system-ui,sans-serif;fill:#152033}.s{font:500 15px system-ui,sans-serif;fill:#506078}
+      .mono{font:650 16px ui-monospace,monospace;fill:#18355d}
+    </style>
+  </defs>
+  <rect class="bg" width="1100" height="610" rx="24"/>
+  <text class="t" x="44" y="50">왼쪽에서 오른쪽으로 입력을 한 번 훑는다</text>
+  <text class="s" x="44" y="78">archive 내부는 새 멤버가 더 선택되지 않을 때까지 반복하지만, 지나간 archive로 자동 복귀하지 않는다.</text>
+
+  <rect class="set" x="45" y="112" width="300" height="114" rx="16"/>
+  <text class="t" x="72" y="148">E</text>
+  <text class="s" x="112" y="148">실행 파일에 포함할 오브젝트</text>
+  <text class="mono" x="72" y="188">main.o, selected members</text>
+
+  <rect class="set" x="400" y="112" width="300" height="114" rx="16"/>
+  <text class="t" x="427" y="148">U</text>
+  <text class="s" x="467" y="148">아직 정의를 찾지 못한 심볼</text>
+  <text class="mono" x="427" y="188">addvec, printf, ...</text>
+
+  <rect class="set" x="755" y="112" width="300" height="114" rx="16"/>
+  <text class="t" x="782" y="148">D</text>
+  <text class="s" x="822" y="148">지금까지 찾은 정의</text>
+  <text class="mono" x="782" y="188">main, addvec, ...</text>
+
+  <rect class="panel" x="45" y="300" width="220" height="100" rx="16"/>
+  <text class="mono" x="155" y="341" text-anchor="middle">main.o</text>
+  <text class="s" x="155" y="371" text-anchor="middle">U에 addvec 추가</text>
+  <path class="line" d="M265 350H325"/>
+
+  <rect class="archive" x="325" y="300" width="220" height="100" rx="16"/>
+  <text class="mono" x="435" y="341" text-anchor="middle">libvector.a</text>
+  <text class="s" x="435" y="371" text-anchor="middle">addvec.o 선택</text>
+  <path class="line" d="M545 350H605"/>
+
+  <rect class="ok" x="605" y="300" width="220" height="100" rx="16"/>
+  <text class="mono" x="715" y="341" text-anchor="middle">U = ∅</text>
+  <text class="s" x="715" y="371" text-anchor="middle">링크 가능</text>
+
+  <text class="t" x="45" y="480">순서를 바꾸면</text>
+  <rect class="archive" x="45" y="510" width="220" height="72" rx="14"/>
+  <text class="mono" x="155" y="553" text-anchor="middle">libvector.a</text>
+  <path class="line" d="M265 546H325"/>
+  <rect class="panel" x="325" y="510" width="220" height="72" rx="14"/>
+  <text class="mono" x="435" y="553" text-anchor="middle">main.o</text>
+  <path class="line" d="M545 546H605"/>
+  <rect class="warn" x="605" y="510" width="450" height="72" rx="14"/>
+  <text class="mono" x="830" y="540" text-anchor="middle">U = { addvec }</text>
+  <text class="s" x="830" y="566" text-anchor="middle">지나간 archive를 다시 보지 않아 링크 오류</text>
+</svg>

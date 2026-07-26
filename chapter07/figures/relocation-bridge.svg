@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">심볼 해석 뒤 재배치가 진행되는 순서</title>
+  <desc id="desc">입력 섹션을 합치고 주소를 배정한 다음 재배치 엔트리를 읽어 코드와 데이터의 참조값을 수정한다.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f7f9fc}.box{fill:#fff;stroke:#9fb1c7;stroke-width:2}.head{fill:#eaf1fa;stroke:#7395bd;stroke-width:2}
+      .arrow{fill:none;stroke:#5f7693;stroke-width:3;marker-end:url(#m)}.title{font:700 25px system-ui,sans-serif;fill:#18263a}
+      .body{font:500 18px system-ui,sans-serif;fill:#4e6076}.mono{font:600 17px ui-monospace,monospace;fill:#29486d}
+      .label{font:700 15px ui-monospace,monospace;fill:#58708c}
+    </style>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#5f7693"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1200" height="520" rx="20"/>
+  <text class="label" x="70" y="58">7.6 SYMBOL RESOLUTION</text>
+  <rect class="head" x="70" y="80" width="300" height="145" rx="16"/>
+  <text class="title" x="100" y="126">참조와 정의 연결</text>
+  <text class="mono" x="100" y="167">call foo → foo 정의</text>
+  <text class="body" x="100" y="199">아직 최종 주소는 정해지지 않음</text>
+
+  <path class="arrow" d="M370 152 H445"/>
+
+  <text class="label" x="465" y="58">7.7 STEP 1</text>
+  <rect class="box" x="445" y="80" width="310" height="145" rx="16"/>
+  <text class="title" x="475" y="126">섹션 병합과 주소 배정</text>
+  <text class="mono" x="475" y="167">.text + .text → .text</text>
+  <text class="body" x="475" y="199">섹션, 심볼의 실행 주소 확정</text>
+
+  <path class="arrow" d="M755 152 H830"/>
+
+  <text class="label" x="850" y="58">7.7 STEP 2</text>
+  <rect class="head" x="830" y="80" width="300" height="145" rx="16"/>
+  <text class="title" x="860" y="126">참조 위치 수정</text>
+  <text class="mono" x="860" y="167">.rela.text / .rela.data</text>
+  <text class="body" x="860" y="199">명령어와 포인터에 값 기록</text>
+
+  <rect class="box" x="70" y="290" width="1060" height="155" rx="16"/>
+  <text class="title" x="100" y="336">재배치 엔트리가 알려 주는 것</text>
+  <text class="mono" x="100" y="379">offset</text>
+  <text class="body" x="180" y="379">어디를 고칠지</text>
+  <text class="mono" x="390" y="379">symbol</text>
+  <text class="body" x="475" y="379">어느 정의를 쓸지</text>
+  <text class="mono" x="720" y="379">type + addend</text>
+  <text class="body" x="880" y="379">어떻게 값을 계산할지</text>
+  <text class="body" x="100" y="417">PC 상대 참조의 대표식: S + A - P　　절대 주소 참조의 대표식: S + A</text>
+</svg>
