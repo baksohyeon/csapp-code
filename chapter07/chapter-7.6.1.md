@@ -1007,8 +1007,8 @@ glibc와 함께 설치되는 경우가 많지만 둘은 별도 프로젝트다. 
 | macOS | 정적 라이브러리는 지원하지만, 시스템 libc까지 포함한 완전 정적 서드파티 실행 파일은 지원하지 않음 |
 | MSVC | `/MD`는 DLL CRT, `/MT`는 정적 CRT. Visual C++ Redistributable은 주로 `/MD` 실행 파일에 필요한 런타임 DLL을 배포 |
 
-glibc가 동적 링크만 지원한다는 설명은 틀리다. 다음 실험은 Ubuntu의 `libc.a`로 정적
-실행 파일을 만들었다.
+glibc는 동적 링크와 정적 링크를 모두 지원한다. 다음 Ubuntu 실험에서는 `gcc -static`이
+`libc.a`를 사용해 정적 실행 파일을 만들었다.
 
 ```text
 $ gcc -static main.o utils.o -o driver-static
