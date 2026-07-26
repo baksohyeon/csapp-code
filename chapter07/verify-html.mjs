@@ -31,7 +31,7 @@ if (/https?:\/\/[^"' )]+(?:\.css|\.js)/i.test(html)) {
 }
 
 for (const required of [
-  "ELI5",
+  "ELI10",
   "REMIND",
   "WARNING",
   "GOTCHA",
@@ -51,6 +51,8 @@ for (const requiredId of [
   "loader-aslr",
   "static-libraries",
   "archive-search",
+  "relocation-preview",
+  "modern-linkers",
 ]) {
   if (!html.includes(`id="${requiredId}"`)) {
     failures.push(`missing HTML section: ${requiredId}`);
@@ -58,6 +60,39 @@ for (const requiredId of [
   if (!markdown.includes(`<a id="${requiredId}"></a>`)) {
     failures.push(`missing Markdown section: ${requiredId}`);
   }
+}
+
+const expectedSectionOrder = [
+  "reading",
+  "mapping",
+  "eli10",
+  "context",
+  "rules",
+  "book-cases",
+  "elf-truth",
+  "storage",
+  "gcc10",
+  "lab",
+  "linkers",
+  "beyond-book",
+  "static-libraries",
+  "driver-libc",
+  "archive-search",
+  "practice",
+  "glossary",
+  "relocation-preview",
+  "modern-linkers",
+  "lto-thinlto",
+  "loader-aslr",
+  "beyond",
+];
+const htmlSectionOrder = [...html.matchAll(/<section id="([^"]+)">/g)].map((match) => match[1]);
+const markdownSectionOrder = [...markdown.matchAll(/<a id="([^"]+)"><\/a>/g)].map((match) => match[1]);
+if (htmlSectionOrder.join("\n") !== expectedSectionOrder.join("\n")) {
+  failures.push(`unexpected HTML section order: ${htmlSectionOrder.join(", ")}`);
+}
+if (markdownSectionOrder.join("\n") !== expectedSectionOrder.join("\n")) {
+  failures.push(`unexpected Markdown section order: ${markdownSectionOrder.join(", ")}`);
 }
 
 for (const requiredText of [

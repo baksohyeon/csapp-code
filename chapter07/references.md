@@ -27,19 +27,24 @@
      필요한 archive member의 선택을 설명한다.
    - 7.6.3은 `E`, `U`, `D` 집합을 사용한 왼쪽부터의 archive 탐색, 라이브러리 순서,
      순환 의존성 처리, Practice Problem 7.3을 다룬다.
-2. [CS:APP3e 공식 정오표](https://csapp.cs.cmu.edu/3e/errata.html)
+2. [CS:APP3e 공식 목차](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf)
+   - 7.6.1, 7.6.2, 7.6.3 다음에 7.7 Relocation이 이어지는 절 순서를 확인
+3. [CS:APP3e 공식 정오표](https://csapp.cs.cmu.edu/3e/errata.html)
    - p.680: GCC 10부터 `-fno-common`이 기본이므로 책의 multiply-defined weak 사례가
      이제 기본 설정에서 링크 오류가 됨.
    - p.682: `foo5`의 정확한 손상 값은 시스템 의존적임.
-3. [CS:APP3e 공식 Figure 원본](https://csapp.cs.cmu.edu/3e/figures.html)
+4. [CS:APP3e 공식 Figure 원본](https://csapp.cs.cmu.edu/3e/figures.html)
    - Chapter 7 전체 그림 목록을 대조했다.
    - 7.6.1 자체에는 공식 번호 Figure가 없다.
 
 ## 2. 공식 강의자료
 
-1. [CMU 15-213 Linking 강의 슬라이드](https://www.cs.cmu.edu/afs/cs/academic/class/15213-m14/www/lectures/15-linking.pdf)
+1. [CS:APP 공식 Chapter 1 컴파일 과정 그림](https://csapp.cs.cmu.edu/3e/ics3/intro/compilation.pdf)
+   - C 소스가 전처리기, 컴파일러, 어셈블러, 링커를 거쳐 실행 파일이 되는 과정
+   - 컴파일 결과인 재배치 가능 오브젝트와 링크 결과인 실행 파일의 구분
+2. [CMU 15-213 Linking 강의 슬라이드](https://www.cs.cmu.edu/afs/cs/academic/class/15213-m14/www/lectures/15-linking.pdf)
    - strong/weak 세 규칙, 심볼 해석, relocation의 강의 순서를 대조했다.
-2. [서울대학교 Systems Programming: Code Optimization and Linking](https://compsec.snu.ac.kr/class/systems-programming/slides/07-optimization-linking.pdf)
+3. [서울대학교 Systems Programming: Code Optimization and Linking](https://compsec.snu.ac.kr/class/systems-programming/slides/07-optimization-linking.pdf)
    - CSAPP 저자 자료를 기반으로 만든 공개 강의자료다.
    - compiler driver → relocatable object → linker 흐름, 전역/지역/외부 심볼의 분류,
      symbol resolution과 relocation의 경계를 교차 확인했다.
