@@ -16,6 +16,35 @@ source_url: https://i.hyeon.me/csapp
 
 # 2026-10-04 CSAPP Ch8 Exceptional Control Flow
 
+> **범위:** CSAPP 3e §8.1, §8.2.1-§8.2.4
+
+## 읽는 기준
+
+- **[CSAPP]** 교재 §8.1-§8.2.4의 모델
+- **[LECTURE]** 스터디에서 확장한 concurrency, C10K, green thread, Go/Erlang runtime
+- **[OFFICIAL]** Linux man-pages, Go runtime, Erlang/OTP 공식 문서로 확인한 구현 세부
+- **[LAB]** Linux에서 직접 확인할 수 있는 관찰 절차
+
+![실행 계층](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg)
+
+CPU exception, Linux signal, language exception, runtime panic은 서로 다른 계층에서 나타날 수 있다. 문서를 읽을 때 용어의 계층과 taxonomy를 먼저 확인한다.
+
+## 교재 대응표
+
+| CSAPP 절 | 핵심 | 보충 |
+|---|---|---|
+| 8.1.1 | exception handling, exception table | strace, syscall ABI |
+| 8.1.2 | interrupt / trap / fault / abort | ISA/OS 용어 차이 |
+| 8.1.3 | Linux/x86 exception과 syscall | x86-64와 arm64 ABI |
+| 8.2.1 | logical control flow | scheduler 관점 |
+| 8.2.2 | concurrent flow | Pike 구분, C10K |
+| 8.2.3 | private address space | /proc/PID/maps |
+| 8.2.4 | user/kernel mode | privileged operation, reboot(2) |
+
+## ELI10
+
+프로그램은 CPU에서 실행된다. Kernel과 CPU는 program이 machine 전체를 임의로 바꾸지 못하도록 권한을 나눈다. Application은 system call을 통해 kernel 기능을 요청한다. Process는 자기만의 실행 흐름과 virtual address space를 가진 것처럼 보이며 kernel scheduler와 MMU가 이 추상화를 만든다.
+
 오늘 범위는 **8.1 Exceptions부터 8.2.4 User and Kernel Modes까지**다.
 
 HTML 원본: [2026-10-04-csapp-ch8-exceptional-control-flow.html](2026-10-04-csapp-ch8-exceptional-control-flow.html)
@@ -38,6 +67,12 @@ Processor가 event를 감지하면 현재 control flow를 중단하고 exception
 | Trap | 의도된 synchronous event | 다음 instruction |
 | Fault | 복구 가능한 오류 가능성 | 복구 후 faulting instruction 재실행 가능 |
 | Abort | 심각한 hardware/system 상태 | application flow로 정상 복귀하지 않음 |
+
+### System call과 ABI
+
+**[OFFICIAL]** Linux system call은 application과 kernel 사이의 기본 interface다. Architecture마다 syscall instruction과 register convention이 다르다.
+
+x86-64 raw syscall ABI는 syscall number를 eax/rax에 두고 arg1..arg6을 rdi, rsi, rdx, r10, r8, r9에 둔다. arm64는 x0..x5를 argument register로 사용한다.
 
 ### System call을 strace로 보기
 
@@ -65,6 +100,8 @@ CS:APP는 두 logical flow의 실행 interval이 시간상 겹치면 concurrent�
 
 ### Blocking call과 function coloring
 
+![Go G/M/P](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg)
+
 Async runtime에서 blocking call은 worker thread를 점유한다. Non-blocking I/O는 대기 상태를 runtime에 등록하고 worker가 다른 task를 실행할 수 있게 한다.
 
 Go runtime의 핵심 실행 단위는 G/M/P다.
@@ -87,7 +124,11 @@ Process A의 virtual address `0x1000`과 Process B의 virtual address `0x1000`�
 
 Process address space에는 read-only code, read/write data, run-time heap, memory-mapped region, user stack, kernel virtual memory 영역이 나타난다.
 
-### 주소 문제 조사
+### [LAB] 주소 문제 조사
+
+**[OFFICIAL]** /proc/PID/maps는 mapped region과 access permission을 보여준다. r/w/x는 read/write/execute, s는 shared, p는 private copy-on-write mapping을 뜻한다. /proc/PID/pagemap은 virtual page의 physical frame 또는 swap mapping 정보를 제공하며 접근 권한의 영향을 받는다.
+
+### 조사 절차
 
 ```bash
 cat /proc/<pid>/maps
@@ -142,3 +183,20 @@ hlt
 - virtual mapping: `/proc/PID/maps`, `pmap`
 - register와 fault 위치: `gdb`, core dump
 - 많은 connection의 blocking: `strace`, `/proc`, runtime profiler
+
+
+## 역사와 레거시
+
+- User-level execution abstraction은 kernel thread 이전에도 여러 실행 흐름을 표현하는 데 사용됐다.
+- Kernel thread는 OS scheduler가 thread를 직접 scheduling하는 모델을 제공한다.
+- Event-driven I/O는 적은 thread로 많은 connection을 다루는 server 구조를 발전시켰다.
+- Erlang process, goroutine, async task, virtual thread는 logical execution flow와 OS thread의 관계를 runtime 수준에서 관리한다.
+- Go concurrency 설계는 CSP, Newsqueak, Alef, Limbo 등의 계보와 연결된다.
+
+## 참고 자료
+
+- CSAPP 3e Chapter 8 §8.1-§8.2.4
+- Linux man-pages: syscall(2), exit_group(2), proc_pid_maps(5), proc_pid_pagemap(5), reboot(2)
+- Go runtime: runtime/HACKING, runtime/proc.go
+- Rob Pike, Concurrency is not Parallelism
+- Erlang/OTP ERTS NIF and dirty scheduler documentation
