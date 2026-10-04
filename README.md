@@ -8,7 +8,7 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 기록.
 | 무엇을 보고 싶나 | 어디로 |
 |------------------|--------|
 | 렌더링된 노트 (웹/모바일에서 바로 보기) | https://raspberrypi.bobcat-fort.ts.net/csapp/ |
-| 최신 강의노트 (Ch7.6 Symbol Resolution) | [레포 소스](chapter07/chapter-7.6.1.html) · [요약 wrapper](wiki/lectures/2026/2026-07-26-csapp-ch7-symbol-resolution.md) · [실습](chapter07/examples/) |
+| 최신 강의노트 (Ch8.1-8.2.4 Exceptional Control Flow) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [레포 소스](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [요약 wrapper](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.md) |
 | 이전 강의노트 (Ch6 Memory Hierarchy) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [레포 소스](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [요약 wrapper](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.md) |
 | 전체 목차 | [wiki/index.md](wiki/index.md) |
 | 교재 PDF | https://i.hyeon.me/csapp.pdf |

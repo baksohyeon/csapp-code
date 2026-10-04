@@ -9,12 +9,14 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.
 
 ## 최신
 
+- [[2026-10-04-csapp-ch8-exceptional-control-flow]]: Chapter 8.1-8.2.4 Exceptional Control Flow 강의노트
 - [[2026-07-26-csapp-ch7-symbol-resolution]]: Chapter 7.6 Symbol Resolution 강의노트
 - [[2026-07-05-csapp-ch6-memory-hierarchy]] — Chapter 6 Memory Hierarchy 통합 강의노트
 
 ## 강의노트 (Lectures)
 
 - 2026
+  - [[2026-10-04-csapp-ch8-exceptional-control-flow]]: Ch8.1-8.2.4 Exceptional Control Flow ([HTML 원본](lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html))
   - [[2026-07-26-csapp-ch7-symbol-resolution]]: Ch7.6 Symbol Resolution ([HTML 원본](../chapter07/chapter-7.6.1.html))
   - [[2026-07-05-csapp-ch6-memory-hierarchy]] — Ch6 Memory Hierarchy ([HTML 원본](lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html))
 
