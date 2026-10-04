@@ -45,12 +45,12 @@ AGENTS.md              ← 이 레포의 작성 규칙 (에이전트/사람 공�
 
 - **웹/모바일 (권장)**: 라즈베리파이 홈서버에 셀프호스팅되어 있어, 아래 주소로 어느 기기에서든
   렌더링된 노트를 바로 볼 수 있다 (Dokku 배포 + Tailscale Funnel 공개).
-  - 최신 강의노트: `https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html`
+  - 최신 강의노트: `https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html`
   - csapp 전체 (파일 목록): `https://raspberrypi.bobcat-fort.ts.net/csapp/`
 - **로컬**: 클론 후 HTML 파일을 브라우저로 연다.
   ```bash
   git clone git@github.com:baksohyeon/csapp-code.git
-  open csapp-code/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html
+  open csapp-code/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html
   ```
 
 ## 실습 실행하기
