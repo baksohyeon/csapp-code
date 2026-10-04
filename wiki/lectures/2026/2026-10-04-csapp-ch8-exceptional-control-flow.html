@@ -19,7 +19,7 @@ code,pre{font-family:var(--mono)}code{padding:1px 4px;border-radius:4px;border:1
 @media(max-width:420px){.hero-points{grid-template-columns:1fr}.hero .wrap{padding:24px 18px 22px}section{padding:22px 16px}.wrap{padding-left:12px;padding-right:12px}header.hero{padding-left:12px;padding-right:12px}}
 @media print{body{background:#fff;color:#000;font-size:11pt}.wrap{max-width:none;padding:0}.side-nav,.toc{display:none}header.hero,main.wrap{margin-left:0}.hero .wrap,section{box-shadow:none;border-color:#aaa}pre{white-space:pre-wrap;background:#f2f2f2;color:#000;border:1px solid #999}}
 </style></head><body><aside class="side-nav" aria-label="고정 목차"><p class="side-kicker">Study Map</p><p class="side-title">CSAPP Ch.8<br>Exceptional Control Flow</p><a href="#summary">오늘 범위</a><a href="#exceptions">8.1 Exceptions</a><a href="#processes">8.2 Processes</a><a href="#address-space">8.2.3 Address Space</a><a href="#modes">8.2.4 CPU Modes</a><a href="#debugging">Debugging</a><a href="#history">History</a><a href="#quiz">Check</a><a href="#references">References</a></aside><header class="hero"><div class="wrap"><p class="eyebrow">CSAPP Chapter 8 · 2026-10-04 강의노트</p><h1>Exceptional Control Flow</h1><p class="lead">프로그램이 운영체제와 만나는 지점부터 process의 private virtual address space와 CPU privilege mode까지 연결한다. 실행 흐름, 동시성, 메모리 격리, kernel 진입을 하나의 시스템 모델로 읽는다.</p><div class="hero-points"><div class="hero-point"><b>Exception</b><span>control flow가 kernel handler로 이동</span></div><div class="hero-point"><b>Process</b><span>logical flow와 address-space abstraction</span></div><div class="hero-point"><b>Memory</b><span>process별 private virtual address space</span></div><div class="hero-point"><b>Privilege</b><span>user mode와 kernel mode의 권한 경계</span></div></div></div></header><main class="wrap"><section id="summary"><h2>오늘 범위</h2><nav class="toc" aria-label="본문 목차">
-<a href="#exceptions">8.1 Exceptions</a><a href="#processes">8.2.1-8.2.2 Processes</a><a href="#address-space">8.2.3 Private Address Space</a><a href="#modes">8.2.4 User and Kernel Modes</a><a href="#debugging">디버깅 관점</a><a href="#history">역사와 레거시</a><a href="#quiz">체크 질문</a><a href="#references">참고 자료</a></nav></section><section id="exceptions"><h2>1. 8.1 Exceptions</h2>
+<a href="#exceptions">8.1 Exceptions</a><a href="#processes">8.2.1-8.2.2 Processes</a><a href="#address-space">8.2.3 Private Address Space</a><a href="#modes">8.2.4 User and Kernel Modes</a><a href="#debugging">디버깅 관점</a><a href="#history">역사와 레거시</a><a href="#quiz">체크 질문</a><a href="#references">참고 자료</a></nav></section><section id="exceptions"><h2>1. 8.1 Exceptions</h2><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg" alt="Exception control transfer" style="display:block;width:100%;height:auto"></div>
 <p>Processor가 event를 감지하면 현재 control flow를 중단하고 exception handler로 control을 넘긴다. Exception number가 exception table의 handler를 선택한다.</p>
 <div class="table-wrap"><table><tr><th>분류</th><th>원인</th><th>Handler 뒤</th></tr><tr><td>Interrupt</td><td>외부 I/O</td><td>다음 instruction</td></tr><tr><td>Trap</td><td>의도된 synchronous event</td><td>다음 instruction. System call이 대표 사례.</td></tr><tr><td>Fault</td><td>복구 가능한 오류 가능성</td><td>복구 후 faulting instruction 재실행 가능</td></tr><tr><td>Abort</td><td>심각한 hardware/system 상태</td><td>application flow로 정상 복귀하지 않음</td></tr></table></div>
 
@@ -34,7 +34,7 @@ exit_group(0)                  = ?
 <h3>8.2.1 Logical Control Flow</h3>
 <p>각 process는 자기 instruction이 연속해서 실행되는 것처럼 관찰한다. 실제 CPU에서는 여러 process의 실행 구간이 섞일 수 있다. Kernel scheduler가 CPU에서 실행할 context를 선택한다.</p>
 
-<h3>8.2.2 Concurrent Flows</h3>
+<h3>8.2.2 Concurrent Flows</h3><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg" alt="Concurrency timeline" style="display:block;width:100%;height:auto"></div>
 <p>CS:APP는 두 logical flow의 실행 interval이 시간상 겹치면 concurrent라고 정의한다. 서로 다른 processor/core에서 동시에 실행되는 concurrent flow를 parallel flow라고 설명한다.</p>
 <div class="note"><b>용어 범위</b><br>CS:APP는 실행 interval을 기준으로 정의한다. Rob Pike 계열 설명은 concurrency를 program composition과 structure의 관점에서, parallelism을 simultaneous execution의 관점에서 설명한다. 교재 문제에서는 CS:APP 정의를 사용한다.</div>
 
@@ -48,7 +48,7 @@ exit_group(0)                  = ?
 <h4>Go runtime</h4>
 <div class="table-wrap"><table><tr><th>G</th><td>Goroutine. Logical task와 stack, scheduling state.</td></tr><tr><th>M</th><td>Machine. OS thread.</td></tr><tr><th>P</th><td>Go code 실행에 필요한 scheduler resource.</td></tr></table></div>
 <p>Network I/O는 runtime netpoller와 연동된다. Blocking syscall에 M이 대기해도 P를 다른 M에서 사용할 수 있어 runnable goroutine이 진행할 수 있다. 현대 Go scheduler는 channel, synchronization, syscall, safepoint, asynchronous preemption 등 여러 지점에서 실행을 전환한다.</p></section>
-<section id="address-space"><h2>3. 8.2.3 Private Address Space</h2>
+<section id="address-space"><h2>3. 8.2.3 Private Address Space</h2><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg" alt="Virtual address mapping" style="display:block;width:100%;height:auto"></div>
 <h3>Private address space와 virtual address space</h3>
 <p>CS:APP의 process 문맥에서 각 process의 private address space는 process가 보는 <b>virtual address space</b>다. Address space는 program이 사용할 수 있는 address의 집합이다.</p>
 <div class="eli"><b>쉽게 말하면</b><br>Process A의 virtual address <code>0x1000</code>과 Process B의 virtual address <code>0x1000</code>은 서로 다른 physical memory를 가리킬 수 있다. 각 process는 자기 virtual address space를 기준으로 memory에 접근한다.</div>
@@ -75,7 +75,7 @@ $ gdb ./program
 
 <h3>Chapter 6과 연결</h3>
 <p>Chapter 6에서는 cache와 memory hierarchy를 중심으로 locality와 physical storage 비용을 봤다. 여기서는 process가 virtual address abstraction을 통해 memory를 보는 구조를 배운다. 이후 virtual memory 장에서 page table과 translation을 더 깊게 다룬다.</p></section>
-<section id="modes"><h2>4. 8.2.4 User and Kernel Modes</h2>
+<section id="modes"><h2>4. 8.2.4 User and Kernel Modes</h2><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg" alt="User and kernel mode transition" style="display:block;width:100%;height:auto"></div>
 <p>CPU는 현재 실행 코드의 privilege level을 구분한다. User mode에서는 privileged operation과 kernel memory 접근이 제한된다. Exception 또는 system call로 kernel code가 실행되면 kernel privilege로 전환된다. Handler가 user process로 복귀하면 user privilege로 돌아간다.</p>
 <div class="table-wrap"><table><tr><th>구분</th><th>User mode</th><th>Kernel mode</th></tr><tr><td>실행 코드</td><td>Application code</td><td>Kernel code</td></tr><tr><td>Privileged operations</td><td>실행 제한</td><td>실행 가능</td></tr><tr><td>Kernel 영역 접근</td><td>직접 접근 제한</td><td>Kernel 권한으로 접근</td></tr></table></div>
 
