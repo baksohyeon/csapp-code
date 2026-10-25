@@ -22,6 +22,8 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.
 
 ## 노트 (Notes)
 
+- [[2026-10-25-csapp-ch8-validation]] — Ch8 기술·LAB·반응형·배포 검증 보고서
+- [[2026-10-25-csapp-ch8-learning-prompt]] — Ch8 학습 문서 개선·검증·배포 실행 프롬프트
 - [[0001-compile-linking]] — 컴파일과 링커, 링크 타임 에러 실습
 - [[java-compile-run]] — javac/java로 컴파일·실행하기 (BST/AVL 데모)
 - [[2025-09-21-study-log]] — 트리/인덱스, OLTP·OLAP, ACID 학습 로그
@@ -35,6 +37,8 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.
 - [[acid-innodb]] — ACID와 InnoDB
 
 ## 실습 (Examples)
+
+- [examples/0002-exceptional-control-flow](../examples/0002-exceptional-control-flow/) — syscall·프로세스·가상 주소 mapping LAB
 
 - [examples/0001-compile-linking](../examples/0001-compile-linking/) — 링크 타임 에러 재현 실습 (→ [[0001-compile-linking]])
 - [chapter07/examples](../chapter07/examples/): 심볼 해석, 정적 archive, GCC 10 전후 ELF 실습 (→ [[2026-07-26-csapp-ch7-symbol-resolution]])

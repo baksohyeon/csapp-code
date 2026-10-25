@@ -1,123 +1,619 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>2026-10-04 CSAPP Chapter 8 Exceptional Control Flow</title>
-<style>
-:root{color-scheme:light;--paper:#f7f9fc;--surface:#fff;--ink:#121318;--muted:#5c6675;--line:#d8e0eb;--line2:#edf2f7;--primary:#0b57d0;--primaryInk:#063b91;--primaryBg:#e8f0fe;--secondary:#006d75;--secondaryBg:#e2f7f9;--warn:#9a6700;--warnBg:#fff7dd;--bad:#b3261e;--badBg:#fce8e6;--purple:#5f2eea;--purpleBg:#f2edff;--code:#111827;--codeInk:#e5e7eb;--radius:14px;--radiusLg:18px;--radiusXl:22px;--max:1040px;--sidebar:256px;--shadow:0 3px 10px rgba(15,23,42,.035);--sans:Inter,Roboto,"Noto Sans KR",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--mono:"SFMono-Regular","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace}
-*{box-sizing:border-box}html{scroll-behavior:smooth}html,body{overflow-x:hidden}body{margin:0;background:linear-gradient(180deg,#f7fbff 0%,#fff 36%,#f7f9fc 100%);color:var(--ink);font:17px/1.78 var(--sans);word-break:keep-all}
-a{color:var(--primary);text-underline-offset:3px}.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
-.side-nav{display:none}.side-kicker{margin:0 0 6px;color:var(--secondary);font-size:12px;font-weight:700;text-transform:uppercase}.side-title{margin:0 0 18px;font-size:20px;line-height:1.2}.side-nav a{display:block;padding:9px 12px;border-radius:999px;color:#26343c;text-decoration:none;font-size:14px;line-height:1.35}.side-nav a:hover{color:var(--primary)}
-header.hero{padding:28px 0 0}.hero .wrap{border:1px solid var(--line);border-radius:var(--radiusXl);background:var(--surface);box-shadow:var(--shadow);padding:32px 38px 30px}.eyebrow{display:inline-flex;margin:0 0 14px;border:1px solid #c8dcff;border-radius:999px;background:var(--primaryBg);color:var(--primaryInk);padding:5px 12px;font-size:12px;font-weight:680}
-h1{margin:0;max-width:820px;font-size:clamp(32px,3.4vw,46px);line-height:1.1;font-weight:650;overflow-wrap:anywhere}.lead{max-width:820px;margin:16px 0 0;color:#2b3648;font-size:18px}
-.hero-points{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:22px}.hero-point{border:1px solid var(--line);background:#f8fafc;border-radius:12px;padding:10px 12px}.hero-point b{display:block;color:var(--primary);font-size:14px}.hero-point span{color:var(--muted);font-size:12px;line-height:1.35}
-main.wrap{padding-top:24px;padding-bottom:72px}section{padding:28px 32px;margin:0 0 22px;border:1px solid var(--line);border-radius:var(--radiusXl);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}h2{margin:0 0 18px;font-size:clamp(25px,3vw,36px);line-height:1.18;font-weight:640}h3{margin:26px 0 12px;font-size:21px;line-height:1.35;font-weight:620}h4{margin:18px 0 8px;font-size:16px;line-height:1.4;font-weight:620}p{margin:10px 0}
-.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 20px;padding:18px;background:#fff;border:1px solid var(--line);border-radius:var(--radiusLg);box-shadow:var(--shadow)}.toc a{display:block;color:var(--ink);text-decoration:none;padding:5px 0}
-.card,.box,.note,.flow{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:18px 20px;box-shadow:0 2px 8px rgba(15,23,42,.035);margin:16px 0}.note{border-color:#c8dcff;background:var(--primaryBg)}.flow{background:#fbfdff;text-align:center;font-weight:680}.eli{margin:18px 0;border:1px solid #b8e0e3;border-radius:var(--radiusLg);padding:16px 18px;background:var(--secondaryBg)}.eli b{color:var(--secondary)}
-.note-box{margin:18px 0;border:1px solid var(--line);border-radius:var(--radiusLg);padding:16px 18px;background:#f8fafc}.note-box .label{display:inline-block;margin-right:10px;color:var(--primary);font-weight:740}.note-box.remind{border-color:#c9b8ff;background:var(--purpleBg)}.note-box.remind .label{color:var(--purple)}.note-box.warn{border-color:#f1dfb1;background:var(--warnBg)}.note-box.warn .label{color:var(--warn)}
-.table-wrap{overflow-x:auto;margin:14px 0;-webkit-overflow-scrolling:touch}table{width:100%;border-collapse:collapse;min-width:720px;background:#fff;border:1px solid var(--line)}th,td{padding:10px 12px;border:1px solid var(--line);vertical-align:top;text-align:left}th{background:#f3f6fb;color:#263142;font-weight:720}
-code,pre{font-family:var(--mono)}code{padding:1px 4px;border-radius:4px;border:1px solid #dbe2ee;background:#eef2f7;font-size:.94em}pre{margin:14px 0;padding:16px;overflow-x:auto;border-radius:var(--radius);background:var(--code);color:var(--codeInk);line-height:1.55;font-size:13px;tab-size:4;white-space:pre}
-.timeline{margin:16px 0;border-left:3px solid #b7c4d4;padding-left:18px}.timeline p{margin:14px 0}.debug-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.debug-card{border:1px solid var(--line);border-radius:var(--radius);padding:16px;background:#fff}.debug-card b{color:var(--primary)}
-@media(min-width:1120px){.side-nav{display:block;position:fixed;inset:0 auto 0 0;width:var(--sidebar);padding:28px 22px;overflow-y:auto;border-right:1px solid var(--line);background:rgba(255,255,255,.82);backdrop-filter:blur(8px);z-index:20}header.hero{margin-left:var(--sidebar);padding:28px 32px 0}.hero .wrap{margin:0;width:min(calc(100vw - var(--sidebar) - 64px),var(--max))}main.wrap{width:min(calc(100vw - var(--sidebar) - 64px),var(--max));margin-left:calc(var(--sidebar) + 32px);margin-right:auto;padding-left:0;padding-right:0}.toc{display:none}}
-@media(max-width:760px){body{font-size:16px;line-height:1.72}.wrap{width:100%;max-width:100%;padding-left:16px;padding-right:16px}header.hero{padding:18px 16px 0}.hero .wrap{width:100%;max-width:100%;padding:28px 22px 24px;border-radius:22px}main.wrap{margin-left:0}section{padding:24px 18px;border-radius:20px}h1{font-size:28px;line-height:1.16}.lead{font-size:16px}.hero-points{grid-template-columns:1fr 1fr}.debug-grid{grid-template-columns:1fr}.table-wrap{margin-left:-2px;margin-right:-2px}table{min-width:640px}pre{font-size:12px;padding:14px}.flow{text-align:left;overflow-wrap:anywhere}.toc{grid-template-columns:1fr}.card,.box,.note,.eli,.note-box{padding:15px 16px}}
-@media(max-width:420px){.hero-points{grid-template-columns:1fr}.hero .wrap{padding:24px 18px 22px}section{padding:22px 16px}.wrap{padding-left:12px;padding-right:12px}header.hero{padding-left:12px;padding-right:12px}}
-@media print{body{background:#fff;color:#000;font-size:11pt}.wrap{max-width:none;padding:0}.side-nav,.toc{display:none}header.hero,main.wrap{margin-left:0}.hero .wrap,section{box-shadow:none;border-color:#aaa}pre{white-space:pre-wrap;background:#f2f2f2;color:#000;border:1px solid #999}}
-</style></head><body><aside class="side-nav" aria-label="고정 목차"><p class="side-kicker">Study Map</p><p class="side-title">CSAPP Ch.8<br>Exceptional Control Flow</p><a href="#summary">오늘 범위</a><a href="#exceptions">8.1 Exceptions</a><a href="#processes">8.2 Processes</a><a href="#address-space">8.2.3 Address Space</a><a href="#modes">8.2.4 CPU Modes</a><a href="#debugging">Debugging</a><a href="#history">History</a><a href="#quiz">Check</a><a href="#references">References</a></aside><header class="hero"><div class="wrap"><p class="eyebrow">CSAPP Chapter 8 · 2026-10-04 강의노트</p><h1>Exceptional Control Flow</h1><p class="lead">프로그램이 운영체제와 만나는 지점부터 process의 private virtual address space와 CPU privilege mode까지 연결한다. 실행 흐름, 동시성, 메모리 격리, kernel 진입을 하나의 시스템 모델로 읽는다.</p><div class="hero-points"><div class="hero-point"><b>Exception</b><span>control flow가 kernel handler로 이동</span></div><div class="hero-point"><b>Process</b><span>logical flow와 address-space abstraction</span></div><div class="hero-point"><b>Memory</b><span>process별 private virtual address space</span></div><div class="hero-point"><b>Privilege</b><span>user mode와 kernel mode의 권한 경계</span></div></div></div></header><main class="wrap"><section id="summary"><h2>오늘 범위</h2><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg" alt="Application runtime libc kernel hardware 실행 계층" style="display:block;width:100%;height:auto"></div><div class="note-box"><span class="label">읽는 기준</span><b>[CSAPP]</b> 교재 모델, <b>[LECTURE]</b> 수업 확장, <b>[OFFICIAL]</b> 공식 문서 검증, <b>[LAB]</b> 직접 관찰 절차로 구분한다.</div><div class="eli"><b>쉽게 말하면</b><br>프로그램은 CPU에서 실행된다. Kernel과 CPU는 program이 machine 전체를 임의로 바꾸지 못하도록 권한을 나눈다. Application은 system call을 통해 kernel 기능을 요청한다. Process는 자기만의 실행 흐름과 virtual address space를 가진 것처럼 보이며 kernel scheduler와 MMU가 이 추상화를 만든다.</div>
-<div class="table-wrap"><table><tr><th>CSAPP 절</th><th>핵심</th><th>보충</th></tr><tr><td>8.1.1</td><td>exception handling, exception table</td><td>strace, syscall ABI</td></tr><tr><td>8.1.2</td><td>interrupt / trap / fault / abort</td><td>ISA/OS 용어 차이</td></tr><tr><td>8.1.3</td><td>Linux/x86 exception과 syscall</td><td>x86-64와 arm64 ABI</td></tr><tr><td>8.2.1</td><td>logical control flow</td><td>scheduler 관점</td></tr><tr><td>8.2.2</td><td>concurrent flow</td><td>Pike 구분, C10K</td></tr><tr><td>8.2.3</td><td>private address space</td><td>/proc/PID/maps</td></tr><tr><td>8.2.4</td><td>user/kernel mode</td><td>privileged operation, reboot(2)</td></tr></table></div><nav class="toc" aria-label="본문 목차">
-<a href="#exceptions">8.1 Exceptions</a><a href="#processes">8.2.1-8.2.2 Processes</a><a href="#address-space">8.2.3 Private Address Space</a><a href="#modes">8.2.4 User and Kernel Modes</a><a href="#debugging">디버깅 관점</a><a href="#history">역사와 레거시</a><a href="#quiz">체크 질문</a><a href="#references">참고 자료</a></nav></section><section id="exceptions"><h2>1. 8.1 Exceptions</h2><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg" alt="Exception control transfer" style="display:block;width:100%;height:auto"></div>
-<p>Processor가 event를 감지하면 현재 control flow를 중단하고 exception handler로 control을 넘긴다. Exception number가 exception table의 handler를 선택한다.</p>
-<div class="table-wrap"><table><tr><th>분류</th><th>원인</th><th>Handler 뒤</th></tr><tr><td>Interrupt</td><td>외부 I/O</td><td>다음 instruction</td></tr><tr><td>Trap</td><td>의도된 synchronous event</td><td>다음 instruction. System call이 대표 사례.</td></tr><tr><td>Fault</td><td>복구 가능한 오류 가능성</td><td>복구 후 faulting instruction 재실행 가능</td></tr><tr><td>Abort</td><td>심각한 hardware/system 상태</td><td>application flow로 정상 복귀하지 않음</td></tr></table></div>
-
-<h3>strace로 확인한 system call</h3>
-<pre>write(1, "hello, world\n", 13) = 13
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="CSAPP 3판 8.1~8.2.4: 예외, 프로세스, 가상 주소 공간, 권한 전환과 Linux LAB"><link rel="icon" href="data:,"><title>CSAPP Ch8 · Exceptional Control Flow</title><style>:root{color-scheme:light;--paper:rgb(247,249,252);--surface:white;--ink:rgb(18,28,42);--muted:rgb(78,94,114);--line:rgb(210,221,234);--primary:rgb(11,87,208);--accent:rgb(0,105,112);--soft:rgb(232,241,254);--code:rgb(19,29,45);--code-ink:rgb(231,238,247);--warn:rgb(131,84,0);--warn-bg:rgb(255,247,221);--radius:18px;--sans:Inter,"Noto Sans KR",system-ui,-apple-system,sans-serif;--mono:Menlo,Consolas,monospace}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--paper:rgb(14,21,32);--surface:rgb(21,29,41);--ink:rgb(235,240,247);--muted:rgb(185,200,219);--line:rgb(66,83,106);--primary:rgb(153,194,255);--accent:rgb(116,221,209);--soft:rgb(30,51,80);--code:rgb(9,16,26);--code-ink:rgb(232,239,248);--warn:rgb(251,211,123);--warn-bg:rgb(65,49,20)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.85 var(--sans);word-break:keep-all;overflow-wrap:anywhere}a{color:var(--primary);text-underline-offset:4px}a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}.skip{position:absolute;left:8px;top:-100px}.skip:focus{top:8px;background:var(--surface);padding:12px;z-index:10}.layout{max-width:1040px;margin:auto;padding:30px 24px 70px;min-width:0}.hero,section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:30px 34px;margin-bottom:24px;min-width:0}.eyebrow{color:var(--accent);font-size:13px;letter-spacing:.04em;font-weight:700;margin:0 0 14px}.hero h1{font-size:clamp(30px,4vw,46px);line-height:1.2;margin:0 0 16px;max-width:22ch}.hero p{color:var(--muted)}.hero-points{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.hero-point{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}.hero-point b{display:block;font-size:15px;color:var(--primary)}h2{font-size:clamp(25px,3vw,32px);line-height:1.35;margin:0 0 22px}h3{font-size:22px;line-height:1.45;margin:32px 0 12px}p{margin:14px 0}li{margin:9px 0}ul,ol{padding-left:24px}.side-nav{display:none}.toc{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:20px 0}.toc summary{font-weight:700;cursor:pointer;min-height:44px}.toc a,.side-nav a{display:block;padding:8px 2px;min-height:44px}.toc ol{margin:0;padding-left:22px}.toc li{margin:0}figure{margin:24px 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}figure img{display:block;width:100%;max-width:420px;height:auto;margin:auto}figcaption{color:var(--muted);font-size:14px;line-height:1.65;margin-top:14px}.table-wrap{overflow-x:auto;max-width:100%;margin:20px 0;border:1px solid var(--line);border-radius:10px;-webkit-overflow-scrolling:touch}table{width:100%;min-width:620px;border-collapse:collapse;font-size:15px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--soft)}tr:last-child td{border-bottom:0}td:last-child,th:last-child{border-right:0}.table-wrap:focus-visible{outline:3px solid var(--accent)}code,pre{font-family:var(--mono)}:not(pre)>code{font-size:.9em;background:var(--soft);border-radius:4px;padding:2px 4px}pre{overflow-x:auto;max-width:100%;padding:20px;border-radius:12px;background:var(--code);color:var(--code-ink);font-size:14px;line-height:1.65;white-space:pre}pre code{padding:0;border:0;background:transparent;color:inherit}blockquote{margin:22px 0;padding:10px 20px;border-left:4px solid var(--accent);background:var(--soft);border-radius:0 12px 12px 0}blockquote.warning{border-color:var(--warn);background:var(--warn-bg)}.source-ref{font-size:.84em;white-space:normal}#출처 li{margin:20px 0;font-size:15px}.hljs-keyword,.hljs-built_in,.hljs-type{color:rgb(159,197,255)}.hljs-string,.hljs-number{color:rgb(157,226,202)}.hljs-comment{color:rgb(171,187,209)}.hljs-meta{color:rgb(243,206,137)}footer{color:var(--muted);font-size:14px}button{font:inherit}
+@media(min-width:1200px){.side-nav{display:block;position:fixed;inset:0 auto 0 0;width:240px;padding:28px 22px;border-right:1px solid var(--line);background:var(--surface);overflow-y:auto;font-size:14px}.side-nav p{font-weight:700;color:var(--accent)}.layout{margin-left:260px;margin-right:auto;width:calc(100% - 280px);max-width:1040px}.side-nav a{line-height:1.5;text-decoration:none}}
+@media(max-width:760px){body{font-size:16px;line-height:1.8}.layout{padding:16px 12px 50px}.hero,section{padding:24px 16px;margin-bottom:18px}.hero-points{grid-template-columns:1fr 1fr}.hero h1{font-size:31px}h3{font-size:20px}figure{padding:0;border:0}table{min-width:560px}pre{padding:15px;font-size:13px}.toc{padding:14px}blockquote{padding:8px 14px}}
+@media(max-width:360px){.hero-points{grid-template-columns:1fr}.hero h1{font-size:28px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{body{background:white;color:black;font-size:11pt}.side-nav,.skip,.toc{display:none}.layout{width:auto;max-width:none;margin:0;padding:0}.hero,section{border:0;padding:12px 0;border-radius:0}.hero-points{display:none}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:rgb(240,240,240);color:black}.table-wrap{overflow:visible}table{min-width:0;font-size:10pt}figure{break-inside:avoid}a{color:inherit}}
+</style></head>
+<body><a class="skip" href="#content">본문으로 건너뛰기</a>
+<aside class="side-nav" aria-label="고정 목차"><p>CSAPP CHAPTER 8</p><a href="#요약과-학습-지도">요약과 학습 지도</a><a href="#기초-개념과-교재-대응">기초 개념과 교재 대응</a><a href="#81-exceptions">8.1 Exceptions</a><a href="#82-processes-실행-흐름">8.2 Processes: 실행 흐름</a><a href="#823-private-address-space">8.2.3 Private Address Space</a><a href="#824-user-and-kernel-modes">8.2.4 User and Kernel Modes</a><a href="#보충-서버-동시성과-런타임">보충: 서버 동시성과 런타임</a><a href="#lab와-적용-로드맵">LAB와 적용 로드맵</a><a href="#적용-조건과-미확인">적용 조건과 미확인</a><a href="#출처">출처</a></aside>
+<div class="layout"><header class="hero"><p class="eyebrow">CSAPP 3e · 2026-10-04 강의노트</p><h1>Exceptional<br>Control Flow</h1><p>사건 처리부터 실행 흐름, 주소 공간과 CPU 권한까지.<br>교재 모델과 공식 구현을 연결하고 Linux LAB으로 확인한다.</p><div class="hero-points"><div class="hero-point"><b>Exception</b>사건과 제어 이전</div><div class="hero-point"><b>Process</b>이어지는 실행 흐름</div><div class="hero-point"><b>Memory</b>주소 변환과 보호</div><div class="hero-point"><b>Privilege</b>커널 진입과 복귀</div></div></header>
+<main id="content"><section id="요약과-학습-지도"><h2>요약과 학습 지도</h2>
+<p>프로세스는 실행 흐름과 가상 주소 공간을 제공한다. CPU의 예외 처리와 권한 검사는 운영체제가 이 실행 환경을 관리하는 기반이다.</p><details class="toc" open><summary>학습 목차</summary><ol><li><a href="#요약과-학습-지도">요약과 학습 지도</a></li><li><a href="#기초-개념과-교재-대응">기초 개념과 교재 대응</a></li><li><a href="#81-exceptions">8.1 Exceptions</a></li><li><a href="#82-processes-실행-흐름">8.2 Processes: 실행 흐름</a></li><li><a href="#823-private-address-space">8.2.3 Private Address Space</a></li><li><a href="#824-user-and-kernel-modes">8.2.4 User and Kernel Modes</a></li><li><a href="#보충-서버-동시성과-런타임">보충: 서버 동시성과 런타임</a></li><li><a href="#lab와-적용-로드맵">LAB와 적용 로드맵</a></li><li><a href="#적용-조건과-미확인">적용 조건과 미확인</a></li><li><a href="#출처">출처</a></li></ol></details>
+<p><strong>범위:</strong> CSAPP 3판 §8.1~§8.2.4. <strong>확인 기준일:</strong> 2026-10-25 KST. 노트 생성일과 스터디 세션 표기는 2026-10-04를 유지한다.</p>
+<p><a href="2026-10-04-csapp-ch8-exceptional-control-flow.html">HTML 강의노트</a> · <a href="../../../examples/0002-exceptional-control-flow/">실습 소스</a> · <a href="../../notes/2026-10-25-csapp-ch8-validation.md">검증 보고서</a></p>
+<p><strong>읽는 기준:</strong> <code>[CSAPP]</code>는 교재 범위·모델, <code>[LECTURE]</code>는 기존 강의 메모에 명시된 확장 범위, <code>[OFFICIAL]</code>은 공식 문서·구현, <code>[COMMENTARY]</code>는 작성자 설명이다. <code>[사실]</code>, <code>[미확인]</code>, <code>[추론]</code>, <code>[제안]</code>은 근거 상태다. LAB의 EXPECTED는 예상이며 OBSERVED는 실제 관측이다.</p>
+</section><section id="기초-개념과-교재-대응"><h2>기초 개념과 교재 대응</h2>
+<h3 id="eli10-실행-순서를-잠시-맡기기">ELI10: 실행 순서를 잠시 맡기기</h3>
+<p>[COMMENTARY] 도서관에서 책을 읽다가 직원에게 대출을 요청한다고 생각해 보자. 읽던 위치를 기억하고 직원의 처리를 기다린 뒤 돌아온다. 예외 처리에서도 CPU와 운영체제는 재개에 필요한 상태를 보존하고 handler로 제어를 옮긴다. 이 비유의 책갈피는 재개 위치를 설명한다. 실제 복귀 주소와 종료 여부는 사건 종류에 따라 달라진다.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>용어</th>
+<th>의미</th>
+<th>확인할 대상</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Control flow</td>
+<td>명령어 실행 순서</td>
+<td>program counter와 명령어</td>
+</tr>
+<tr>
+<td>Exception handler</td>
+<td>사건을 처리하는 OS 코드</td>
+<td>vector·handler·복귀 상태</td>
+</tr>
+<tr>
+<td>Process</td>
+<td>실행 중인 프로그램의 인스턴스</td>
+<td>PID·실행 상태·주소 공간</td>
+</tr>
+<tr>
+<td>Virtual address</td>
+<td>프로세스가 사용하는 주소</td>
+<td>mapping·접근 권한</td>
+</tr>
+<tr>
+<td>Privilege mode</td>
+<td>CPU 코드 실행 권한</td>
+<td>user/kernel 경계</td>
+</tr>
+</tbody>
+</table></div>
+<figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg" alt="프로그램에서 하드웨어까지의 실행 계층과 syscall 경계" loading="lazy"><figcaption>프로그램에서 하드웨어까지의 실행 계층과 syscall 경계</figcaption></figure>
+<p>[OFFICIAL][사실] libc와 언어 runtime은 사용자 공간에서 동작할 수 있다. syscall은 커널 진입 인터페이스다. CPU exception, Linux signal, 언어 exception·panic은 각 계층의 메커니즘이다. syscall을 직접 호출하는 경로도 있다. <a class="source-ref" href="#source-s3">[S3]</a><a class="source-ref" href="#source-s7">[S7]</a><a class="source-ref" href="#source-s10">[S10]</a></p>
+<h3 id="교재-절-대응표">교재 절 대응표</h3>
+<p>[CSAPP][사실] 공식 3판 목차에서 이번 범위는 §8.1~§8.2.4다. §8.2.5 Context Switches는 다음 범위로 연결한다. 아래 쪽수는 북미판 공식 목차의 인쇄 쪽수다. <a class="source-ref" href="#source-s1">[S1]</a></p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>절</th>
+<th>교재 주제</th>
+<th>이 문서의 연결</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8.1 · p.723</td>
+<td>Exceptions</td>
+<td>사건과 제어 이전</td>
+</tr>
+<tr>
+<td>8.1.1 · p.724</td>
+<td>Exception Handling</td>
+<td>handler 선택·상태 보존</td>
+</tr>
+<tr>
+<td>8.1.2 · p.726</td>
+<td>Classes of Exceptions</td>
+<td>분류·재개 위치</td>
+</tr>
+<tr>
+<td>8.1.3 · p.729</td>
+<td>Linux/x86-64</td>
+<td>#DE·signal·syscall ABI</td>
+</tr>
+<tr>
+<td>8.2 · p.732</td>
+<td>Processes</td>
+<td>실행 흐름·주소 공간</td>
+</tr>
+<tr>
+<td>8.2.1 · p.732</td>
+<td>Logical Control Flow</td>
+<td>프로세스별 명령어 흐름</td>
+</tr>
+<tr>
+<td>8.2.2 · p.733</td>
+<td>Concurrent Flows</td>
+<td>타임라인·병렬 실행</td>
+</tr>
+<tr>
+<td>8.2.3 · p.734</td>
+<td>Private Address Space</td>
+<td>mapping·보호</td>
+</tr>
+<tr>
+<td>8.2.4 · p.734</td>
+<td>User and Kernel Modes</td>
+<td>권한·커널 진입</td>
+</tr>
+</tbody>
+</table></div>
+</section><section id="81-exceptions"><h2>8.1 Exceptions</h2>
+<h3 id="811-exception-handling">8.1.1 Exception Handling</h3>
+<p>[CSAPP][사실] 현재 프로그램 바깥의 사건과 명령어 실행 중 생기는 사건을 처리하려면, 정상적인 분기·함수 호출 이외의 제어 이전이 필요하다. CSAPP의 exception 모델은 사건에 따라 운영체제 handler로 제어를 옮긴다. 교재 그림과 CMU 강의 자료에서 이 구조를 확인할 수 있다. <a class="source-ref" href="#source-s2">[S2]</a><a class="source-ref" href="#source-s18">[S18]</a></p>
+<ol>
+<li>CPU가 사건을 인식한다.</li>
+<li>아키텍처에 정의된 진입 규칙으로 상태를 저장하고 handler를 선택한다.</li>
+<li>커널 handler가 원인을 처리한다.</li>
+<li>복귀 가능한 경우 저장된 상태로 실행을 재개한다. 종료가 필요한 경우 해당 실행을 끝낸다.</li>
+</ol>
+<figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg" alt="사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름" loading="lazy"><figcaption>사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름</figcaption></figure>
+<p>[OFFICIAL][사실] x86의 interrupt/exception vector와 IDT는 handler 선택에 사용된다. 64비트 <code>SYSCALL</code> 진입은 MSR에 설정된 경로를 사용한다. syscall의 구체적인 진입 경로는 ISA 규칙을 함께 읽는다. <a class="source-ref" href="#source-s4">[S4]</a></p>
+<h3 id="812-classes-of-exceptions">8.1.2 Classes of Exceptions</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>CSAPP 분류</th>
+<th>시점·원인</th>
+<th>재개 모델</th>
+<th>예</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interrupt</td>
+<td>비동기 외부 사건</td>
+<td>중단된 흐름 재개</td>
+<td>타이머·장치 통지</td>
+</tr>
+<tr>
+<td>Trap</td>
+<td>명령어와 동기인 의도적 사건</td>
+<td>사건 이후 실행 계속</td>
+<td>syscall의 교재 모델</td>
+</tr>
+<tr>
+<td>Fault</td>
+<td>명령어와 동기인 처리 필요 상태</td>
+<td>해결되면 해당 명령 재시도</td>
+<td>page fault</td>
+</tr>
+<tr>
+<td>Abort</td>
+<td>심각한 상태 오류</td>
+<td>안정적인 재시작 보장 없음</td>
+<td>double fault</td>
+</tr>
+</tbody>
+</table></div>
+<p>[CSAPP][사실] 이 표는 교재의 넓은 exception 분류다. <a class="source-ref" href="#source-s2">[S2]</a><a class="source-ref" href="#source-s18">[S18]</a></p>
+<p>[OFFICIAL][사실] Intel은 interrupt와 exception을 구분하고, exception을 fault·trap·abort로 분류한다. fault의 저장된 명령어 위치는 원인 명령어를, trap은 해당 명령 실행 이후 이어질 위치를 나타낸다. <a class="source-ref" href="#source-s4">[S4]</a> (Vol.3A §7.5~§7.6)</p>
+<blockquote>
+<p><strong>REMIND</strong> Fault의 재시도 가능성은 원인이 해결됐을 때의 복귀 모델이다. 접근 위반처럼 프로세스 종료로 이어지는 fault도 있다. <a class="source-ref" href="#source-s4">[S4]</a><a class="source-ref" href="#source-s7">[S7]</a></p>
+</blockquote>
+<h3 id="813-linuxx86-64-divide-error와-signal">8.1.3 Linux/x86-64: divide error와 signal</h3>
+<p>[OFFICIAL][사실] x86의 <code>DIV</code>·<code>IDIV</code>는 제수가 0이거나 몫이 목적지 범위에 들어가지 않으면 divide-error fault <code>#DE</code>를 발생시킨다. Linux는 산술 오류를 <code>SIGFPE</code> 같은 signal로 사용자 프로세스에 전달한다. 기본 동작은 signal 종류와 프로세스 설정에 따라 결정된다. <a class="source-ref" href="#source-s4">[S4]</a> (Event 0)<a class="source-ref" href="#source-s7">[S7]</a></p>
+<p>[COMMENTARY] 원인을 조사할 때 <code>명령어 → CPU 예외 → 커널 처리 → signal → 프로세스 동작</code>을 따라간다. C의 정수 0 나눗셈 예제에는 undefined behavior가 있으므로, 재현하려면 생성된 명령어와 컴파일 옵션까지 확인해야 한다. 여기서는 해당 fault 실험을 실행하지 않았다. <a class="source-ref" href="#source-s19">[S19]</a></p>
+<h3 id="system-call과-함수-호출-abi">System call과 함수 호출 ABI</h3>
+<p>[OFFICIAL][사실] ABI는 호출 경계에서 인자·반환값을 전달하는 규약이다. Linux syscall 규약은 아키텍처별로 정의된다. 다음 표의 x86-64는 LP64, arm64는 AArch64 Linux 기준이다. <a class="source-ref" href="#source-s3">[S3]</a></p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>x86-64 syscall</th>
+<th>arm64 syscall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>진입 명령</td>
+<td><code>syscall</code></td>
+<td><code>svc #0</code></td>
+</tr>
+<tr>
+<td>syscall 번호</td>
+<td><code>eax</code> / <code>rax</code></td>
+<td><code>w8</code> / <code>x8</code></td>
+</tr>
+<tr>
+<td>인자 1~3</td>
+<td><code>rdi</code>, <code>rsi</code>, <code>rdx</code></td>
+<td><code>x0</code>, <code>x1</code>, <code>x2</code></td>
+</tr>
+<tr>
+<td>인자 4~6</td>
+<td><code>r10</code>, <code>r8</code>, <code>r9</code></td>
+<td><code>x3</code>, <code>x4</code>, <code>x5</code></td>
+</tr>
+<tr>
+<td>반환 레지스터</td>
+<td><code>rax</code></td>
+<td><code>x0</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>[OFFICIAL][사실] System V AMD64 C 함수 호출의 4번째 정수·포인터 인자는 <code>rcx</code>다. Linux x86-64 syscall의 4번째 인자는 <code>r10</code>이다. <code>SYSCALL</code> 명령은 <code>rcx</code>와 <code>r11</code>을 사용해 복귀 위치·flags를 저장한다. libc wrapper는 커널 오류를 <code>-1</code> 반환과 <code>errno</code>로 변환한다. <a class="source-ref" href="#source-s3">[S3]</a><a class="source-ref" href="#source-s4">[S4]</a><a class="source-ref" href="#source-s20">[S20]</a></p>
+<h3 id="stdinstdoutstderr와-strace">stdin·stdout·stderr와 strace</h3>
+<p>[OFFICIAL][사실] 일반적인 프로세스 시작 상태에서 표준 입력·출력·오류의 file descriptor는 0·1·2다. libc의 <code>stdin</code>·<code>stdout</code>·<code>stderr</code>는 <code>FILE</code> stream이며 버퍼링을 제공한다. <code>write(fd, ...)</code>는 fd를 사용한다. <a class="source-ref" href="#source-s8">[S8]</a><a class="source-ref" href="#source-s9">[S9]</a></p>
+<p>[COMMENTARY] <code>printf()</code> 호출 횟수와 <code>write</code> syscall 횟수는 버퍼링에 따라 달라진다. strace는 syscall·signal을 관측한다. 아래 출력은 LAB의 EXPECTED 예시다.</p>
+<pre><code class="language-text">write(1, &quot;hello, world\n&quot;, 13) = 13
 exit_group(0)                  = ?
-+++ exited with 0 +++</pre>
-<p>0은 stdin, 1은 stdout, 2는 stderr다. Linux x86-64 raw syscall ABI에서 syscall number는 <code>rax</code>, 첫 인자는 <code>rdi</code>에 들어간다. <code>rdi=1</code>은 stdout을 선택한다. 종료 syscall은 caller로 돌아오지 않는다.</p></section>
-<section id="processes"><h2>2. 8.2 Processes</h2>
-<p>Process는 실행 중인 program의 instance다. OS는 각 process에 logical control flow와 private address space를 제공한다.</p>
-
-<h3>8.2.1 Logical Control Flow</h3>
-<p>각 process는 자기 instruction이 연속해서 실행되는 것처럼 관찰한다. 실제 CPU에서는 여러 process의 실행 구간이 섞일 수 있다. Kernel scheduler가 CPU에서 실행할 context를 선택한다.</p>
-
-<h3>8.2.2 Concurrent Flows</h3><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg" alt="Concurrency timeline" style="display:block;width:100%;height:auto"></div>
-<p>CS:APP는 두 logical flow의 실행 interval이 시간상 겹치면 concurrent라고 정의한다. 서로 다른 processor/core에서 동시에 실행되는 concurrent flow를 parallel flow라고 설명한다.</p>
-<div class="note"><b>용어 범위</b><br>CS:APP는 실행 interval을 기준으로 정의한다. Rob Pike 계열 설명은 concurrency를 program composition과 structure의 관점에서, parallelism을 simultaneous execution의 관점에서 설명한다. 교재 문제에서는 CS:APP 정의를 사용한다.</div>
-
-<h3>수업 확장: 서버 동시성</h3>
-<p>웹 서버는 여러 request가 I/O를 기다리는 동안 다른 request도 진행해야 한다. Request마다 OS thread 하나를 배정하면 connection 수 증가에 따라 stack memory와 scheduling 비용도 증가한다. C10K는 많은 connection을 효율적으로 처리하는 server architecture 문제를 대표한다.</p>
-<div class="flow">많은 logical requests → runtime scheduler → 제한된 active execution resources → OS threads + kernel I/O</div>
-
-<h4>Blocking call과 function coloring</h4>
-<p>Async runtime에서 blocking call은 worker thread를 점유한다. Non-blocking I/O는 대기 상태를 runtime에 등록하고 worker가 다른 task를 실행할 수 있게 한다. 함수의 실행 방식이 호출 체인의 작성 방식에 영향을 주는 제약을 function coloring이라고 부른다.</p>
-
-<h4>Go runtime</h4><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg" alt="Go runtime의 G P M scheduler resource 관계" style="display:block;width:100%;height:auto"></div>
-<div class="table-wrap"><table><tr><th>G</th><td>Goroutine. Logical task와 stack, scheduling state.</td></tr><tr><th>M</th><td>Machine. OS thread.</td></tr><tr><th>P</th><td>Go code 실행에 필요한 scheduler resource.</td></tr></table></div>
-<p>Network I/O는 runtime netpoller와 연동된다. Blocking syscall에 M이 대기해도 P를 다른 M에서 사용할 수 있어 runnable goroutine이 진행할 수 있다. 현대 Go scheduler는 channel, synchronization, syscall, safepoint, asynchronous preemption 등 여러 지점에서 실행을 전환한다.</p></section>
-<section id="address-space"><h2>3. 8.2.3 Private Address Space</h2><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg" alt="Virtual address mapping" style="display:block;width:100%;height:auto"></div>
-<h3>Private address space와 virtual address space</h3>
-<p>CS:APP의 process 문맥에서 각 process의 private address space는 process가 보는 <b>virtual address space</b>다. Address space는 program이 사용할 수 있는 address의 집합이다.</p>
-<div class="eli"><b>쉽게 말하면</b><br>Process A의 virtual address <code>0x1000</code>과 Process B의 virtual address <code>0x1000</code>은 서로 다른 physical memory를 가리킬 수 있다. 각 process는 자기 virtual address space를 기준으로 memory에 접근한다.</div>
-
-<h3>왜 process마다 독립적으로 보이는가</h3>
-<p>MMU와 page table이 virtual address를 physical address로 변환한다. Process마다 address translation state가 달라질 수 있다. 같은 virtual address도 다른 physical page로 mapping될 수 있다.</p>
-
-<h3>Process address space 구조</h3>
-<div class="table-wrap"><table><tr><th>영역</th><th>역할</th></tr><tr><td>Read-only code</td><td>.text, .rodata 등</td></tr><tr><td>Read/write data</td><td>.data, .bss 등</td></tr><tr><td>Run-time heap</td><td>malloc 등의 동적 할당</td></tr><tr><td>Memory-mapped region</td><td>Shared library, mmap mapping</td></tr><tr><td>User stack</td><td>함수 호출 frame과 local execution state</td></tr><tr><td>Kernel virtual memory</td><td>Kernel code/data와 kernel mapping. User code의 직접 접근 제한</td></tr></table></div>
-
-<h3>[LAB] 주소 문제를 디버깅하는 방법</h3><div class="note-box"><span class="label">Linux 관찰</span><code>/proc/PID/maps</code>는 mapped region과 r/w/x/s/p permission을 보여준다. <code>/proc/PID/pagemap</code>은 virtual page의 physical frame 또는 swap mapping을 관찰하는 interface이며 접근 권한의 영향을 받는다.</div>
-<pre>$ cat /proc/&lt;pid&gt;/maps
-$ pmap &lt;pid&gt;
-$ gdb ./program
-(gdb) info proc mappings
-(gdb) p &variable</pre>
-<div class="box"><b>조사 순서</b><br>
-1. 문제가 발생한 PID를 확인한다.<br>
-2. Virtual address 값을 확인한다.<br>
-3. <code>/proc/PID/maps</code>에서 주소가 속한 mapping을 찾는다.<br>
-4. Mapping의 <code>r/w/x</code> permission을 확인한다.<br>
-5. File-backed mapping과 anonymous mapping을 구분한다.<br>
-6. Process를 비교할 때 각 process의 mapping을 따로 확인한다.</div>
-
-<h3>Chapter 6과 연결</h3>
-<p>Chapter 6에서는 cache와 memory hierarchy를 중심으로 locality와 physical storage 비용을 봤다. 여기서는 process가 virtual address abstraction을 통해 memory를 보는 구조를 배운다. 이후 virtual memory 장에서 page table과 translation을 더 깊게 다룬다.</p></section>
-<section id="modes"><h2>4. 8.2.4 User and Kernel Modes</h2><div class="card"><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg" alt="User and kernel mode transition" style="display:block;width:100%;height:auto"></div>
-<p>CPU는 현재 실행 코드의 privilege level을 구분한다. User mode에서는 privileged operation과 kernel memory 접근이 제한된다. Exception 또는 system call로 kernel code가 실행되면 kernel privilege로 전환된다. Handler가 user process로 복귀하면 user privilege로 돌아간다.</p>
-<div class="table-wrap"><table><tr><th>구분</th><th>User mode</th><th>Kernel mode</th></tr><tr><td>실행 코드</td><td>Application code</td><td>Kernel code</td></tr><tr><td>Privileged operations</td><td>실행 제한</td><td>실행 가능</td></tr><tr><td>Kernel 영역 접근</td><td>직접 접근 제한</td><td>Kernel 권한으로 접근</td></tr></table></div>
-
-<h3>Privileged instruction 예</h3>
-<p>x86에는 control register 접근, interrupt 제어, descriptor-table 관리, I/O privilege와 관련된 privileged operation이 있다.</p>
-<pre>mov %rax, %cr3    ; address translation 상태 변경
-cli               ; maskable interrupt 비활성화
-sti               ; maskable interrupt 활성화
-hlt               ; processor를 halt 상태로 진입</pre>
-<p><code>CR3</code>는 page-table translation의 핵심 상태를 가리킨다. User application이 임의로 변경할 수 있으면 process isolation과 kernel protection이 유지되지 않는다.</p>
-
-<h3>컴퓨터 전원 끄기</h3><div class="note-box"><span class="label">Linux</span><code>reboot(2)</code>의 <code>LINUX_REBOOT_CMD_POWER_OFF</code>는 power-off 동작을 요청한다. 호출자는 필요한 privilege를 가져야 한다.</div>
-<p>Linux application은 system shutdown을 kernel에 요청한다. Kernel은 권한을 검사하고 filesystem, process, device 상태를 정리한 뒤 platform의 power-management mechanism을 사용한다. Linux의 <code>reboot()</code> interface에는 power-off 동작이 정의되어 있다.</p>
-<div class="eli"><b>쉽게 말하면</b><br>Application이 shutdown을 요청한다. Kernel이 권한과 system 상태를 확인한다. Kernel과 platform firmware/device layer가 실제 power-off 절차를 수행한다.</div></section>
-<section id="debugging"><h2>5. 오늘 개념을 디버깅 관점으로 연결</h2>
-<div class="table-wrap"><table><tr><th>증상</th><th>먼저 확인할 것</th><th>도구</th></tr>
-<tr><td>프로그램이 갑자기 kernel로 들어간 것 같다</td><td>어떤 syscall/signal/exception이 발생했는가</td><td>strace, gdb</td></tr>
-<tr><td>같은 주소인데 process마다 값이 다르다</td><td>각 PID의 virtual mapping</td><td>/proc/PID/maps, pmap</td></tr>
-<tr><td>Segmentation fault</td><td>faulting virtual address와 mapping permission</td><td>gdb, core dump, maps</td></tr>
-<tr><td>서버가 많은 connection에서 멈춘다</td><td>blocking I/O, thread 수, runnable/waiting 상태</td><td>strace, perf, /proc, runtime profiler</td></tr>
-<tr><td>권한 관련 instruction 실패</td><td>현재 privilege level과 kernel interface 필요 여부</td><td>disassembly, kernel docs</td></tr></table></div>
-
-<h3>문제 해결 사고 순서</h3>
-<div class="flow">관찰 → 실행 계층 식별 → 상태 확인 → OS 경계 확인 → 가설 → 도구로 검증 → 수정</div>
-<p><b>관찰:</b> 실제 증상과 주소, PID, syscall, signal을 기록한다.</p>
-<p><b>실행 계층:</b> application, runtime, libc, kernel, hardware 중 어느 계층의 현상인지 구분한다.</p>
-<p><b>상태 확인:</b> register, virtual mapping, thread state, permission을 확인한다.</p>
-<p><b>OS 경계:</b> system call 또는 exception을 통해 kernel로 들어간 지점을 찾는다.</p>
-<p><b>가설:</b> blocking, invalid mapping, permission, scheduling 중 현재 증상을 설명하는 원인을 세운다.</p>
-<p><b>검증:</b> strace, gdb, /proc, profiler 출력으로 가설을 확인한다.</p></section>
-<section id="history"><h2>6. 역사와 레거시를 같이 기억하기</h2>
-<p>Process isolation과 privilege separation은 여러 program이 한 machine을 공유하면서도 서로의 실행과 memory를 보호하기 위해 발전했다. User-level execution abstraction, kernel thread, event-driven I/O, async runtime과 lightweight thread는 많은 실행 흐름을 효율적으로 다루기 위한 서로 다른 시대의 설계다.</p>
-<p>오늘 범위의 핵심 연결은 다음과 같다.</p>
-<div class="flow">Exception이 kernel 진입점을 제공 → Process가 logical flow를 제공 → Virtual address space가 memory view를 분리 → CPU privilege가 kernel 자원을 보호</div></section>
-<section id="quiz"><h2>7. 오늘의 체크 질문</h2>
-<p><b>Q.</b> Process A와 B에서 같은 virtual address가 같은 데이터를 뜻하는가?<br><b>A.</b> 각 process의 mapping에 따라 달라진다.</p>
-<p><b>Q.</b> User code가 CR3를 직접 바꿀 수 있는가?<br><b>A.</b> x86 privilege rule이 해당 operation을 제한한다.</p>
-<p><b>Q.</b> Application은 kernel 기능을 어떻게 요청하는가?<br><b>A.</b> System-call interface를 사용한다.</p>
-<p><b>Q.</b> Private address space에서 private의 핵심은 무엇인가?<br><b>A.</b> Process별 virtual memory mapping과 protection이다.</p></section>
-<section id="references"><h2>8. 참고 자료</h2><p><b>자료 표기:</b> 교재 설명과 수업 확장, 공식 구현 문서를 구분해 읽는다.</p><ul><li>CSAPP 3e Chapter 8 §8.1-§8.2.4</li><li>Linux man-pages: syscall(2), exit_group(2), proc_pid_maps(5), proc_pid_pagemap(5), reboot(2)</li><li>Go runtime HACKING, runtime/proc.go</li><li>Rob Pike, Concurrency is not Parallelism</li><li>Erlang/OTP ERTS NIF and dirty scheduler documentation</li></ul>
-<p class="src">CS:APP 3e, Chapter 8, pp. 759-772.</p>
-<p class="src">Intel 64 and IA-32 Software Developer's Manual, privilege levels, control registers, privileged instructions.</p>
-<p class="src">Linux man-pages: syscall(2), proc_pid_maps(5), reboot(2).</p>
-<p class="src">Go runtime documentation and source: G/M/P scheduler, netpoll, syscall handoff.</p></section></main></body></html>
+</code></pre>
+<p>[OFFICIAL][사실] <code>exit_group</code>은 호출 프로세스의 thread group을 종료하고 복귀하지 않는다. 종료 syscall과 반환하는 syscall의 복귀 경로는 구분해 읽는다. <a class="source-ref" href="#source-s6">[S6]</a></p>
+</section><section id="82-processes-실행-흐름"><h2>8.2 Processes: 실행 흐름</h2>
+<p>[CSAPP][사실] 프로세스는 실행 중인 프로그램의 인스턴스다. 논리적 제어 흐름과 가상 주소 공간은 프로그램이 시스템을 사용하는 핵심 추상화다. <a class="source-ref" href="#source-s18">[S18]</a></p>
+<h3 id="821-logical-control-flow">8.2.1 Logical Control Flow</h3>
+<p>[CSAPP][사실] 한 프로세스의 program counter가 가리킨 명령어들을 시간순으로 보면 그 프로세스의 logical control flow를 얻는다. CPU가 다른 프로세스를 실행하는 동안에도 이 흐름의 상태가 보존되어 다음 실행으로 이어진다. <a class="source-ref" href="#source-s18">[S18]</a></p>
+<p>[COMMENTARY] 한 사람이 책 두 권을 번갈아 읽어도 각 책의 읽기 순서는 이어진다. 이 비유는 실행 순서의 보존을 설명한다. 실제 프로세스 상태에는 레지스터·메모리·OS 자원이 포함된다.</p>
+<h3 id="822-concurrent-flows">8.2.2 Concurrent Flows</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>자료</th>
+<th>동시성의 관점</th>
+<th>병렬성과의 연결</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CSAPP·CMU</td>
+<td>두 흐름의 시작~종료 시간 구간이 겹침</td>
+<td>서로 다른 코어에서 동시에 진행 가능</td>
+</tr>
+<tr>
+<td>Rob Pike</td>
+<td>독립 실행 부분을 조합하는 프로그램 구조</td>
+<td>구조를 실제 동시 실행으로 실현 가능</td>
+</tr>
+<tr>
+<td>OSTEP §26</td>
+<td>한 프로세스 안의 여러 thread와 공유 상태</td>
+<td>실행 순서·동기화 문제로 연결</td>
+</tr>
+</tbody>
+</table></div>
+<figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg" alt="단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인" loading="lazy"><figcaption>단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인</figcaption></figure>
+<p>[CSAPP][사실] 단일 코어에서도 흐름의 전체 실행 기간은 겹칠 수 있다. 병렬 실행은 여러 코어에서 같은 시점에 명령어를 진행하는 상황이다. <a class="source-ref" href="#source-s18">[S18]</a></p>
+<p>[OFFICIAL][사실] Pike는 구조와 실행의 관점을 제시한다. OSTEP은 thread마다 PC·레지스터·stack이 있고 주소 공간을 공유한다는 모델에서 동기화로 전개한다. <a class="source-ref" href="#source-s12">[S12]</a><a class="source-ref" href="#source-s13">[S13]</a></p>
+<p>[COMMENTARY] 타임라인의 색 막대는 실제 CPU 실행 구간이다. concurrency는 막대 하나의 겹침과 각 흐름의 시작~종료 구간을 구분해 판단한다. LAB의 출력 순서만으로 서로 다른 코어의 병렬 실행을 입증할 수 있는 범위는 제한된다.</p>
+</section><section id="823-private-address-space"><h2>8.2.3 Private Address Space</h2>
+<p>[CSAPP][사실] 프로세스는 자신의 가상 주소 공간을 사용한다. CPU의 MMU와 운영체제가 관리하는 page table이 주소 변환과 접근 보호를 지원한다. <a class="source-ref" href="#source-s18">[S18]</a><a class="source-ref" href="#source-s4">[S4]</a></p>
+<h3 id="eli10-건물마다-같은-방-번호">ELI10: 건물마다 같은 방 번호</h3>
+<p>[COMMENTARY] 서로 다른 건물에 모두 101호가 있을 수 있다. 가상 주소는 건물 안의 방 번호에, 주소 변환 상태는 어느 건물인지 알려주는 정보에 비유할 수 있다. 같은 가상 주소도 프로세스의 mapping에 따라 서로 다른 물리 페이지로 이어진다. 공유 mapping은 두 프로세스가 같은 물리 페이지를 사용하는 예다.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>프로세스 A</th>
+<th>프로세스 B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>가상 주소 예시</td>
+<td><code>0x1000</code></td>
+<td><code>0x1000</code></td>
+</tr>
+<tr>
+<td>변환 상태</td>
+<td>A의 page table</td>
+<td>B의 page table</td>
+</tr>
+<tr>
+<td>물리 페이지 예시</td>
+<td>X</td>
+<td>Y 또는 공유 X</td>
+</tr>
+</tbody>
+</table></div>
+<figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg" alt="프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조" loading="lazy"><figcaption>프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조</figcaption></figure>
+<p>[OFFICIAL][사실] <code>MAP_PRIVATE</code>는 copy-on-write mapping을, <code>MAP_SHARED</code>는 공유 mapping을 지정한다. private mapping도 fork 직후 등에는 물리 페이지를 공유할 수 있다. <a class="source-ref" href="#source-s15">[S15]</a></p>
+<h3 id="교재-주소-공간과-실제-mapping">교재 주소 공간과 실제 mapping</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>영역</th>
+<th>학습할 역할</th>
+<th>Linux 관측</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>코드·읽기 전용 데이터</td>
+<td>명령어·상수</td>
+<td>실행 파일의 <code>r-xp</code>, <code>r--p</code> 등</td>
+</tr>
+<tr>
+<td>쓰기 가능한 데이터</td>
+<td>전역·정적 상태</td>
+<td>실행 파일의 <code>rw-p</code>, anonymous 영역 등</td>
+</tr>
+<tr>
+<td>Heap</td>
+<td>동적 할당</td>
+<td><code>[heap]</code>과 별도 mmap 영역 가능</td>
+</tr>
+<tr>
+<td>Mapped region</td>
+<td>라이브러리·파일·anonymous mapping</td>
+<td>경로·offset·권한</td>
+</tr>
+<tr>
+<td>Stack</td>
+<td>함수 실행 상태</td>
+<td><code>[stack]</code> 등</td>
+</tr>
+<tr>
+<td>Kernel 영역</td>
+<td>커널 자원·보호</td>
+<td>교재 개념도와 실제 page-table 구성 구분</td>
+</tr>
+</tbody>
+</table></div>
+<p>[OFFICIAL][사실] <code>/proc/PID/maps</code>는 가상 주소 구간과 접근 권한을 보여준다. <code>r/w/x</code>는 읽기·쓰기·실행, <code>s/p</code>는 공유·private copy-on-write를 나타낸다. <a class="source-ref" href="#source-s10">[S10]</a></p>
+<p>[OFFICIAL][사실] pagemap은 가상 페이지 단위 정보를 제공한다. Linux 4.2부터 <code>CAP_SYS_ADMIN</code>이 없으면 PFN 필드가 0으로 가려질 수 있다. 파일 접근 자체에도 ptrace 권한 검사가 적용된다. kernel 문서와 man-pages의 비트 설명은 버전별로 대조해야 한다. <a class="source-ref" href="#source-s11">[S11]</a></p>
+<p>[COMMENTARY] 주소 배치·ASLR·공유 영역·KPTI 설정은 실행 환경의 조건이다. 이 노트의 그림은 주소 변환 모델을 표현하며 특정 커널의 전체 page-table 배치를 확정하지 않는다. 실제 mapping은 LAB에서 확인한다.</p>
+</section><section id="824-user-and-kernel-modes"><h2>8.2.4 User and Kernel Modes</h2>
+<p>[CSAPP][사실] CPU의 실행 권한은 사용자 코드의 접근과 특권 동작을 제한한다. 운영체제는 커널 진입·복귀 경계를 관리한다. <a class="source-ref" href="#source-s18">[S18]</a></p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>동작</th>
+<th>권한과 경계</th>
+<th>예</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>사용자 함수 호출</td>
+<td>사용자 공간의 호출 규약</td>
+<td><code>main → helper</code></td>
+</tr>
+<tr>
+<td>syscall 진입</td>
+<td>커널 코드 실행으로 전환</td>
+<td><code>write</code></td>
+</tr>
+<tr>
+<td>handler에서 복귀</td>
+<td>저장된 사용자 상태 복원</td>
+<td>반환 가능한 syscall</td>
+</tr>
+<tr>
+<td>context switch</td>
+<td>실행할 task 변경</td>
+<td>다음 절 §8.2.5의 주제</td>
+</tr>
+</tbody>
+</table></div>
+<figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg" alt="같은 task의 syscall 진입과 사용자 공간 복귀" loading="lazy"><figcaption>같은 task의 syscall 진입과 사용자 공간 복귀</figcaption></figure>
+<p>[COMMENTARY] syscall이 같은 task로 복귀하는 경우에도 권한 전환은 일어난다. task 변경 여부는 스케줄링의 별도 질문이다.</p>
+<h3 id="x86-특권-명령과-조건">x86 특권 명령과 조건</h3>
+<p>[OFFICIAL][사실] control register에 쓰는 <code>mov %rax, %cr3</code>와 <code>hlt</code>에는 특권 조건이 있다. <code>cli</code>·<code>sti</code>는 CPL·IOPL과 가상화 관련 제어 조건에 따라 동작한다. 일반 Linux 사용자 프로그램은 허용된 커널 인터페이스로 권한 동작을 요청한다. <a class="source-ref" href="#source-s4">[S4]</a> (Vol.2A/2B)</p>
+<pre><code class="language-asm">mov %rax, %cr3    # 주소 변환 상태 변경
+hlt               # 특권 조건에서 CPU 대기
+</code></pre>
+<p>[OFFICIAL][사실] 전원 끄기 syscall은 <code>CAP_SYS_BOOT</code> 등 권한 조건을 검사한다. power-off의 실제 결과는 플랫폼에 의존한다. orderly shutdown의 사용자 공간 서비스 정리와 raw <code>reboot(POWER_OFF)</code> 요청은 각 단계의 책임을 구분해야 한다. man-pages는 호출 전 <code>sync</code>가 없을 때 데이터 손실 가능성을 명시한다. <a class="source-ref" href="#source-s5">[S5]</a></p>
+<blockquote class="warning">
+<p><strong>WARNING</strong> 이 노트의 종료·전원 제어 설명은 문서 분석이다. 실습에서는 host의 reboot·shutdown을 실행하지 않는다.</p>
+</blockquote>
+</section><section id="보충-서버-동시성과-런타임"><h2>보충: 서버 동시성과 런타임</h2>
+<p>[LECTURE] 기존 강의 메모는 C10K, blocking I/O, green thread, Go/Erlang을 확장 주제로 다룬다. 아래 구현 설명과 Rust 보충은 공식 자료 및 작성자 해설로 읽는다.</p>
+<h3 id="많은-요청이-io를-기다릴-때">많은 요청이 I/O를 기다릴 때</h3>
+<p>[OFFICIAL][사실] C10K 원문은 많은 client connection을 다루는 I/O 전략과 OS 설정을 비교한다. 이 명칭은 서버 아키텍처를 설명하는 역사적 문제다. <a class="source-ref" href="#source-s14">[S14]</a></p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>설계</th>
+<th>대기 처리</th>
+<th>조사할 비용·조건</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thread-per-request</td>
+<td>OS thread가 blocking 대기 가능</td>
+<td>stack·thread 수·스케줄링</td>
+</tr>
+<tr>
+<td>Event loop</td>
+<td>readiness 통지 뒤 작업 재개</td>
+<td>긴 handler·blocking 호출</td>
+</tr>
+<tr>
+<td>Runtime task</td>
+<td>runtime이 task와 thread를 연결</td>
+<td>runtime 지원 I/O·실행 정책</td>
+</tr>
+</tbody>
+</table></div>
+<figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg" alt="blocking worker와 readiness 기반 task 재개의 비교" loading="lazy"><figcaption>blocking worker와 readiness 기반 task 재개의 비교</figcaption></figure>
+<p>[COMMENTARY][추론] 동시 connection 증가 시에는 thread 수·stack·대기 시간·CPU를 함께 측정해야 한다. thread-per-request의 한계 수치는 workload와 환경으로 결정된다. 이 문서는 성능 benchmark 수치를 제시하지 않는다.</p>
+<h3 id="scheduling과-function-coloring">Scheduling과 function coloring</h3>
+<p>[COMMENTARY] Cooperative scheduling은 task의 yield·대기 지점에서 실행 기회를 넘기는 방식이다. Preemptive scheduling은 scheduler가 실행 중인 작업을 중단할 수 있는 방식이다. green thread는 runtime이 관리하는 실행 단위를 설명할 때 쓰는 용어이며 구체적인 선점·I/O 동작은 구현별로 확인한다.</p>
+<p>[COMMENTARY] function coloring은 async 함수와 호출 체인의 작성 제약을 설명하는 비공식 표현이다. Rust에서는 <code>async</code> 함수가 Future를 만들고 <code>.await</code>로 결과를 기다린다. executor가 future를 poll하며, poll 중 긴 blocking 작업을 하면 해당 worker가 점유된다. <a class="source-ref" href="#source-s17">[S17]</a></p>
+<h3 id="go-gmp-실행-중인-g와-io-대기-g">Go G/M/P: 실행 중인 G와 I/O 대기 G</h3>
+<p>[OFFICIAL][사실] 아래 구조는 Go <code>go1.26.0</code> runtime 문서·소스를 기준으로 한다. <a class="source-ref" href="#source-s16">[S16]</a></p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>이름</th>
+<th>의미</th>
+<th>연결</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G</td>
+<td>goroutine과 실행 상태</td>
+<td>실행·runnable·대기 상태</td>
+</tr>
+<tr>
+<td>M</td>
+<td>OS thread</td>
+<td>Go·runtime·syscall 실행 가능</td>
+</tr>
+<tr>
+<td>P</td>
+<td>사용자 Go 실행에 필요한 scheduler·allocator 자원</td>
+<td>수는 <code>GOMAXPROCS</code></td>
+</tr>
+</tbody>
+</table></div>
+<figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg" alt="실행 중인 G P M과 netpoll에서 대기하는 G의 관계" loading="lazy"><figcaption>실행 중인 G P M과 netpoll에서 대기하는 G의 관계</figcaption></figure>
+<p>[OFFICIAL][사실] 사용자 Go 코드를 실행하는 M에는 P가 필요하다. 지원되는 network I/O는 netpoll로 G를 대기시킬 수 있다. syscall 진입·복귀와 P 회수는 <code>entersyscall</code>, <code>entersyscallblock</code>, <code>retake</code> 등의 경로에서 관리한다. 모든 blocking call이 같은 경로를 따르는지 확인하려면 호출 구현도 읽어야 한다. <a class="source-ref" href="#source-s16">[S16]</a></p>
+<p>[OFFICIAL][사실] Go 1.14는 지원 플랫폼에서 비동기 선점을 도입했다. 현재 scheduler를 설명할 때 함수 호출·협력적 대기 지점과 비동기 선점의 조건을 함께 읽는다. <a class="source-ref" href="#source-s21">[S21]</a></p>
+<h3 id="erlangbeam과-native-blocking">Erlang/BEAM과 native blocking</h3>
+<p>[OFFICIAL][사실] Erlang/OTP <code>29.1.2</code> 문서는 긴 NIF 작업이 일반 scheduler의 응답성을 떨어뜨릴 수 있다고 설명한다. 긴 native 작업은 dirty scheduler에 배치할 수 있다. CPU-bound와 I/O-bound 분류를 맞춰야 하며, CPU 작업을 dirty I/O로 잘못 분류하면 일반 scheduler가 영향을 받을 수 있다. <a class="source-ref" href="#source-s22">[S22]</a></p>
+<p>[COMMENTARY] runtime task의 수와 OS thread 수, native 작업의 배치 위치를 각각 확인한다. Go·BEAM·Rust의 실행 단위를 비교할 때 메모리 격리·선점·I/O 지원도 함께 비교한다.</p>
+</section><section id="lab와-적용-로드맵"><h2>LAB와 적용 로드맵</h2>
+<h3 id="환경과-재현-명령">환경과 재현 명령</h3>
+<p>[제안] Linux/x86-64에서 syscall과 mapping을 확인한 뒤 프로그램의 요청 대기 구조를 조사한다. 실습 소스는 <a href="../../../examples/0002-exceptional-control-flow/hello.c">hello.c</a>, <a href="../../../examples/0002-exceptional-control-flow/flows.c">flows.c</a>, <a href="../../../examples/0002-exceptional-control-flow/maps.c">maps.c</a>다.</p>
+<pre><code class="language-bash"><span class="hljs-comment"># 레포 root에서 실행</span>
+<span class="hljs-comment"># macOS ARM64에서는 Docker의 amd64 실행 지원이 필요하다.</span>
+docker build --platform linux/amd64 -t csapp-ch8-lab:amd64 \
+  examples/0002-exceptional-control-flow
+docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-add=SYS_PTRACE \
+  csapp-ch8-lab:amd64
+</code></pre>
+<h3 id="lab-1-syscall종료-경계">LAB 1: syscall·종료 경계</h3>
+<ol>
+<li><code>hello.c</code>를 <code>gcc -std=c11 -Wall -Wextra -Werror -O0 -g</code>로 컴파일한다.</li>
+<li><code>strace -qq -e trace=write,exit_group ./hello</code>를 실행한다.</li>
+<li>fd·길이·반환값과 <code>exit_group</code>을 읽는다.</li>
+</ol>
+<p>[EXPECTED] <code>write(1, &quot;hello, world\n&quot;, 13) = 13</code>과 종료 호출이 보인다. 짧은 문자열 출력 성공을 검사하는 학습 예제다. 일반 출력 루프는 partial write와 <code>EINTR</code> 처리도 필요하다. <a class="source-ref" href="#source-s8">[S8]</a></p>
+<h3 id="lab-2-두-프로세스-흐름">LAB 2: 두 프로세스 흐름</h3>
+<ol>
+<li><code>flows.c</code>가 <code>fork</code>로 만든 부모·자식을 확인한다.</li>
+<li>각 PID의 <code>step=0,1,2</code> 순서를 읽는다.</li>
+<li>전체 출력 순서를 다시 실행해 비교한다.</li>
+</ol>
+<p>[EXPECTED] 부모·자식이 각각 세 줄을 출력한다. 매 실행의 교차 순서는 달라질 수 있다. CPU 코어의 동시 사용은 별도 tracing·CPU affinity 조건을 갖춰 측정한다.</p>
+<h3 id="lab-3-주소와-mapping">LAB 3: 주소와 mapping</h3>
+<ol>
+<li><code>maps.c</code>가 <code>MAP_PRIVATE|MAP_ANONYMOUS</code>로 만든 주소와 PID를 출력한다.</li>
+<li>실행 중 <code>/proc/PID/maps</code>에서 그 주소를 포함한 구간을 찾는다.</li>
+<li><code>rw-p</code>와 anonymous mapping을 확인한다.</li>
+<li>pagemap의 present 비트를 읽고 PFN 접근 조건을 기록한다.</li>
+</ol>
+<p>[EXPECTED] 쓰기 후 해당 가상 페이지의 mapping과 상태가 보인다. PFN이 0이면 권한으로 가려졌을 가능성을 먼저 확인한다. 이 결과만으로 물리 주소를 확정하지 않는다. <a class="source-ref" href="#source-s10">[S10]</a><a class="source-ref" href="#source-s11">[S11]</a></p>
+<h3 id="관측과-다음-적용">관측과 다음 적용</h3>
+<p>[사실][OBSERVED] 2026-10-25에 OrbStack Linux에서 다음 결과를 얻었다. GCC 12.2.0, strace 6.1, Debian bookworm 컨테이너 기준이다.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>실행 환경</th>
+<th>검사</th>
+<th>관측</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux ARM64 native</td>
+<td>전체 LAB</td>
+<td>write 13바이트·exit_group, 부모/자식 각 3줄, rw-p, present=1·PFN=0</td>
+</tr>
+<tr>
+<td>Linux x86-64 에뮬레이션</td>
+<td>세 C 예제 컴파일·실행</td>
+<td>성공. syscall register 직접 관측 없음</td>
+</tr>
+<tr>
+<td>Linux x86-64 에뮬레이션</td>
+<td>strace</td>
+<td>syscall trace 불완전. 전체 LAB 통과 판정 보류</td>
+</tr>
+</tbody>
+</table></div>
+<p>ARM64 전체 LAB을 재현하려면 위 두 명령의 <code>linux/amd64</code>와 이미지 tag를 각각 <code>linux/arm64</code>, <code>csapp-ch8-lab:arm64</code>로 바꾼다. ISA별 syscall ABI는 공식 표로 확인하고 실험 환경과 구분한다.</p>
+<p>실제 환경·명령·전체 출력은 <a href="../../notes/2026-10-25-csapp-ch8-validation.md">검증 보고서</a>에 기록한다. 다음 단계는 <code>syscall/signal 관측 → PID·mapping 확인 → runtime 대기 위치 확인 → 가설 → 측정</code>이다.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>단계</th>
+<th>할 일</th>
+<th>도구</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>커널 경계에서 사건 기록</td>
+<td>strace</td>
+</tr>
+<tr>
+<td>2</td>
+<td>주소와 접근 권한 확인</td>
+<td>maps·pmap·gdb</td>
+</tr>
+<tr>
+<td>3</td>
+<td>worker와 I/O 대기 조사</td>
+<td>thread 목록·runtime profiler</td>
+</tr>
+<tr>
+<td>4</td>
+<td>변경 전후 같은 부하 비교</td>
+<td>지연·CPU·메모리 측정</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="확인-질문">확인 질문</h3>
+<ul>
+<li><strong>같은 가상 주소의 데이터는?</strong> 프로세스의 mapping과 공유 관계로 결정된다.</li>
+<li><strong>syscall과 context switch의 관계는?</strong> syscall은 커널 진입이다. 다른 task 실행 여부는 스케줄링 결과로 확인한다.</li>
+<li><strong>fault 뒤 같은 명령어를 재실행하는 이유는?</strong> 원인을 해결한 뒤 해당 메모리 접근 등을 다시 수행하기 위해서다.</li>
+<li><strong>Go에서 P와 CPU 코어는?</strong> P는 runtime 자원이다. 실제 코어 실행 배치는 OS scheduler와 실행 환경에 따른다.</li>
+</ul>
+</section><section id="적용-조건과-미확인"><h2>적용 조건과 미확인</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>상태</th>
+<th>읽는 조건</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>교재 절·인쇄 쪽수</td>
+<td>사실</td>
+<td>북미판 공식 목차. 번역판 쪽수와 구분</td>
+</tr>
+<tr>
+<td>Exception 분류</td>
+<td>조건부 일치</td>
+<td>CSAPP의 넓은 exception 용법과 Intel의 interrupt/exception 구분</td>
+</tr>
+<tr>
+<td>Syscall 레지스터</td>
+<td>사실</td>
+<td>Linux LP64 x86-64·AArch64 표. 다른 ABI는 별도 확인</td>
+</tr>
+<tr>
+<td>주소 공간 그림</td>
+<td>해설</td>
+<td>개념 mapping. 실제 주소·kernel mapping 설정은 환경 의존</td>
+</tr>
+<tr>
+<td>Runtime 설명</td>
+<td>사실·해설</td>
+<td>Go go1.26.0·OTP 29.1.2·Rust 문서. 세 runtime의 성능 비교 미실행</td>
+</tr>
+<tr>
+<td>Divide fault·전원 제어</td>
+<td>미실행</td>
+<td>자료 검증. 실제 fault 재현과 host 전원 제어 실행 없음</td>
+</tr>
+<tr>
+<td>강의 세부 발언</td>
+<td>미확인</td>
+<td>이 문서는 기존 노트의 확장 범위를 보존. 원 녹취 대조 없음</td>
+</tr>
+</tbody>
+</table></div>
+</section><section id="출처"><h2>출처</h2>
+<p>확인 날짜는 모두 <strong>2026-10-25 KST</strong>다. 동적 문서의 변경 가능성과 아래 명시 버전을 함께 읽는다. 링크를 열어 필요한 절로 이동한다.</p>
+<ul>
+<li id="source-s1"><strong><a class="source-ref" href="#source-s1">[S1]</a> CSAPP 3판 공식 목차·서문</strong>: <a href="https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf">TOC PDF</a>, Ch8 절·북미판 쪽수. <a href="https://csapp.cs.cmu.edu/3e/errata.html">정오표</a>도 함께 확인.</li>
+<li id="source-s2"><strong><a class="source-ref" href="#source-s2">[S2]</a> CSAPP 공식 그림 목록</strong>: <a href="https://csapp.cs.cmu.edu/3e/figures.html">Chapter 8 figures</a>, exception·trap·fault 도식.</li>
+<li id="source-s3"><strong><a class="source-ref" href="#source-s3">[S3]</a> Linux syscall ABI</strong>: <a href="https://man7.org/linux/man-pages/man2/syscall.2.html">syscall(2)</a>, Architecture calling conventions·wrapper.</li>
+<li id="source-s4"><strong><a class="source-ref" href="#source-s4">[S4]</a> Intel SDM</strong>: <a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html">공식 다운로드</a>, revision 093. <a href="https://cdrdv2.intel.com/v1/dl/getContent/671447">Vol.3 PDF</a> §7.5~§7.6·Event 0, Vol.2A/2B의 CLI·STI·HLT·MOV·SYSCALL.</li>
+<li id="source-s5"><strong><a class="source-ref" href="#source-s5">[S5]</a> Linux 전원 제어</strong>: <a href="https://man7.org/linux/man-pages/man2/reboot.2.html">reboot(2)</a>, POWER_OFF·권한·RETURN VALUE.</li>
+<li id="source-s6"><strong><a class="source-ref" href="#source-s6">[S6]</a> Thread group 종료</strong>: <a href="https://man7.org/linux/man-pages/man2/exit_group.2.html">exit_group(2)</a>, DESCRIPTION·RETURN VALUE.</li>
+<li id="source-s7"><strong><a class="source-ref" href="#source-s7">[S7]</a> Linux signal</strong>: <a href="https://man7.org/linux/man-pages/man7/signal.7.html">signal(7)</a>, signal disposition·SIGFPE.</li>
+<li id="source-s8"><strong><a class="source-ref" href="#source-s8">[S8]</a> 출력 syscall</strong>: <a href="https://man7.org/linux/man-pages/man2/write.2.html">write(2)</a>, 반환 길이·오류.</li>
+<li id="source-s9"><strong><a class="source-ref" href="#source-s9">[S9]</a> 표준 stream</strong>: <a href="https://man7.org/linux/man-pages/man3/stdio.3.html">stdio(3)</a>, stream·버퍼링·표준 fd.</li>
+<li id="source-s10"><strong><a class="source-ref" href="#source-s10">[S10]</a> 가상 주소 mapping</strong>: <a href="https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html">proc_pid_maps(5)</a>, man-pages 6.19·권한 필드.</li>
+<li id="source-s11"><strong><a class="source-ref" href="#source-s11">[S11]</a> 페이지 관측</strong>: <a href="https://man7.org/linux/man-pages/man5/proc_pid_pagemap.5.html">proc_pid_pagemap(5)</a>, man-pages 6.19. <a href="https://docs.kernel.org/admin-guide/mm/pagemap.html">Kernel pagemap</a>, PFN 권한·버전별 비트 정의.</li>
+<li id="source-s12"><strong><a class="source-ref" href="#source-s12">[S12]</a> Rob Pike 원발표</strong>: <a href="https://go.dev/talks/2012/waza.slide">Concurrency is not Parallelism</a>, 2012-01-11, structure·execution.</li>
+<li id="source-s13"><strong><a class="source-ref" href="#source-s13">[S13]</a> OSTEP 공식 교재</strong>: <a href="https://pages.cs.wisc.edu/~remzi/OSTEP/threads-intro.pdf">§26 Concurrency: An Introduction</a>, thread·공유 주소 공간.</li>
+<li id="source-s14"><strong><a class="source-ref" href="#source-s14">[S14]</a> C10K 원문</strong>: <a href="https://www.kegel.com/c10k.html">The C10K problem</a>, 역사적 I/O 전략 비교.</li>
+<li id="source-s15"><strong><a class="source-ref" href="#source-s15">[S15]</a> Mapping 의미</strong>: <a href="https://man7.org/linux/man-pages/man2/mmap.2.html">mmap(2)</a>, MAP_PRIVATE·MAP_SHARED.</li>
+<li id="source-s16"><strong><a class="source-ref" href="#source-s16">[S16]</a> Go go1.26.0 runtime</strong>: <a href="https://github.com/golang/go/blob/go1.26.0/src/runtime/HACKING.md">HACKING.md</a>, G/M/P. <a href="https://github.com/golang/go/blob/go1.26.0/src/runtime/proc.go">proc.go</a>, entersyscall·entersyscallblock·retake·netpoll.</li>
+<li id="source-s17"><strong><a class="source-ref" href="#source-s17">[S17]</a> Rust async</strong>: <a href="https://doc.rust-lang.org/book/ch17-00-async-await.html">The Rust Book §17</a>, async·await·future·runtime와 <a href="https://doc.rust-lang.org/book/ch17-02-concurrency-with-async.html">동시 실행</a>, executor·blocking.</li>
+<li id="source-s18"><strong><a class="source-ref" href="#source-s18">[S18]</a> CMU 공식 강의</strong>: <a href="https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf">Exceptions and Processes</a>, 교재 동반 강의 자료. 이 스터디 강의자의 발언과는 출처를 구분.</li>
+<li id="source-s19"><strong><a class="source-ref" href="#source-s19">[S19]</a> C11 위원회 초안</strong>: <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf">N1570 PDF</a>, §6.5.5의 정수 나눗셈 조건.</li>
+<li id="source-s20"><strong><a class="source-ref" href="#source-s20">[S20]</a> AMD64 psABI</strong>: <a href="https://gitlab.com/x86-psABIs/x86-64-ABI">공식 프로젝트</a>, commit <code>e1ce098331da5dbd66e1ffc74162380bcc213236</code>의 <code>x86-64-ABI/low-level-sys-info.tex</code>, System V 함수 호출 규약 §3.2.3.</li>
+<li id="source-s21"><strong><a class="source-ref" href="#source-s21">[S21]</a> Go 1.14 릴리스 노트</strong>: <a href="https://go.dev/doc/go1.14#runtime">runtime</a>, 비동기 선점·플랫폼 조건.</li>
+<li id="source-s22"><strong><a class="source-ref" href="#source-s22">[S22]</a> Erlang/OTP 29.1.2</strong>: <a href="https://www.erlang.org/doc/apps/erts/erl_nif.html">erl_nif</a>, Long-running NIFs·Dirty NIFs.</li>
+</ul>
+</section></main><footer>CSAPP 스터디 · 확인 기준일 2026-10-25 KST · <a href="2026-10-04-csapp-ch8-exceptional-control-flow.md">Markdown</a></footer></div></body></html>

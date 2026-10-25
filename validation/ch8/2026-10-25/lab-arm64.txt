@@ -1,0 +1,18 @@
+Linux 7.2.12-orbstack-00394-gbecdd6130068 aarch64 GNU/Linux
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+strace -- version 6.1
+hello, world
+write(1, "hello, world\n", 13)          = 13
+exit_group(0)                           = ?
+write(1, "hello, world\n", 13)          = 13
+exit_group(0)                           = ?
+parent pid=37 step=0
+child pid=38 step=0
+parent pid=37 step=1
+child pid=38 step=1
+parent pid=37 step=2
+child pid=38 step=2
+pid=42 page=0xffffa4ddd000 value=A
+maps: ffffa4ddd000-ffffa4de0000 rw-p 00000000 00:00 0
+pagemap: present=1 PFN=0 (PFN visibility depends on CAP_SYS_ADMIN)
+PASS: write/exit_group, parent-child flows, private writable mapping

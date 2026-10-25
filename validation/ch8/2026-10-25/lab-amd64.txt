@@ -1,0 +1,10 @@
+Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
+hello, world
+parent pid=24 step=0
+child pid=25 step=0
+child pid=25 step=1
+parent pid=24 step=1
+child pid=25 step=2
+parent pid=24 step=2
+pid=26 page=0x7fffff7c9000 value=A
+PASS: amd64 compile and execution; strace excluded under emulation

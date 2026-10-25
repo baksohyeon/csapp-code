@@ -1,0 +1,191 @@
+{
+  "checkedAt": "2026-10-25T08:47:59.762695+00:00",
+  "results": [
+    {
+      "url": "https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf",
+      "status": 200,
+      "type": "application/pdf",
+      "prefixValid": true,
+      "final": "https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf"
+    },
+    {
+      "url": "https://csapp.cs.cmu.edu/3e/errata.html",
+      "status": 200,
+      "type": "text/html; charset=UTF-8",
+      "prefixValid": true,
+      "final": "https://csapp.cs.cmu.edu/3e/errata.html"
+    },
+    {
+      "url": "https://csapp.cs.cmu.edu/3e/figures.html",
+      "status": 200,
+      "type": "text/html; charset=UTF-8",
+      "prefixValid": true,
+      "final": "https://csapp.cs.cmu.edu/3e/figures.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/syscall.2.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man2/syscall.2.html"
+    },
+    {
+      "url": "https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://cdrdv2.intel.com/v1/dl/getContent/671447",
+      "status": 200,
+      "type": "application/pdf",
+      "prefixValid": true,
+      "final": "https://cdrdv2-public.intel.com/929358/325384-093-sdm-vol-3abcd.pdf"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/reboot.2.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man2/reboot.2.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/exit_group.2.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man2/exit_group.2.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man7/signal.7.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man7/signal.7.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/write.2.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man2/write.2.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man3/stdio.3.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man3/stdio.3.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man5/proc_pid_pagemap.5.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man5/proc_pid_pagemap.5.html"
+    },
+    {
+      "url": "https://docs.kernel.org/admin-guide/mm/pagemap.html",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "prefixValid": true,
+      "final": "https://docs.kernel.org/admin-guide/mm/pagemap.html"
+    },
+    {
+      "url": "https://go.dev/talks/2012/waza.slide",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "prefixValid": true,
+      "final": "https://go.dev/talks/2012/waza.slide"
+    },
+    {
+      "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-intro.pdf",
+      "status": 200,
+      "type": "application/pdf",
+      "prefixValid": true,
+      "final": "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-intro.pdf"
+    },
+    {
+      "url": "https://www.kegel.com/c10k.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://www.kegel.com/c10k.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/mmap.2.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://man7.org/linux/man-pages/man2/mmap.2.html"
+    },
+    {
+      "url": "https://github.com/golang/go/blob/go1.26.0/src/runtime/HACKING.md",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "prefixValid": true,
+      "final": "https://github.com/golang/go/blob/go1.26.0/src/runtime/HACKING.md"
+    },
+    {
+      "url": "https://github.com/golang/go/blob/go1.26.0/src/runtime/proc.go",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "prefixValid": true,
+      "final": "https://github.com/golang/go/blob/go1.26.0/src/runtime/proc.go"
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch17-00-async-await.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://doc.rust-lang.org/book/ch17-00-async-await.html"
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch17-02-concurrency-with-async.html",
+      "status": 200,
+      "type": "text/html",
+      "prefixValid": true,
+      "final": "https://doc.rust-lang.org/book/ch17-02-concurrency-with-async.html"
+    },
+    {
+      "url": "https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf",
+      "status": 200,
+      "type": "application/pdf",
+      "prefixValid": true,
+      "final": "https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf"
+    },
+    {
+      "url": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf",
+      "status": 200,
+      "type": "application/pdf",
+      "prefixValid": true,
+      "final": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf"
+    },
+    {
+      "url": "https://gitlab.com/x86-psABIs/x86-64-ABI",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "prefixValid": true,
+      "final": "https://gitlab.com/x86-psABIs/x86-64-ABI"
+    },
+    {
+      "url": "https://go.dev/doc/go1.14#runtime",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "prefixValid": true,
+      "final": "https://go.dev/doc/go1.14#runtime"
+    },
+    {
+      "url": "https://www.erlang.org/doc/apps/erts/erl_nif.html",
+      "status": 200,
+      "type": "text/html; charset=UTF-8",
+      "prefixValid": true,
+      "final": "https://www.erlang.org/doc/apps/erts/erl_nif.html"
+    }
+  ]
+}
