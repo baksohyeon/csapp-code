@@ -40,8 +40,8 @@ for(const theme of ['light','dark']){
    const brokenAnchors=[...document.querySelectorAll('a[href^="#"]')].filter(e=>!document.getElementById(decodeURI(e.getAttribute('href').slice(1)))).map(e=>e.getAttribute('href'));
    return {pageOverflow:Math.max(0,root.scrollWidth-root.clientWidth),ellipsisDeclarations:ellipsis.length,truncateCount:clipped.length,scrollY:moved,documentHeight:root.scrollHeight,figures,tables,brokenAnchors,iframes:document.querySelectorAll('iframe').length,sectionCount:document.querySelectorAll('.docs-article>section').length};
   });
-  if(width<1344) await page.locator('.toc').evaluate(e=>e.open=true);
-  await page.locator(width<1344?'.toc a[href="#processes"]':'.docs-outline a[href="#processes"]').click();
+  if(width<1024) await page.locator('.toc').evaluate(e=>e.open=true);
+  await page.locator(width<1024?'.toc a[href="#processes"]':'.docs-outline a[href="#processes"]').click();
   await page.waitForTimeout(100);
   metrics.anchorNavigation=await page.evaluate(()=>location.hash==='#processes');
   await page.evaluate(()=>{document.querySelectorAll('.table-wrap').forEach(e=>e.scrollLeft=0);window.scrollTo(0,0);});

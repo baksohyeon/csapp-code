@@ -200,3 +200,11 @@ LAB이 끝나면 QEMU guest process와 임시 rootfs를 정리한다. host 재�
 - 모바일의 코드 스크롤 영역에 키보드 포커스를 추가했다. 375·812·1440 light 및 375·1440 dark에서 axe WCAG A/AA 자동 검사 위반 0. 자동 검사는 수동 접근성 평가 전체를 대체하지 않는다.
 - [라우팅·접근성 결과와 스크린샷](../../validation/ch8/2026-10-25/navigation/results.json).
 - [10개 화면 조건 측정과 스크린샷](../../validation/ch8/2026-10-25/docs-layout/metrics.json). 페이지 가로 넘침·말줄임·브라우저 오류 0, SVG 9장 로딩, 세로 스크롤 확인.
+
+## 기존 강의 디자인에 맞춘 재조정
+
+Ch6·Ch7을 1440px 실제 화면으로 비교하고 Ch7의 hero·범위 배지·파란 강조색·옅은 격자 배경·둥근 섹션 패널·왼쪽 study rail을 Ch8에 적용했다. 본문을 세 열에서 목차와 본문의 두 열로 조정했다. 코드 블록은 어두운 배경과 별도 구문 색상 토큰을 사용한다. 경로·고정 앵커·LAB 내부 디버깅 사례 위치는 유지한다.
+
+- [10개 화면 조건과 스크린샷](../../validation/ch8/2026-10-25/lecture-style/metrics.json): 가로 넘침·말줄임·브라우저 오류 0, SVG 9장, 스크롤 확인.
+- [탐색·테마·접근성 검사](../../validation/ch8/2026-10-25/lecture-style-navigation/results.json): 5개 화면·테마 조건의 axe WCAG A/AA 자동 검사 위반 0.
+- HTML parser 오류 0, Ch8 본문 동기화·Ch7 기존 검증 통과.

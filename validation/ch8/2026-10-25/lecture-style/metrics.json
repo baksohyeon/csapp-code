@@ -1,0 +1,1706 @@
+{
+  "checkedAt": "2026-10-25T10:45:47.014Z",
+  "phase": "/tmp/csapp-restyle-layout",
+  "results": [
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 320,
+      "height": 568,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 46044,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 212,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "320x568-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 375,
+      "height": 812,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 41875,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "375x812-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 812,
+      "height": 375,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 33073,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "812x375-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 40967,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 282,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "390x844-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 39638,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 322,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "430x932-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 33214,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "768x1024-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 33428,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "1024x768-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 33399,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "1440x900-light.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 375,
+      "height": 812,
+      "theme": "dark",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 41875,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 267,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        },
+        {
+          "overflow": true,
+          "scrolled": true
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "375x812-dark.jpg"
+    },
+    {
+      "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "status": 200,
+      "pageOverflow": 0,
+      "ellipsisDeclarations": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "documentHeight": 33399,
+      "figures": [
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+          "alt": "프로그램에서 하드웨어까지의 실행 계층과 syscall 경계",
+          "ariaLabel": "사용자 공간의 application runtime libc에서 syscall 경계를 통해 kernel과 hardware로 이어지는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+          "alt": "사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름",
+          "ariaLabel": "CPU가 사건을 인식하고 handler가 처리한 뒤 사건의 종류에 따라 현재 명령 다음 명령 또는 종료로 이어지는 흐름",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+          "alt": "단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인",
+          "ariaLabel": "위 패널의 단일 코어에서는 A와 B가 교대로 실행되고 아래 패널의 두 코어에서는 실행 구간이 겹치는 타임라인",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+          "alt": "프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조",
+          "ariaLabel": "두 프로세스의 같은 가상 주소가 각각의 page table로 다른 물리 페이지에 연결되며 공유 mapping도 가능한 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+          "alt": "같은 task의 syscall 진입과 사용자 공간 복귀",
+          "ariaLabel": "같은 task가 사용자 코드에서 syscall로 kernel에 진입하고 복귀하며 task 변경 여부는 별도로 결정되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+          "alt": "blocking worker와 readiness 기반 task 재개의 비교",
+          "ariaLabel": "blocking I/O는 worker가 기다리는 반면 readiness 기반 I/O는 task를 대기시킨 뒤 worker가 다른 task를 실행하는 비교",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+          "alt": "실행 중인 G P M과 netpoll에서 대기하는 G의 관계",
+          "ariaLabel": "Go 사용자 코드는 G P M 조합으로 실행되고 I/O 대기 G는 netpoll에 등록되어 readiness 후 runnable 상태가 되는 구조",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg",
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "ariaLabel": "프로그램 실행과 출력 확인, strace ptrace를 통한 syscall 관측을 각각 검증하는 두 경로",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        },
+        {
+          "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg",
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "ariaLabel": "Orb amd64의 사용자 공간 번역 실행과 QEMU의 x86 kernel을 포함한 전체 시스템 실행을 구분하는 계층",
+          "width": 416,
+          "loaded": true,
+          "xmlError": null
+        }
+      ],
+      "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        },
+        {
+          "overflow": false,
+          "scrolled": false
+        }
+      ],
+      "brokenAnchors": [],
+      "iframes": 0,
+      "sectionCount": 10,
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "1440x900-dark.jpg"
+    }
+  ]
+}

@@ -15,7 +15,7 @@ try{
  assert.equal(await page.locator('h1').innerText(),'컴퓨터 시스템 학습 문서');
  await page.getByRole('link',{name:'Ch8 · Exceptional Control Flow',exact:true}).click();
  assert.equal(page.url(),url);
- await page.locator('.docs-collection a').filter({hasText:'Ch7'}).click();
+ await page.locator('.docs-hero-nav a').filter({hasText:'Ch7'}).click();
  assert(page.url().endsWith('/chapter07/chapter-7.6.1.html'));
  await page.getByRole('navigation',{name:'강의 이동'}).getByRole('link',{name:'Ch8 →'}).click();
  assert.equal(page.url(),url);
