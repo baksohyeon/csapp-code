@@ -40,6 +40,10 @@ for(const name of ['2026-10-25-csapp-ch8-validation','2026-10-25-csapp-ch8-learn
  if(fm.date!==name.slice(0,10))errors.push('note date '+name);
  const index=await readFile(path.join(root,'wiki/index.md'),'utf8');
  if(!index.includes('[['+name+']]'))errors.push('index '+name);
+ for(const [,target] of text.matchAll(/\]\(([^)]+)\)/g)){
+  if(/^(https?:|#)/.test(target))continue;
+  try{await access(path.resolve(root,'wiki/notes',target.split('#')[0]));}catch{errors.push(name+' link '+target);}
+ }
 }
 const render=spawnSync(process.execPath,[path.join(root,'tools/ch8/render.mjs'),'--check'],{encoding:'utf8'});
 if(render.status!==0)errors.push(render.stderr);

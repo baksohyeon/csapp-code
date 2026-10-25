@@ -21,3 +21,5 @@ frontmatter·문서 본문은 Markdown에, HTML 디자인은 `style.css`와 rend
 ```sh
 node tools/ch8/browser.mjs https://raspberrypi.bobcat-fort.ts.net/csapp/ live
 ```
+
+HTML·Markdown·SVG 및 기존 Ch6/Ch7 파일의 라이브 hash 비교: `node tools/ch8/live.mjs`.

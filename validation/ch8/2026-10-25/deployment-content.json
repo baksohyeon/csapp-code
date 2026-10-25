@@ -1,0 +1,103 @@
+{
+  "checkedAt": "2026-10-25T08:53:32.840Z",
+  "commit": "a6e1812dff6038cd85d0ce8c2924faa1d244f256",
+  "base": "https://raspberrypi.bobcat-fort.ts.net/csapp/",
+  "results": [
+    {
+      "file": "wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "localSha256": "e5b7e0b59e86b84232a6ffa2da8dcc448240ee4901edd51045c4c85a2a710b8e",
+      "liveSha256": "e5b7e0b59e86b84232a6ffa2da8dcc448240ee4901edd51045c4c85a2a710b8e",
+      "match": true
+    },
+    {
+      "file": "wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.md",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "localSha256": "bbfad676b8b9e82068e05f24dea8421828fb9c2c0f4b6b6013849377d4647c4d",
+      "liveSha256": "bbfad676b8b9e82068e05f24dea8421828fb9c2c0f4b6b6013849377d4647c4d",
+      "match": true
+    },
+    {
+      "file": "wiki/assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
+      "status": 200,
+      "contentType": "image/svg+xml; charset=utf-8",
+      "localSha256": "89f95365a6d604b90e82c72167c7ad403d785ff95315d81bcd62380c26823099",
+      "liveSha256": "89f95365a6d604b90e82c72167c7ad403d785ff95315d81bcd62380c26823099",
+      "match": true
+    },
+    {
+      "file": "wiki/assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg",
+      "status": 200,
+      "contentType": "image/svg+xml; charset=utf-8",
+      "localSha256": "25adb21a1870d31e4d8c49fc7ba3cda1e04de8aa90feecf362ff6a7bc89df2ca",
+      "liveSha256": "25adb21a1870d31e4d8c49fc7ba3cda1e04de8aa90feecf362ff6a7bc89df2ca",
+      "match": true
+    },
+    {
+      "file": "wiki/assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg",
+      "status": 200,
+      "contentType": "image/svg+xml; charset=utf-8",
+      "localSha256": "646009676ba886de48b675bfb0a6a225f583244020b1e83619ebfda3a10cbe5b",
+      "liveSha256": "646009676ba886de48b675bfb0a6a225f583244020b1e83619ebfda3a10cbe5b",
+      "match": true
+    },
+    {
+      "file": "wiki/assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg",
+      "status": 200,
+      "contentType": "image/svg+xml; charset=utf-8",
+      "localSha256": "c72ea3a1edf47c2cba6ccbe9c6670f08383f1ae23a68a85bb210d8c68fcc1253",
+      "liveSha256": "c72ea3a1edf47c2cba6ccbe9c6670f08383f1ae23a68a85bb210d8c68fcc1253",
+      "match": true
+    },
+    {
+      "file": "wiki/assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg",
+      "status": 200,
+      "contentType": "image/svg+xml; charset=utf-8",
+      "localSha256": "098502681888d220872ef35226b67623ac5e354f1336bde2907834e1742c9ac7",
+      "liveSha256": "098502681888d220872ef35226b67623ac5e354f1336bde2907834e1742c9ac7",
+      "match": true
+    },
+    {
+      "file": "wiki/assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg",
+      "status": 200,
+      "contentType": "image/svg+xml; charset=utf-8",
+      "localSha256": "0a32fa46f6d02a0e8f80d8f969779b8ee189ca323a4be6894a000476780a1c90",
+      "liveSha256": "0a32fa46f6d02a0e8f80d8f969779b8ee189ca323a4be6894a000476780a1c90",
+      "match": true
+    },
+    {
+      "file": "wiki/assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg",
+      "status": 200,
+      "contentType": "image/svg+xml; charset=utf-8",
+      "localSha256": "aad244710d12670f8c455ff564942450f4c28bbc7fd35ee9a50c9f5c755db731",
+      "liveSha256": "aad244710d12670f8c455ff564942450f4c28bbc7fd35ee9a50c9f5c755db731",
+      "match": true
+    },
+    {
+      "file": "wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "localSha256": "5ef494d944b78f1df30520ea26a3d58e71056f4193f16cf11d64ed045aac0979",
+      "liveSha256": "5ef494d944b78f1df30520ea26a3d58e71056f4193f16cf11d64ed045aac0979",
+      "match": true
+    },
+    {
+      "file": "chapter07/chapter-7.6.1.html",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "localSha256": "88cba8b29c81a127156ae8003324077bb4461693430347d7b5eb133dba6277d5",
+      "liveSha256": "88cba8b29c81a127156ae8003324077bb4461693430347d7b5eb133dba6277d5",
+      "match": true
+    },
+    {
+      "file": "README.md",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "localSha256": "0f41f186468664cc0f621d2962ab0de89336889f534b72de3c1bd1875d3ae3bd",
+      "liveSha256": "0f41f186468664cc0f621d2962ab0de89336889f534b72de3c1bd1875d3ae3bd",
+      "match": true
+    }
+  ]
+}

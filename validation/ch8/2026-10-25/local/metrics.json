@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T08:49:06.727Z",
+  "checkedAt": "2026-10-25T08:51:05.806Z",
   "phase": "local",
   "results": [
     {
@@ -12,7 +12,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 26040,
+      "documentHeight": 26076,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -142,7 +142,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 24191,
+      "documentHeight": 24235,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -272,7 +272,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 20799,
+      "documentHeight": 20858,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -402,7 +402,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 23692,
+      "documentHeight": 23738,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -532,7 +532,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 23289,
+      "documentHeight": 23340,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -662,7 +662,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 21087,
+      "documentHeight": 21146,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -792,7 +792,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 19754,
+      "documentHeight": 19812,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -922,7 +922,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 19783,
+      "documentHeight": 19842,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -1052,7 +1052,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 24191,
+      "documentHeight": 24235,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -1182,7 +1182,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 19783,
+      "documentHeight": 19842,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",

@@ -1,6 +1,6 @@
 ---
 type: Note
-status: draft
+status: done
 date: 2026-10-25
 related_to:
   - "[[2026-10-04-csapp-ch8-exceptional-control-flow]]"
@@ -47,7 +47,7 @@ Pi는 Tailscale SSH 추가 인증 후 연결됐다. Dokku 0.38.20, app `csapp`, 
 | 긴 NIF·dirty 분류 | 확인 | OTP 29.1.2 erl_nif의 Long-running NIFs·Dirty NIFs |
 | power-off의 정리·권한 | 보완 | reboot(2) CAP_SYS_BOOT·sync·플랫폼 조건. 실제 전원 제어 미실행 |
 
-[출처 HTTP 검사](../../../validation/ch8/2026-10-25/sources.json).
+[출처 HTTP 검사](../../validation/ch8/2026-10-25/sources.json).
 Intel 안내 페이지는 web 도구로 열람됐으나 직접 HTTP 검사에서는 403이었다.
 공식 PDF는 직접 HTTP 200으로 내려받아 revision 093, September 2026과 관련 절을 확인했다.
 레포 README의 교재 PDF 주소는 이번 환경에서 PDF 본문을 반환하지 않았다.
@@ -68,10 +68,10 @@ Kernel: `7.2.12-orbstack-00394-gbecdd6130068`.
 | 부모·자식 각 3줄 | PASS | PASS |
 | rw-p mapping·pagemap 읽기 | PASS, present=1 PFN=0 | mapping introspection 미실행 |
 
-- [ARM64 전체 출력](../../../validation/ch8/2026-10-25/lab-arm64.txt)
-- [x86-64 컴파일·실행](../../../validation/ch8/2026-10-25/lab-amd64.txt)
-- [x86-64 trace 불완전 기록](../../../validation/ch8/2026-10-25/lab-amd64-strace-incomplete.txt)
-- [재현 명령](../../../examples/0002-exceptional-control-flow/README.md)
+- [ARM64 전체 출력](../../validation/ch8/2026-10-25/lab-arm64.txt)
+- [x86-64 컴파일·실행](../../validation/ch8/2026-10-25/lab-amd64.txt)
+- [x86-64 trace 불완전 기록](../../validation/ch8/2026-10-25/lab-amd64-strace-incomplete.txt)
+- [재현 명령](../../examples/0002-exceptional-control-flow/README.md)
 
 x86-64 에뮬레이션에서 strace가 x32/64 mode 전환 메시지를 반복하며 필터된 syscall을 표시하지 않았다.
 전체 LAB의 trace 검사는 실패로 취급했다. ARM64의 관측을 x86-64 syscall register 관측으로 보고하지 않았다.
@@ -81,7 +81,7 @@ x86-64 에뮬레이션에서 strace가 x32/64 mode 전환 메시지를 반복하
 
 - `node tools/ch8/verify.mjs`: frontmatter·날짜, 고유 ID 55개, 교재 소절 7개, 상대 링크, 공용 SVG 7장, 금지 문형, HTML/Markdown 동기화 PASS.
 - `node chapter07/verify-html.mjs`: 기존 Ch7 HTML·Markdown·링크 검사 PASS.
-- HTML5 parser 오류 0, SVG XML parse 7개 성공: [구조 결과](../../../validation/ch8/2026-10-25/structure.json).
+- HTML5 parser 오류 0, SVG XML parse 7개 성공: [구조 결과](../../validation/ch8/2026-10-25/structure.json).
 - `git diff --check`: PASS.
 
 ## 로컬 브라우저 검증
@@ -104,16 +104,35 @@ x86-64 에뮬레이션에서 strace가 x32/64 mode 전환 메시지를 반복하
 
 초기 favicon 404를 inline favicon으로 수정했다. 화면 검토에서 중복 제목을 발견해 renderer의
 선행 공백 처리를 수정하고 다시 렌더링했다. 본문 표의 내부 가로 스크롤은 허용하고 페이지 넘침과 구분했다.
-전체 결과와 도판 스크린샷은 [local metrics](../../../validation/ch8/2026-10-25/local/metrics.json)에 있다.
-[모바일 상단](../../../validation/ch8/2026-10-25/local/375x812-light.jpg),
-[모바일 가로](../../../validation/ch8/2026-10-25/local/812x375-light.jpg),
-[실행 타임라인](../../../validation/ch8/2026-10-25/local/figure-3-light.jpg),
-[dark Go 도판](../../../validation/ch8/2026-10-25/local/figure-7-dark.jpg)을 직접 확인했다.
+전체 결과와 도판 스크린샷은 [local metrics](../../validation/ch8/2026-10-25/local/metrics.json)에 있다.
+[모바일 상단](../../validation/ch8/2026-10-25/local/375x812-light.jpg),
+[모바일 가로](../../validation/ch8/2026-10-25/local/812x375-light.jpg),
+[실행 타임라인](../../validation/ch8/2026-10-25/local/figure-3-light.jpg),
+[dark Go 도판](../../validation/ch8/2026-10-25/local/figure-7-dark.jpg)을 직접 확인했다.
 
 ## Git과 배포
 
-문서·로컬 검증은 완료했다. GitHub push, Dokku 배포, 라이브 내용 일치와 브라우저 검증은
-이 보고서의 다음 갱신에서 실제 결과를 기록한다.
+문서 payload 커밋 `a6e1812`를 GitHub `main`에 push하고 기존 Dokku remote로 배포했다.
+Dokku build `mvnl9imxumykhi`는 `succeeded`, exit code 0으로 종료했다.
+새 container `fb798948f14b`의 실행과 기본 uptime·port healthcheck 통과를 확인했다.
+정적 사이트의 release는 이 build ID·image·container로 식별한다. 별도 `releases:list` 명령은 이 Dokku 설치에 없다.
+
+- 라이브: [Ch8 학습 문서](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html)
+- [배포 상태](../../validation/ch8/2026-10-25/deployment.json)
+- [라이브 파일 해시](../../validation/ch8/2026-10-25/deployment-content.json): Ch8 HTML·Markdown·SVG 7장, Ch6·Ch7 HTML, README 등 12개 모두 HTTP 200과 SHA-256 일치.
+- [라이브 브라우저 측정](../../validation/ch8/2026-10-25/live/metrics.json): 로컬과 같은 10개 viewport·theme 조건에서 가로 넘침 0·실제 말줄임 0·브라우저 오류 0·세로 스크롤 700px·SVG 7장·anchor 이동 정상.
+- [라이브 모바일 화면](../../validation/ch8/2026-10-25/live/375x812-light.jpg)을 직접 확인했다.
+
+`/csapp/` 경로를 유지했고 기존 Ch6·Ch7도 원본 해시와 일치했다.
+배포 진행 중 이전 container가 응답한 짧은 구간에는 Ch8 404를 관측했다.
+proxy 전환 후 재검사에서 12개 대상이 모두 정상 응답했다.
+검사 후 서버 로그 30줄에서 error·crit·emerg는 없었다.
+시작 로그의 기존 `charset_types` 중복 `text/html` 경고는 설정에서 중복 항목을 제거했고,
+동일 nginx image의 임시 container에서 `nginx -t` 성공을 확인했다.
+이 설정과 라이브 검증 증거는 후속 커밋·동기화 배포에 포함한다.
+
+이 보고서의 배포 기록은 위 payload를 직접 검증한 결과다.
+후속 보고서·증거 커밋의 SHA와 최종 배포 결과는 Git 이력 및 Dokku build 이력에서 확인한다.
 
 배포 전 app은 `csapp`, Dokku 0.38.20, branch `main`, container `e1970ef60d3`였다.
 서버 bare repo의 main은 `93a22e8b0187b0b0a632412685744d7a1da7e8c0`였다.

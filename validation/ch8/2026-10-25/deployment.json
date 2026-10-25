@@ -1,0 +1,21 @@
+{
+  "app": "csapp",
+  "dokkuVersion": "0.38.20",
+  "payloadCommit": "a6e1812",
+  "container": "fb798948f14b",
+  "build": {
+    "id": "mvnl9imxumykhi",
+    "app": "csapp",
+    "kind": "build",
+    "pid": 63852,
+    "started_at": "2026-10-25T08:51:40.889411601Z",
+    "finished_at": "2026-10-25T08:53:35.75653564Z",
+    "status": "succeeded",
+    "source": "git-hook",
+    "exit_code": 0,
+    "display_status": "succeeded",
+    "duration": "1m55s",
+    "log_path": "/var/lib/dokku/data/builds/csapp/mvnl9imxumykhi.log"
+  },
+  "publicUrl": "https://raspberrypi.bobcat-fort.ts.net/csapp/"
+}
