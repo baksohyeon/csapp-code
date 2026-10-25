@@ -140,6 +140,39 @@ proxy 전환 후 재검사에서 12개 대상이 모두 정상 응답했다.
 
 ## 남은 범위
 
-- native Linux/x86-64의 register·strace 관측은 미실행이다. ABI는 공식 자료로 확인했다.
+- x86-64 syscall·mapping LAB은 아래 full-system QEMU 검증으로 완료했다. syscall 인자 레지스터 직접 추적과 실제 하드웨어 성능 비교는 별도 범위다.
 - Go·Erlang·Rust runtime 동작·성능 비교 실험은 미실행이다.
 - 스크린리더 실기기·실제 휴대폰·프린터 출력 검증은 미실행이다.
+
+## x86-64 추가 검증
+
+사용자 지적 후 `orb`의 기존 `ubuntu` amd64 환경을 확인했다.
+Ubuntu 25.04에 GCC 14.2.0·strace 6.14를 설치하고
+`orb -m ubuntu sh examples/0002-exceptional-control-flow/verify.sh`를 실행했다.
+`hello, world` 출력은 성공했지만 syscall trace가 비어 전체 LAB은 exit 1이었다.
+별도 `strace /bin/echo hello`에서도 x32/64 mode 전환이 반복되고 write·exit_group이 표시되지 않았다.
+[Orb 실행 기록](../../validation/ch8/2026-10-25/lab-orb-amd64.txt).
+
+이어 설치된 QEMU로 **x86-64 커널과 userspace를 함께 실행**했다.
+Orb의 전역 Rosetta 설정은 변경하지 않았다.
+
+| 항목 | 실제 관측 |
+|---|---|
+| QEMU | 11.1.2, TCG full-system, q35·CPU max |
+| Kernel | Linux 6.18.58-0-lts x86_64 |
+| Userspace | Debian bookworm, GCC 12.2.0, strace 6.1 |
+| 자원 | virtual CPU 2개·RAM 1536 MiB·network 없음 |
+| write | fd=1, 요청 13바이트, 반환 13 |
+| exit_group | status=0, 비복귀 trace |
+| 흐름 | 부모·자식 각 3줄·순서 0→1→2 |
+| mapping | private anonymous rw-p |
+| pagemap | present=1, PFN=255844. 해당 guest root 권한에서 관측한 값 |
+| 전체 결과 | `CSAPP_QEMU_EXIT=0`, PASS |
+
+- [전체 x86-64 로그](../../validation/ch8/2026-10-25/lab-x86-system.txt)
+- [환경·kernel hash](../../validation/ch8/2026-10-25/x86-system-environment.json)
+- 재현: 레포 root에서 `python3 tools/ch8/qemu-lab.py`. 저장한 재현 도구를 다시 실행해 PASS를 확인했다. [재실행 로그](../../validation/ch8/2026-10-25/lab-x86-system-reproduced.txt).
+- 재현 도구: Docker, QEMU, Python 3, curl, tar, cpio, gzip.
+
+LAB이 끝나면 QEMU guest process와 임시 rootfs를 정리한다. host 재부팅·전원 종료는 수행하지 않는다.
+이 결과로 기존 x86-64 syscall LAB의 미검증 상태를 해소했다.

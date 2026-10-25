@@ -26,3 +26,12 @@ docker run --rm --platform linux/arm64 --cap-add=SYS_PTRACE csapp-ch8-lab:arm64
 
 베이스 이미지는 Debian bookworm-slim이며 패키지 업데이트에 따라 결과 환경이 달라질 수 있다.
 실행 시 kernel·ISA·GCC·strace 버전을 출력한다.
+
+Apple Silicon에서 x86-64 커널을 포함한 전체 LAB 검증:
+
+```sh
+python3 tools/ch8/qemu-lab.py
+```
+
+QEMU full-system TCG로 별도 guest를 실행한다. Orb의 amd64 userspace에서 strace trace가
+불완전할 때 사용할 수 있다. guest 종료 뒤 임시 rootfs를 자동 정리한다.

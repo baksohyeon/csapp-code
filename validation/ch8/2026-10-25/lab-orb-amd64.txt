@@ -1,0 +1,4 @@
+Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
+gcc (Ubuntu 14.2.0-19ubuntu2) 14.2.0
+strace -- version 6.14
+hello, world

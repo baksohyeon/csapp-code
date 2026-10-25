@@ -1,0 +1,21 @@
+SeaBIOS (version rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org)
+Booting from ROM...
+Probing EDD (edd=off to disable)... oLinux 6.18.58-0-lts x86_64 GNU/Linux
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+strace -- version 6.1
+hello, world
+write(1, "hello, world\n", 13)          = 13
+exit_group(0)                           = ?
+write(1, "hello, world\n", 13)          = 13
+exit_group(0)                           = ?
+parent pid=510 step=0
+child pid=511 step=0
+child pid=511 step=1
+parent pid=510 step=1
+parent pid=510 step=2
+child pid=511 step=2
+pid=515 page=0x7f07eea46000 value=A
+maps: 7f07eea46000-7f07eea49000 rw-p 00000000 00:00 0
+pagemap: present=1 PFN=329732 (PFN visibility depends on CAP_SYS_ADMIN)
+PASS: write/exit_group, parent-child flows, private writable mapping
+CSAPP_QEMU_EXIT=0

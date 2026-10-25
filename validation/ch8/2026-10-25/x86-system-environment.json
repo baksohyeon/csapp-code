@@ -1,0 +1,10 @@
+{
+  "kernel": "Linux 6.18.58-0-lts x86_64",
+  "qemu": "QEMU emulator version 11.1.2",
+  "kernelUrl": "https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/x86_64/netboot/vmlinuz-lts",
+  "kernelSha256": "9ce15213979f82b9f7c93d9153c6864599761e517cabd0db77b55de51f402352",
+  "imageId": "sha256:456878806437eed5ea701af616c73a15a9b18529edce17dc9b84c0d14a6ade4d",
+  "mode": "full-system TCG, x86-64 kernel and userspace; 2 virtual CPUs, 1536 MiB, network disabled",
+  "result": "PASS; CSAPP_QEMU_EXIT=0",
+  "orbResult": "Ubuntu 25.04 amd64, GCC14.2, strace6.14: syscall trace incomplete; full LAB exit1"
+}

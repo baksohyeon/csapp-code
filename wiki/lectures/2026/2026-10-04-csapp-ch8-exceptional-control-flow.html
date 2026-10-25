@@ -497,12 +497,18 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 <td>성공. syscall register 직접 관측 없음</td>
 </tr>
 <tr>
-<td>Linux x86-64 에뮬레이션</td>
+<td>OrbStack amd64 userspace</td>
 <td>strace</td>
-<td>syscall trace 불완전. 전체 LAB 통과 판정 보류</td>
+<td>syscall trace 불완전. 전체 LAB 실패</td>
+</tr>
+<tr>
+<td>QEMU full-system x86-64</td>
+<td>전체 LAB</td>
+<td>write·exit_group·부모/자식·rw-p·pagemap PASS</td>
 </tr>
 </tbody>
 </table></div>
+<p>QEMU 검증은 Linux 6.18.58-0-lts x86-64 커널, Debian userspace, GCC 12.2.0, strace 6.1에서 수행했다. 이는 전체 시스템 에뮬레이션의 관측이다. 실제 x86 하드웨어 성능 측정과는 환경이 다르다. macOS에서 <code>python3 tools/ch8/qemu-lab.py</code>로 재현할 수 있다.</p>
 <p>ARM64 전체 LAB을 재현하려면 위 두 명령의 <code>linux/amd64</code>와 이미지 tag를 각각 <code>linux/arm64</code>, <code>csapp-ch8-lab:arm64</code>로 바꾼다. ISA별 syscall ABI는 공식 표로 확인하고 실험 환경과 구분한다.</p>
 <p>실제 환경·명령·전체 출력은 <a href="../../notes/2026-10-25-csapp-ch8-validation.md">검증 보고서</a>에 기록한다. 다음 단계는 <code>syscall/signal 관측 → PID·mapping 확인 → runtime 대기 위치 확인 → 가설 → 측정</code>이다.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>

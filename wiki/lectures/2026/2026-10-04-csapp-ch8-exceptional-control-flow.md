@@ -318,7 +318,10 @@ docker run --rm --platform linux/amd64 --cap-add=SYS_PTRACE \
 |---|---|---|
 | Linux ARM64 native | 전체 LAB | write 13바이트·exit_group, 부모/자식 각 3줄, rw-p, present=1·PFN=0 |
 | Linux x86-64 에뮬레이션 | 세 C 예제 컴파일·실행 | 성공. syscall register 직접 관측 없음 |
-| Linux x86-64 에뮬레이션 | strace | syscall trace 불완전. 전체 LAB 통과 판정 보류 |
+| OrbStack amd64 userspace | strace | syscall trace 불완전. 전체 LAB 실패 |
+| QEMU full-system x86-64 | 전체 LAB | write·exit_group·부모/자식·rw-p·pagemap PASS |
+
+QEMU 검증은 Linux 6.18.58-0-lts x86-64 커널, Debian userspace, GCC 12.2.0, strace 6.1에서 수행했다. 이는 전체 시스템 에뮬레이션의 관측이다. 실제 x86 하드웨어 성능 측정과는 환경이 다르다. macOS에서 `python3 tools/ch8/qemu-lab.py`로 재현할 수 있다.
 
 ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지 tag를 각각 `linux/arm64`, `csapp-ch8-lab:arm64`로 바꾼다. ISA별 syscall ABI는 공식 표로 확인하고 실험 환경과 구분한다.
 
