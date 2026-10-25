@@ -117,7 +117,7 @@ $ ./hello
 
 # 3. 개별 컴파일 후 링킹
 $ gcc -c hello.c
-$ gcc -c sum.c  
+$ gcc -c sum.c
 $ gcc hello.o sum.o -o hello
 $ ./hello
 ```
