@@ -146,6 +146,9 @@ proxy 전환 후 재검사에서 12개 대상이 모두 정상 응답했다.
 
 ## x86-64 추가 검증
 
+판단 과정과 재현 방법은 [주니어용 디버깅 학습 노트](2026-10-25-x86-strace-debugging.html)에 정리했다.
+해당 노트의 375×812·812×375·1440×900 light와 375×812 dark 검사에서 가로 넘침·말줄임·깨진 anchor·브라우저 오류는 0, SVG 2장 로딩과 실제 anchor 이동은 정상이다. [노트 측정·스크린샷](../../validation/ch8/2026-10-25/debug-note/metrics.json).
+
 사용자 지적 후 `orb`의 기존 `ubuntu` amd64 환경을 확인했다.
 Ubuntu 25.04에 GCC 14.2.0·strace 6.14를 설치하고
 `orb -m ubuntu sh examples/0002-exceptional-control-flow/verify.sh`를 실행했다.

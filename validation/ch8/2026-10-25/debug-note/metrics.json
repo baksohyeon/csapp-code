@@ -1,0 +1,106 @@
+{
+  "checkedAt": "2026-10-25T09:12:22.432Z",
+  "url": "file:///Users/dorito/dev/csapp-code/wiki/notes/2026-10-25-x86-strace-debugging.html",
+  "results": [
+    {
+      "width": 375,
+      "height": 812,
+      "theme": "light",
+      "overflow": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "brokenAnchors": [],
+      "svg": [
+        {
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "width": 317,
+          "loaded": true
+        },
+        {
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "width": 317,
+          "loaded": true
+        }
+      ],
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "375x812-light.png",
+      "status": 200
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "theme": "light",
+      "overflow": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "brokenAnchors": [],
+      "svg": [
+        {
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "width": 420,
+          "loaded": true
+        },
+        {
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "width": 420,
+          "loaded": true
+        }
+      ],
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "812x375-light.png",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "overflow": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "brokenAnchors": [],
+      "svg": [
+        {
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "width": 420,
+          "loaded": true
+        },
+        {
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "width": 420,
+          "loaded": true
+        }
+      ],
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "1440x900-light.png",
+      "status": 200
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "theme": "dark",
+      "overflow": 0,
+      "truncateCount": 0,
+      "scrollY": 700,
+      "brokenAnchors": [],
+      "svg": [
+        {
+          "alt": "프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로",
+          "width": 317,
+          "loaded": true
+        },
+        {
+          "alt": "amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교",
+          "width": 317,
+          "loaded": true
+        }
+      ],
+      "anchorNavigation": true,
+      "errors": [],
+      "screenshot": "375x812-dark.png",
+      "status": 200
+    }
+  ]
+}

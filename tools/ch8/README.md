@@ -23,3 +23,9 @@ node tools/ch8/browser.mjs https://raspberrypi.bobcat-fort.ts.net/csapp/ live
 ```
 
 HTML·Markdown·SVG 및 기존 Ch6/Ch7 파일의 라이브 hash 비교: `node tools/ch8/live.mjs`.
+
+별도 Markdown 학습 노트 HTML 생성:
+
+```sh
+node tools/ch8/render-note.mjs wiki/notes/2026-10-25-x86-strace-debugging.md
+```
