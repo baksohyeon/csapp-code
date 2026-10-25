@@ -539,7 +539,7 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 <span class="anchor-alias" id="심층-사례-strace-관측-실패-디버깅" aria-hidden="true"></span><h3 id="lab-debugging">심층 사례: strace 관측 실패 디버깅<a class="heading-link" href="#lab-debugging" aria-label="심층 사례: strace 관측 실패 디버깅 고정 링크">#</a></h3>
 <p>[사실][OBSERVED] 프로그램은 출력했지만 syscall trace가 비어 있었다. Orb의 기존 Ubuntu amd64에서 재현한 뒤, <strong>x86-64 커널을 부팅한 QEMU에서 전체 LAB을 두 번 통과했다.</strong></p>
 <p>이 사례는 앞의 syscall·프로세스·주소 공간 LAB을 검증하는 과정이다. 아래에서는 관측한 사실, 세운 가설, 확인 실험, 실행 환경 선택의 근거를 차례로 연결한다. LAB의 관측 공백은 해소했고, Orb/Rosetta 내부의 정확한 결함 위치는 미확인이다.</p>
-<p>표기: **[관측]**은 실제 실행, **[공식]**은 1차 자료, **[가설]**은 추론, **[결정]<strong>은 조치다. <strong>[판정]</strong>·</strong>[해석]**은 관측에 대한 작성자 설명이다. 예상은 EXPECTED로 표시한다.</p>
+<p>표기: [관측]은 실제 실행, [공식]은 1차 자료, [가설]은 추론, [결정]은 조치다. [판정]·[해석]은 관측에 대한 작성자 설명이다. 예상은 EXPECTED로 표시한다.</p>
 <span class="anchor-alias" id="1-먼저-무엇을-검증하려-했는가" aria-hidden="true"></span><h4 id="debug-goals">1. 먼저 무엇을 검증하려 했는가<a class="heading-link" href="#debug-goals" aria-label="1. 먼저 무엇을 검증하려 했는가 고정 링크">#</a></h4>
 <span class="anchor-alias" id="lab의-목표" aria-hidden="true"></span><h5 id="detail-10">LAB의 목표<a class="heading-link" href="#detail-10" aria-label="LAB의 목표 고정 링크">#</a></h5>
 <p>학습 목표는 Linux 프로그램이 커널 기능을 호출하는 경계를 직접 보는 것이다.
