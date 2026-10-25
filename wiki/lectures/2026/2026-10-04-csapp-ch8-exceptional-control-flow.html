@@ -45,64 +45,138 @@
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg" alt="프로그램에서 하드웨어까지의 실행 계층과 syscall 경계" loading="lazy"><figcaption>프로그램에서 하드웨어까지의 실행 계층과 syscall 경계</figcaption></figure>
 <p>[OFFICIAL][사실] libc와 언어 runtime은 사용자 공간에서 동작할 수 있다. syscall은 커널 진입 인터페이스다. CPU exception, Linux signal, 언어 exception·panic은 각 계층의 메커니즘이다. syscall을 직접 호출하는 경로도 있다. <a class="source-ref" href="#source-s3">[S3]</a><a class="source-ref" href="#source-s7">[S7]</a><a class="source-ref" href="#source-s10">[S10]</a></p>
 <span class="anchor-alias" id="교재-절-대응표" aria-hidden="true"></span><h3 id="detail-2">교재 절 대응표<a class="heading-link" href="#detail-2" aria-label="교재 절 대응표 고정 링크">#</a></h3>
-<p>[CSAPP][사실] 공식 3판 목차 PDF의 xiv쪽(PDF 14쪽)을 대조했다. 이 노트의 교재 본문은 §8.1~§8.2.4이며, §8.2.3·§8.2.4는 §8.2의 하위 절이다. 아래 쪽수는 북미판 인쇄 쪽수다. <a class="source-ref" href="#source-s1">[S1]</a></p>
+<p>[CSAPP][사실] 공식 북미판 목차의 xiv쪽(PDF 14쪽)과 스터디 교재 Global Edition의 xv쪽(PDF 15쪽)을 대조했다. 절 순서는 같다. 이 노트의 교재 본문은 §8.1~§8.2.4이며, §8.2.3·§8.2.4는 §8.2의 하위 절이다. 아래는 각 판의 인쇄 쪽수다. 스터디 PDF 뷰어의 페이지 번호와도 구분한다. <a class="source-ref" href="#source-s1">[S1]</a><a class="source-ref" href="#source-s30">[S30]</a></p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
 <th>절</th>
+<th>북미판</th>
+<th>Global</th>
 <th>교재 주제</th>
-<th>이 문서의 연결</th>
+<th>학습 연결</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>8.1 · p.723</td>
+<td>8.1</td>
+<td>p.723</td>
+<td>p.759</td>
 <td>Exceptions</td>
 <td>사건과 제어 이전</td>
 </tr>
 <tr>
-<td>8.1.1 · p.724</td>
+<td>8.1.1</td>
+<td>p.724</td>
+<td>p.760</td>
 <td>Exception Handling</td>
 <td>handler 선택·상태 보존</td>
 </tr>
 <tr>
-<td>8.1.2 · p.726</td>
+<td>8.1.2</td>
+<td>p.726</td>
+<td>p.762</td>
 <td>Classes of Exceptions</td>
 <td>분류·재개 위치</td>
 </tr>
 <tr>
-<td>8.1.3 · p.729</td>
+<td>8.1.3</td>
+<td>p.729</td>
+<td>p.765</td>
 <td>Exceptions in Linux/x86-64 Systems</td>
 <td>CPU 예외·Linux 처리·system call</td>
 </tr>
 <tr>
-<td>8.2 · p.732</td>
+<td>8.2</td>
+<td>p.732</td>
+<td>p.768</td>
 <td>Processes</td>
 <td>실행 흐름·주소 공간</td>
 </tr>
 <tr>
-<td>8.2.1 · p.732</td>
+<td>8.2.1</td>
+<td>p.732</td>
+<td>p.768</td>
 <td>Logical Control Flow</td>
 <td>프로세스별 명령어 흐름</td>
 </tr>
 <tr>
-<td>8.2.2 · p.733</td>
+<td>8.2.2</td>
+<td>p.733</td>
+<td>p.769</td>
 <td>Concurrent Flows</td>
 <td>타임라인·병렬 실행</td>
 </tr>
 <tr>
-<td>8.2.3 · p.734</td>
+<td>8.2.3</td>
+<td>p.734</td>
+<td>p.770</td>
 <td>Private Address Space</td>
 <td>mapping·보호</td>
 </tr>
 <tr>
-<td>8.2.4 · p.734</td>
+<td>8.2.4</td>
+<td>p.734</td>
+<td>p.770</td>
 <td>User and Kernel Modes</td>
 <td>권한·커널 진입</td>
 </tr>
 </tbody>
 </table></div>
-<p>[CSAPP][사실] Chapter 8 전체는 p.721에서 시작한다. 이번 노트 이후에는 §8.2.5 문맥 교환(p.736), §8.3 syscall 오류 처리(p.737), §8.4 프로세스 제어(p.738), §8.5 signal(p.756), §8.6 비지역 점프(p.781), §8.7 프로세스 도구(p.786), §8.8 요약(p.787)이 이어진다. 이 범위의 독립 강의노트는 아직 작성하지 않았다. <a class="source-ref" href="#source-s1">[S1]</a></p>
+<p>[CSAPP][사실] Chapter 8은 북미판 p.721 / Global p.757에서 시작한다. 이번 범위 다음은 아래와 같다. 이 범위의 독립 강의노트는 아직 작성하지 않았다. <a class="source-ref" href="#source-s1">[S1]</a><a class="source-ref" href="#source-s30">[S30]</a></p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
+<thead>
+<tr>
+<th>다음 절</th>
+<th>주제</th>
+<th>북미판</th>
+<th>Global</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8.2.5</td>
+<td>문맥 교환</td>
+<td>p.736</td>
+<td>p.772</td>
+</tr>
+<tr>
+<td>8.3</td>
+<td>syscall 오류 처리</td>
+<td>p.737</td>
+<td>p.773</td>
+</tr>
+<tr>
+<td>8.4</td>
+<td>프로세스 제어</td>
+<td>p.738</td>
+<td>p.774</td>
+</tr>
+<tr>
+<td>8.5</td>
+<td>signal</td>
+<td>p.756</td>
+<td>p.792</td>
+</tr>
+<tr>
+<td>8.6</td>
+<td>비지역 점프</td>
+<td>p.781</td>
+<td>p.817</td>
+</tr>
+<tr>
+<td>8.7</td>
+<td>프로세스 도구</td>
+<td>p.786</td>
+<td>p.822</td>
+</tr>
+<tr>
+<td>8.8</td>
+<td>요약</td>
+<td>p.787</td>
+<td>p.823</td>
+</tr>
+</tbody>
+</table></div>
 <p>[COMMENTARY] LAB의 <code>fork</code>·<code>waitpid</code>는 §8.4의 실습을 미리 연결하고, <code>/proc</code>·pagemap은 Chapter 9의 주소 변환 학습으로 이어진다. Go·BEAM·Rust 보충은 이 노트 뒤쪽에 둔다.</p>
 </section><section data-section="exceptions"><span class="anchor-alias" id="81-exceptions" aria-hidden="true"></span><h2 id="exceptions">8.1 Exceptions<a class="heading-link" href="#exceptions" aria-label="8.1 Exceptions 고정 링크">#</a></h2>
 <span class="anchor-alias" id="811-exception-handling" aria-hidden="true"></span><h3 id="exception-handling">8.1.1 Exception Handling<a class="heading-link" href="#exception-handling" aria-label="8.1.1 Exception Handling 고정 링크">#</a></h3>
@@ -158,7 +232,7 @@
 <p><strong>REMIND</strong> Fault의 재시도 가능성은 원인이 해결됐을 때의 복귀 모델이다. 접근 위반처럼 프로세스 종료로 이어지는 fault도 있다. <a class="source-ref" href="#source-s4">[S4]</a><a class="source-ref" href="#source-s7">[S7]</a></p>
 </blockquote>
 <span class="anchor-alias" id="813-exceptions-in-linuxx86-64-systems" aria-hidden="true"></span><span class="anchor-alias" id="813-linuxx86-64-divide-error와-signal" aria-hidden="true"></span><h3 id="linux-exceptions">8.1.3 Exceptions in Linux/x86-64 Systems<a class="heading-link" href="#linux-exceptions" aria-label="8.1.3 Exceptions in Linux/x86-64 Systems 고정 링크">#</a></h3>
-<p>[CSAPP][사실] 이 절은 Linux/x86-64에서 예외와 system call을 구체화한다. CMU 동반 강의는 처리 가능한 page fault의 명령 재실행과 유효하지 않은 메모리 참조의 signal 전달을 비교한다. <a class="source-ref" href="#source-s18">[S18]</a> (슬라이드 15~17)</p>
+<p>[CSAPP][사실] 스터디 교재 Global p.765~767의 이 절은 divide error, 일반 보호 예외, page fault, machine check와 system call을 다룬다. CMU 동반 강의도 처리 가능한 page fault의 명령 재실행과 유효하지 않은 메모리 참조의 signal 전달을 비교한다. <a class="source-ref" href="#source-s30">[S30]</a><a class="source-ref" href="#source-s18">[S18]</a> (슬라이드 15~17)</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -172,6 +246,16 @@
 <td>0 나눗셈 등 산술 예외</td>
 <td>Linux의 signal 전달</td>
 <td>signal의 설정·기본 동작에 따름</td>
+</tr>
+<tr>
+<td>일반 보호 예외</td>
+<td>보호 위반 처리</td>
+<td>사용자 프로세스의 signal 처리로 연결</td>
+</tr>
+<tr>
+<td>Machine check</td>
+<td>교재 모델의 치명적 하드웨어 오류 처리</td>
+<td>원래 프로그램으로 복귀하지 않음</td>
 </tr>
 <tr>
 <td>처리 가능한 page fault</td>
@@ -246,7 +330,7 @@ exit_group(0)                  = ?
 <p>[COMMENTARY] 한 사람이 책 두 권을 번갈아 읽어도 각 책의 읽기 순서는 이어진다. 이 비유는 실행 순서의 보존을 설명한다. 실제 프로세스 상태에는 레지스터·메모리·OS 자원이 포함된다.</p>
 <span class="anchor-alias" id="822-concurrent-flows" aria-hidden="true"></span><h3 id="concurrent-flows">8.2.2 Concurrent Flows<a class="heading-link" href="#concurrent-flows" aria-label="8.2.2 Concurrent Flows 고정 링크">#</a></h3>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg" alt="단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인" loading="lazy"><figcaption>단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인</figcaption></figure>
-<p>[CSAPP][사실] 단일 코어에서도 흐름의 전체 실행 기간은 겹칠 수 있다. 병렬 실행은 여러 코어에서 같은 시점에 명령어를 진행하는 상황이다. <a class="source-ref" href="#source-s18">[S18]</a></p>
+<p>[CSAPP][사실] 교재 Global p.769~770은 두 흐름의 실행 기간이 겹치면 concurrent flow로 정의한다. 프로세스가 CPU를 번갈아 사용하는 multitasking의 각 실행 구간을 time slice라고 부른다. 다른 코어나 컴퓨터에서 함께 진행하는 흐름은 parallel flow다. <a class="source-ref" href="#source-s30">[S30]</a></p>
 <p>[COMMENTARY] 타임라인의 색 막대는 실제 CPU 실행 구간이다. concurrency는 막대 하나의 겹침과 각 흐름의 시작~종료 구간을 구분해 판단한다. LAB의 출력 순서만으로 서로 다른 코어의 병렬 실행을 입증할 수 있는 범위는 제한된다.</p>
 <span class="anchor-alias" id="823-private-address-space" aria-hidden="true"></span><h3 id="address-space">8.2.3 Private Address Space<a class="heading-link" href="#address-space" aria-label="8.2.3 Private Address Space 고정 링크">#</a></h3>
 <p>[CSAPP][사실] 프로세스는 자신의 가상 주소 공간을 사용한다. <a class="source-ref" href="#source-s18">[S18]</a></p>
@@ -282,7 +366,7 @@ exit_group(0)                  = ?
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg" alt="프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조" loading="lazy"><figcaption>프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조</figcaption></figure>
 <p>[OFFICIAL][사실] <code>MAP_PRIVATE</code>는 copy-on-write mapping을, <code>MAP_SHARED</code>는 공유 mapping을 지정한다. private mapping도 fork 직후 등에는 물리 페이지를 공유할 수 있다. <a class="source-ref" href="#source-s15">[S15]</a></p>
 <span class="anchor-alias" id="교재-주소-공간과-실제-mapping" aria-hidden="true"></span><h4 id="detail-4">교재 주소 공간과 실제 mapping<a class="heading-link" href="#detail-4" aria-label="교재 주소 공간과 실제 mapping 고정 링크">#</a></h4>
-<p>[CSAPP][사실] 공식 정오표는 p.735 그림 8.13의 stack 주소 상한 표기와 <code>%esp</code>를 정정한다. 실제 stack 주소는 프로세스마다 달라지고 x86-64 stack pointer 표기는 <code>%rsp</code>다. 이 노트의 그림에는 고정 stack 주소를 넣지 않는다. <a class="source-ref" href="#source-s1">[S1]</a></p>
+<p>[CSAPP][사실] 공식 북미판 정오표는 p.735 그림 8.13의 stack 주소 상한 표기와 <code>%esp</code>를 정정한다. 실제 stack 주소는 프로세스마다 달라지고 x86-64 stack pointer 표기는 <code>%rsp</code>다. 스터디 Global판의 같은 그림은 p.771에 있다. 이 노트의 그림에는 고정 stack 주소를 넣지 않는다. <a class="source-ref" href="#source-s1">[S1]</a><a class="source-ref" href="#source-s30">[S30]</a></p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -1139,6 +1223,9 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 </li>
 <li id="source-s29">
 <p><strong><a class="source-ref" href="#source-s29">[S29]</a> Linux kernel parameters</strong>: <a href="https://docs.kernel.org/admin-guide/kernel-parameters.html">공식 문서</a>, console·rdinit.</p>
+</li>
+<li id="source-s30">
+<p><strong><a class="source-ref" href="#source-s30">[S30]</a> 스터디 교재 판본 확인</strong>: <a href="https://i.hyeon.me/csapp.pdf">스터디 PDF 진입 주소</a>의 HTML redirect를 따라 확인한 CSAPP 3e Global Edition. 표제지 PDF 4쪽, 목차 xv쪽(PDF 15쪽), §8.1~§8.2.4 인쇄 p.759~771. 이 문서의 대응표는 북미판과 Global판 쪽수를 구분한다.</p>
 </li>
 </ul>
 </section><footer class="docs-footer"><nav class="docs-pagination" aria-label="이전 강의와 원문"><a href="../../../chapter07/chapter-7.6.1.html">← Ch7 · Symbol Resolution</a><a href="2026-10-04-csapp-ch8-exceptional-control-flow.md">Markdown 원문</a></nav><p>확인 기준일 2026-10-25 KST</p></footer></article></main><aside class="docs-outline"><nav aria-label="이 문서에서"><p class="docs-nav-title">이 문서에서</p><ul><li><a href="#summary" data-section="summary">요약과 학습 지도</a></li><li><a href="#foundations" data-section="foundations">기초 개념과 교재 대응</a></li><li><a href="#exceptions" data-section="exceptions">8.1 Exceptions</a></li><li class="nested"><a href="#exception-handling" data-section="exception-handling">8.1.1 Exception Handling</a></li><li class="nested"><a href="#exception-classes" data-section="exception-classes">8.1.2 Classes of Exceptions</a></li><li class="nested"><a href="#linux-exceptions" data-section="linux-exceptions">8.1.3 Exceptions in Linux/x86-64 Systems</a></li><li><a href="#processes" data-section="processes">8.2 Processes</a></li><li class="nested"><a href="#logical-flow" data-section="logical-flow">8.2.1 Logical Control Flow</a></li><li class="nested"><a href="#concurrent-flows" data-section="concurrent-flows">8.2.2 Concurrent Flows</a></li><li class="nested"><a href="#address-space" data-section="address-space">8.2.3 Private Address Space</a></li><li class="nested"><a href="#modes" data-section="modes">8.2.4 User and Kernel Modes</a></li><li><a href="#runtimes" data-section="runtimes">보충: 서버 동시성과 런타임</a></li><li><a href="#labs" data-section="labs">LAB와 적용 로드맵</a></li><li class="nested"><a href="#lab-debugging" data-section="lab-debugging">실습 디버깅 사례</a></li><li><a href="#conditions" data-section="conditions">적용 조건과 미확인</a></li><li><a href="#references" data-section="references">출처</a></li></ul></nav></aside></div></body></html>

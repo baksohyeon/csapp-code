@@ -11,63 +11,72 @@
       "title": "Exceptions",
       "printedPage": 723,
       "htmlHeadingLevel": 2,
-      "parent": null
+      "parent": null,
+      "globalPrintedPage": 759
     },
     {
       "number": "8.1.1",
       "title": "Exception Handling",
       "printedPage": 724,
       "htmlHeadingLevel": 3,
-      "parent": "8.1"
+      "parent": "8.1",
+      "globalPrintedPage": 760
     },
     {
       "number": "8.1.2",
       "title": "Classes of Exceptions",
       "printedPage": 726,
       "htmlHeadingLevel": 3,
-      "parent": "8.1"
+      "parent": "8.1",
+      "globalPrintedPage": 762
     },
     {
       "number": "8.1.3",
       "title": "Exceptions in Linux/x86-64 Systems",
       "printedPage": 729,
       "htmlHeadingLevel": 3,
-      "parent": "8.1"
+      "parent": "8.1",
+      "globalPrintedPage": 765
     },
     {
       "number": "8.2",
       "title": "Processes",
       "printedPage": 732,
       "htmlHeadingLevel": 2,
-      "parent": null
+      "parent": null,
+      "globalPrintedPage": 768
     },
     {
       "number": "8.2.1",
       "title": "Logical Control Flow",
       "printedPage": 732,
       "htmlHeadingLevel": 3,
-      "parent": "8.2"
+      "parent": "8.2",
+      "globalPrintedPage": 768
     },
     {
       "number": "8.2.2",
       "title": "Concurrent Flows",
       "printedPage": 733,
       "htmlHeadingLevel": 3,
-      "parent": "8.2"
+      "parent": "8.2",
+      "globalPrintedPage": 769
     },
     {
       "number": "8.2.3",
       "title": "Private Address Space",
       "printedPage": 734,
       "htmlHeadingLevel": 3,
-      "parent": "8.2"
+      "parent": "8.2",
+      "globalPrintedPage": 770
     },
     {
       "number": "8.2.4",
       "title": "User and Kernel Modes",
       "printedPage": 734,
       "htmlHeadingLevel": 3,
-      "parent": "8.2"
+      "parent": "8.2",
+      "globalPrintedPage": 770
     }
   ],
   "followingScope": {
@@ -83,11 +92,21 @@
     "pageNumbers": "matched official TOC",
     "headingHierarchy": "8.2.3 and 8.2.4 were incorrectly h2; restored h3 under 8.2",
     "supplementBoundary": "cross-author concurrency moved after textbook sections; syscall ABI and proc maps labeled supplements",
-    "omittedExample": "added recoverable page fault and invalid-memory example using CMU slides 15-17",
-    "errata": "p735 Figure8.13 stack address and rsp correction added"
+    "omittedExample": "Added general protection, recoverable page fault and machine check using Global Edition section 8.1.3; compared CMU slides.",
+    "errata": "p735 Figure8.13 stack address and rsp correction added",
+    "editionMismatch": "Existing page labels used North American TOC; actual study PDF is Global Edition. Added dual page columns after comparing both TOCs."
   },
   "supportingSources": [
     "https://csapp.cs.cmu.edu/3e/errata.html",
     "https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf"
-  ]
+  ],
+  "studyEdition": {
+    "edition": "CSAPP 3e Global Edition",
+    "entryUrl": "https://i.hyeon.me/csapp.pdf",
+    "redirectUrl": "https://rawcdn.githack.com/xubenji/csapp/7cec0e9c552139e1ab32213bb60c623dbcc0e46d/Computer%20Systems%20A%20Programmers%20Perspective%20(3rd).pdf",
+    "sourceSha256": "321352279a3e530f67ad6ef9cb2dc820ad072324ab474a2a16af31cdb73abdb9",
+    "coverPdfPage": 4,
+    "tocPrintedPage": "xv",
+    "tocPdfPage": 15
+  }
 }

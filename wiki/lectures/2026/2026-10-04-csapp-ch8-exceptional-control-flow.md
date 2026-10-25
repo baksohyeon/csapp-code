@@ -64,21 +64,32 @@ source_url: https://i.hyeon.me/csapp
 
 ### 교재 절 대응표
 
-[CSAPP][사실] 공식 3판 목차 PDF의 xiv쪽(PDF 14쪽)을 대조했다. 이 노트의 교재 본문은 §8.1~§8.2.4이며, §8.2.3·§8.2.4는 §8.2의 하위 절이다. 아래 쪽수는 북미판 인쇄 쪽수다. [S1]
+[CSAPP][사실] 공식 북미판 목차의 xiv쪽(PDF 14쪽)과 스터디 교재 Global Edition의 xv쪽(PDF 15쪽)을 대조했다. 절 순서는 같다. 이 노트의 교재 본문은 §8.1~§8.2.4이며, §8.2.3·§8.2.4는 §8.2의 하위 절이다. 아래는 각 판의 인쇄 쪽수다. 스터디 PDF 뷰어의 페이지 번호와도 구분한다. [S1][S30]
 
-| 절 | 교재 주제 | 이 문서의 연결 |
-|---|---|---|
-| 8.1 · p.723 | Exceptions | 사건과 제어 이전 |
-| 8.1.1 · p.724 | Exception Handling | handler 선택·상태 보존 |
-| 8.1.2 · p.726 | Classes of Exceptions | 분류·재개 위치 |
-| 8.1.3 · p.729 | Exceptions in Linux/x86-64 Systems | CPU 예외·Linux 처리·system call |
-| 8.2 · p.732 | Processes | 실행 흐름·주소 공간 |
-| 8.2.1 · p.732 | Logical Control Flow | 프로세스별 명령어 흐름 |
-| 8.2.2 · p.733 | Concurrent Flows | 타임라인·병렬 실행 |
-| 8.2.3 · p.734 | Private Address Space | mapping·보호 |
-| 8.2.4 · p.734 | User and Kernel Modes | 권한·커널 진입 |
+| 절 | 북미판 | Global | 교재 주제 | 학습 연결 |
+|---|---|---|---|---|
+| 8.1 | p.723 | p.759 | Exceptions | 사건과 제어 이전 |
+| 8.1.1 | p.724 | p.760 | Exception Handling | handler 선택·상태 보존 |
+| 8.1.2 | p.726 | p.762 | Classes of Exceptions | 분류·재개 위치 |
+| 8.1.3 | p.729 | p.765 | Exceptions in Linux/x86-64 Systems | CPU 예외·Linux 처리·system call |
+| 8.2 | p.732 | p.768 | Processes | 실행 흐름·주소 공간 |
+| 8.2.1 | p.732 | p.768 | Logical Control Flow | 프로세스별 명령어 흐름 |
+| 8.2.2 | p.733 | p.769 | Concurrent Flows | 타임라인·병렬 실행 |
+| 8.2.3 | p.734 | p.770 | Private Address Space | mapping·보호 |
+| 8.2.4 | p.734 | p.770 | User and Kernel Modes | 권한·커널 진입 |
 
-[CSAPP][사실] Chapter 8 전체는 p.721에서 시작한다. 이번 노트 이후에는 §8.2.5 문맥 교환(p.736), §8.3 syscall 오류 처리(p.737), §8.4 프로세스 제어(p.738), §8.5 signal(p.756), §8.6 비지역 점프(p.781), §8.7 프로세스 도구(p.786), §8.8 요약(p.787)이 이어진다. 이 범위의 독립 강의노트는 아직 작성하지 않았다. [S1]
+[CSAPP][사실] Chapter 8은 북미판 p.721 / Global p.757에서 시작한다. 이번 범위 다음은 아래와 같다. 이 범위의 독립 강의노트는 아직 작성하지 않았다. [S1][S30]
+
+| 다음 절 | 주제 | 북미판 | Global |
+|---|---|---|---|
+| 8.2.5 | 문맥 교환 | p.736 | p.772 |
+| 8.3 | syscall 오류 처리 | p.737 | p.773 |
+| 8.4 | 프로세스 제어 | p.738 | p.774 |
+| 8.5 | signal | p.756 | p.792 |
+| 8.6 | 비지역 점프 | p.781 | p.817 |
+| 8.7 | 프로세스 도구 | p.786 | p.822 |
+| 8.8 | 요약 | p.787 | p.823 |
+
 
 [COMMENTARY] LAB의 `fork`·`waitpid`는 §8.4의 실습을 미리 연결하고, `/proc`·pagemap은 Chapter 9의 주소 변환 학습으로 이어진다. Go·BEAM·Rust 보충은 이 노트 뒤쪽에 둔다.
 
@@ -115,11 +126,13 @@ source_url: https://i.hyeon.me/csapp
 
 ### 8.1.3 Exceptions in Linux/x86-64 Systems
 
-[CSAPP][사실] 이 절은 Linux/x86-64에서 예외와 system call을 구체화한다. CMU 동반 강의는 처리 가능한 page fault의 명령 재실행과 유효하지 않은 메모리 참조의 signal 전달을 비교한다. [S18] (슬라이드 15~17)
+[CSAPP][사실] 스터디 교재 Global p.765~767의 이 절은 divide error, 일반 보호 예외, page fault, machine check와 system call을 다룬다. CMU 동반 강의도 처리 가능한 page fault의 명령 재실행과 유효하지 않은 메모리 참조의 signal 전달을 비교한다. [S30][S18] (슬라이드 15~17)
 
 | 사례 | 커널 처리 | 이어지는 실행 |
 |---|---|---|
 | 0 나눗셈 등 산술 예외 | Linux의 signal 전달 | signal의 설정·기본 동작에 따름 |
+| 일반 보호 예외 | 보호 위반 처리 | 사용자 프로세스의 signal 처리로 연결 |
+| Machine check | 교재 모델의 치명적 하드웨어 오류 처리 | 원래 프로그램으로 복귀하지 않음 |
 | 처리 가능한 page fault | 필요한 페이지 상태 준비 | 원인 명령 재실행 |
 | 유효하지 않은 메모리 참조 | `SIGSEGV` 전달 | 기본 동작은 프로세스 종료 |
 | System call | 요청된 커널 서비스 실행 | 반환 가능한 호출은 다음 사용자 명령으로 복귀 |
@@ -171,7 +184,7 @@ exit_group(0)                  = ?
 
 ![단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg)
 
-[CSAPP][사실] 단일 코어에서도 흐름의 전체 실행 기간은 겹칠 수 있다. 병렬 실행은 여러 코어에서 같은 시점에 명령어를 진행하는 상황이다. [S18]
+[CSAPP][사실] 교재 Global p.769~770은 두 흐름의 실행 기간이 겹치면 concurrent flow로 정의한다. 프로세스가 CPU를 번갈아 사용하는 multitasking의 각 실행 구간을 time slice라고 부른다. 다른 코어나 컴퓨터에서 함께 진행하는 흐름은 parallel flow다. [S30]
 
 [COMMENTARY] 타임라인의 색 막대는 실제 CPU 실행 구간이다. concurrency는 막대 하나의 겹침과 각 흐름의 시작~종료 구간을 구분해 판단한다. LAB의 출력 순서만으로 서로 다른 코어의 병렬 실행을 입증할 수 있는 범위는 제한된다.
 
@@ -197,7 +210,7 @@ exit_group(0)                  = ?
 
 #### 교재 주소 공간과 실제 mapping
 
-[CSAPP][사실] 공식 정오표는 p.735 그림 8.13의 stack 주소 상한 표기와 `%esp`를 정정한다. 실제 stack 주소는 프로세스마다 달라지고 x86-64 stack pointer 표기는 `%rsp`다. 이 노트의 그림에는 고정 stack 주소를 넣지 않는다. [S1]
+[CSAPP][사실] 공식 북미판 정오표는 p.735 그림 8.13의 stack 주소 상한 표기와 `%esp`를 정정한다. 실제 stack 주소는 프로세스마다 달라지고 x86-64 stack pointer 표기는 `%rsp`다. 스터디 Global판의 같은 그림은 p.771에 있다. 이 노트의 그림에는 고정 stack 주소를 넣지 않는다. [S1][S30]
 
 | 영역 | 학습할 역할 | Linux 관측 |
 |---|---|---|
@@ -783,3 +796,5 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 - **[S27] strace**: [공식 프로젝트](https://strace.io/)와 [strace(1)](https://man7.org/linux/man-pages/man1/strace.1.html), 옵션·trace 출력.
 - **[S28] QEMU Invocation**: [실행 옵션](https://www.qemu.org/docs/master/system/invocation.html), guest 구성·network·kernel 부팅.
 - **[S29] Linux kernel parameters**: [공식 문서](https://docs.kernel.org/admin-guide/kernel-parameters.html), console·rdinit.
+
+- **[S30] 스터디 교재 판본 확인**: [스터디 PDF 진입 주소](https://i.hyeon.me/csapp.pdf)의 HTML redirect를 따라 확인한 CSAPP 3e Global Edition. 표제지 PDF 4쪽, 목차 xv쪽(PDF 15쪽), §8.1~§8.2.4 인쇄 p.759~771. 이 문서의 대응표는 북미판과 Global판 쪽수를 구분한다.

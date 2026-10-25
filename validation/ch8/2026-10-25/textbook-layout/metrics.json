@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-10-25T11:00:17.566Z",
-  "phase": "/tmp/csapp-textbook-final",
+  "checkedAt": "2026-10-25T11:05:03.663Z",
+  "phase": "/tmp/csapp-editions-layout",
   "results": [
     {
       "url": "http://127.0.0.1:8765/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html",
@@ -12,7 +12,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 48393,
+      "documentHeight": 49748,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -88,6 +88,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
         {
           "overflow": true,
           "scrolled": true
@@ -186,7 +190,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 44119,
+      "documentHeight": 45356,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -262,6 +266,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
         {
           "overflow": true,
           "scrolled": true
@@ -360,7 +368,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 34701,
+      "documentHeight": 35517,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -436,6 +444,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
         {
           "overflow": false,
           "scrolled": false
@@ -534,7 +546,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 43156,
+      "documentHeight": 44423,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -610,6 +622,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
         {
           "overflow": true,
           "scrolled": true
@@ -708,7 +724,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 41747,
+      "documentHeight": 42954,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -784,6 +800,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
         {
           "overflow": true,
           "scrolled": true
@@ -882,7 +902,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 34928,
+      "documentHeight": 35825,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -958,6 +978,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
         {
           "overflow": false,
           "scrolled": false
@@ -1056,7 +1080,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 35107,
+      "documentHeight": 36032,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -1132,6 +1156,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
         {
           "overflow": false,
           "scrolled": false
@@ -1230,7 +1258,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 35057,
+      "documentHeight": 35981,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -1306,6 +1334,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
         {
           "overflow": false,
           "scrolled": false
@@ -1404,7 +1436,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 44119,
+      "documentHeight": 45356,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -1480,6 +1512,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": true,
+          "scrolled": true
+        },
         {
           "overflow": true,
           "scrolled": true
@@ -1578,7 +1614,7 @@
       "ellipsisDeclarations": 0,
       "truncateCount": 0,
       "scrollY": 700,
-      "documentHeight": 35057,
+      "documentHeight": 35981,
       "figures": [
         {
           "src": "../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg",
@@ -1654,6 +1690,10 @@
         }
       ],
       "tables": [
+        {
+          "overflow": false,
+          "scrolled": false
+        },
         {
           "overflow": false,
           "scrolled": false

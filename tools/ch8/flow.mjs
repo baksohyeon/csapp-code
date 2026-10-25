@@ -25,7 +25,8 @@ try{
  for(let i=0;i<audit.sections.length;i++){
   const section=audit.sections[i];const heading=page.locator('#'+expected[i][0]);
   assert.equal((await heading.innerText()).replace(/#$/,'').trim(),section.number+' '+section.title);
-  assert(bodyText.includes(section.number+' · p.'+section.printedPage));
+  const row=page.locator('table tr').filter({has:page.locator('td:first-child').filter({hasText:new RegExp('^'+section.number.replaceAll('.',String.fromCharCode(92)+'.')+'$')})}).first();
+  assert((await row.innerText()).includes('p.'+section.printedPage));assert((await row.innerText()).includes('p.'+section.globalPrintedPage));
  }
  let last=-1;
  const headings=await page.locator('.docs-article h2,.docs-article h3').evaluateAll(xs=>xs.map(x=>x.id));

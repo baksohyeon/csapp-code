@@ -1,6 +1,6 @@
 {
   "base": "http://127.0.0.1:8765/",
-  "checkedAt": "2026-10-25T11:00:16.328Z",
+  "checkedAt": "2026-10-25T11:04:32.822Z",
   "records": [
     {
       "test": "homepage/CSAPP → Wiki → chapter, readable notes, source reader, back to Wiki; textbook hierarchy; code highlight and clipboard",
