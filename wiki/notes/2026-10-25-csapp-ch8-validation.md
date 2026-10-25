@@ -146,8 +146,8 @@ proxy 전환 후 재검사에서 12개 대상이 모두 정상 응답했다.
 
 ## x86-64 추가 검증
 
-판단 과정과 재현 방법은 [주니어용 디버깅 학습 노트](2026-10-25-x86-strace-debugging.html)에 정리했다.
-해당 노트의 375×812·812×375·1440×900 light와 375×812 dark 검사에서 가로 넘침·말줄임·깨진 anchor·브라우저 오류는 0, SVG 2장 로딩과 실제 anchor 이동은 정상이다. [노트 측정·스크린샷](../../validation/ch8/2026-10-25/debug-note/metrics.json).
+판단 과정과 재현 방법은 [Ch8 본문의 실습 디버깅 사례](../lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html#심층-사례-strace-관측-실패-디버깅)에 정리했다.
+통합 전 별도 렌더링의 측정 기록은 [초기 측정·스크린샷](../../validation/ch8/2026-10-25/debug-note/metrics.json)에 보존했다. 최신 본문 통합 검증은 아래 기록을 따른다.
 
 사용자 지적 후 `orb`의 기존 `ubuntu` amd64 환경을 확인했다.
 Ubuntu 25.04에 GCC 14.2.0·strace 6.14를 설치하고
@@ -179,3 +179,14 @@ Orb의 전역 Rosetta 설정은 변경하지 않았다.
 
 LAB이 끝나면 QEMU guest process와 임시 rootfs를 정리한다. host 재부팅·전원 종료는 수행하지 않는다.
 이 결과로 기존 x86-64 syscall LAB의 미검증 상태를 해소했다.
+
+## Ch8 본문 통합 검증
+
+디버깅 사례의 관측·가설·실험·선택 근거·한계·재현 절차를 Ch8의 LAB 다음 절에 통합했다.
+기존 별도 노트 URL은 Ch8의 같은 절로 이동한다. wiki 목차도 Ch8를 학습 진입점으로 유지한다.
+
+- HTML/Markdown 동기화, 고유 ID 88개·상대 링크·교재 소절·공유 SVG 9장 검사 PASS.
+- HTML5 parser 오류 0, SVG XML 9개 parse 성공.
+- 8개 viewport light와 대표 모바일·데스크톱 dark의 총 10개 조건에서 가로 넘침 0·말줄임 0·브라우저 오류 0·scrollY 700px·SVG 9장 로딩.
+- [통합 본문 측정·스크린샷](../../validation/ch8/2026-10-25/integrated-local/metrics.json).
+- 본문에는 학습 설명과 증거를 두고, 배포·편집 결과는 이 보고서에 기록했다.

@@ -30,7 +30,7 @@ md.renderer.rules.table_close=()=>'</table></div>\n';
 let html=md.render(source.slice(match[0].length).trimStart().replace(/^# .*\n+/,''));
 // Replace the authored Markdown TOC with the same headings used in desktop navigation.
 html=html.replace(/<h3 id="목차">목차<\/h3>\n<ul>[\s\S]*?<\/ul>\n/,'');
-html=html.replace(/<li><strong>\[S(\d+)\]/g,'<li id="source-s$1"><strong>[S$1]');
+html=html.replace(/<li>(\s*(?:<p>)?)<strong>\[S(\d+)\]/g,'<li id="source-s$2">$1<strong>[S$2]');
 html=html.replace(/\[S(\d+)\]/g,'<a class="source-ref" href="#source-s$1">[S$1]</a>');
 html=html.replace(/<p><img src="([^"]+)" alt="([^"]*)"><\/p>/g,(_,src,alt)=>`<figure><img src="${src}" alt="${alt}" loading="lazy"><figcaption>${alt}</figcaption></figure>`);
 html=html.replace(/<blockquote>\n<p><strong>WARNING/g,'<blockquote class="warning">\n<p><strong>WARNING');

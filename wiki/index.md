@@ -22,7 +22,6 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.
 
 ## 노트 (Notes)
 
-- [[2026-10-25-x86-strace-debugging]] — strace 관측 실패에서 x86-64 full-system 검증까지 ([HTML](notes/2026-10-25-x86-strace-debugging.html))
 - [[2026-10-25-csapp-ch8-validation]] — Ch8 기술·LAB·반응형·배포 검증 보고서
 - [[2026-10-25-csapp-ch8-learning-prompt]] — Ch8 학습 문서 개선·검증·배포 실행 프롬프트
 - [[0001-compile-linking]] — 컴파일과 링커, 링크 타임 에러 실습

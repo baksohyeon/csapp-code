@@ -47,8 +47,8 @@ for(const theme of ['light','dark']){
   const screenshot=`${width}x${height}-${theme}.jpg`;
   await page.screenshot({path:path.join(out,screenshot),type:'jpeg',quality:75});
   if(width===375){
-   for(const id of ['81-exceptions','823-private-address-space','lab와-적용-로드맵']){
-    await page.locator(`[id="${id}"]`).scrollIntoViewIfNeeded();
+   for(const id of ['81-exceptions','823-private-address-space','lab와-적용-로드맵','심층-사례-strace-관측-실패-디버깅']){
+    await page.locator(`[id="${id}"]`).evaluate(e=>e.scrollIntoView({block:'start'}));
     await page.screenshot({path:path.join(out,`${id}-${theme}.jpg`),type:'jpeg',quality:75});
    }
    for(const [i,figure] of (await page.locator('figure').all()).entries()){
