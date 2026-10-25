@@ -17,4 +17,4 @@ artifact_path: wiki/notes/2026-10-25-x86-strace-debugging.html
 
 확인 기준일: 2026-10-25 KST.
 
-[디버깅 사례는 Ch8 학습 문서 본문에서 읽는다](../lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html#심층-사례-strace-관측-실패-디버깅).
+[디버깅 사례는 Ch8 학습 문서 본문에서 읽는다](../lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html#lab-debugging).

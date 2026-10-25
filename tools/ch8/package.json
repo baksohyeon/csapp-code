@@ -11,5 +11,8 @@
     "render": "node render.mjs",
     "verify": "node verify.mjs",
     "browser": "node browser.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0"
   }
 }

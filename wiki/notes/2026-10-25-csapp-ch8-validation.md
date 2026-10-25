@@ -146,7 +146,7 @@ proxy 전환 후 재검사에서 12개 대상이 모두 정상 응답했다.
 
 ## x86-64 추가 검증
 
-판단 과정과 재현 방법은 [Ch8 본문의 실습 디버깅 사례](../lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html#심층-사례-strace-관측-실패-디버깅)에 정리했다.
+판단 과정과 재현 방법은 [Ch8 본문의 실습 디버깅 사례](../lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html#lab-debugging)에 정리했다.
 통합 전 별도 렌더링의 측정 기록은 [초기 측정·스크린샷](../../validation/ch8/2026-10-25/debug-note/metrics.json)에 보존했다. 최신 본문 통합 검증은 아래 기록을 따른다.
 
 사용자 지적 후 `orb`의 기존 `ubuntu` amd64 환경을 확인했다.
@@ -182,7 +182,7 @@ LAB이 끝나면 QEMU guest process와 임시 rootfs를 정리한다. host 재�
 
 ## Ch8 본문 통합 검증
 
-디버깅 사례의 관측·가설·실험·선택 근거·한계·재현 절차를 Ch8의 LAB 다음 절에 통합했다.
+디버깅 사례의 관측·가설·실험·선택 근거·한계·재현 절차를 Ch8의 LAB 내부 하위 절에 통합했다.
 기존 별도 노트 URL은 Ch8의 같은 절로 이동한다. wiki 목차도 Ch8를 학습 진입점으로 유지한다.
 
 - HTML/Markdown 동기화, 고유 ID 88개·상대 링크·교재 소절·공유 SVG 9장 검사 PASS.
@@ -190,3 +190,13 @@ LAB이 끝나면 QEMU guest process와 임시 rootfs를 정리한다. host 재�
 - 8개 viewport light와 대표 모바일·데스크톱 dark의 총 10개 조건에서 가로 넘침 0·말줄임 0·브라우저 오류 0·scrollY 700px·SVG 9장 로딩.
 - [통합 본문 측정·스크린샷](../../validation/ch8/2026-10-25/integrated-local/metrics.json).
 - 본문에는 학습 설명과 증거를 두고, 배포·편집 결과는 이 보고서에 기록했다.
+
+## 문서 위치·탐색·디자인 검증
+
+- canonical 문서는 기존 `wiki/lectures/2026/`에 유지했다. 디버깅 사례는 LAB 내부 `#lab-debugging`이며 이전 한글 앵커와 별도 노트 주소도 연결된다.
+- `/`는 강의 진입 목차, `/wiki/`는 filesystem 기반 Wiki 목차를 제공한다. nginx는 실제 파일 경로를 사용하며 없는 경로는 404로 응답한다.
+- Ch6·Ch7·Ch8 간 이동, breadcrumb, 강의 목록, 현재 문서 목차를 분리했다. 고정 앵커의 직접 열기·새로고침·뒤로/앞으로 이동과 테마 저장을 검증했다.
+- 공통 색상·폰트·간격·읽기 폭 토큰을 `wiki/assets/site/tokens.css`에 정의했다. 본문은 최대 46rem, 모바일은 화면에 맞춰 축소되며 표·코드는 내부에서 스크롤한다.
+- 모바일의 코드 스크롤 영역에 키보드 포커스를 추가했다. 375·812·1440 light 및 375·1440 dark에서 axe WCAG A/AA 자동 검사 위반 0. 자동 검사는 수동 접근성 평가 전체를 대체하지 않는다.
+- [라우팅·접근성 결과와 스크린샷](../../validation/ch8/2026-10-25/navigation/results.json).
+- [10개 화면 조건 측정과 스크린샷](../../validation/ch8/2026-10-25/docs-layout/metrics.json). 페이지 가로 넘침·말줄임·브라우저 오류 0, SVG 9장 로딩, 세로 스크롤 확인.

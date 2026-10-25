@@ -1,0 +1,86 @@
+/* Semantic tokens shared by the documentation index and lecture pages. */
+:root {
+  color-scheme: light;
+  --docs-bg: #ffffff;
+  --docs-panel: #f6f7f9;
+  --docs-text: #202124;
+  --docs-muted: #52606d;
+  --docs-border: #d5dbe2;
+  --docs-link: #1558b0;
+  --docs-link-hover: #093b83;
+  --docs-selected: #e8f0fc;
+  --docs-focus: #7a3ff2;
+  --docs-code-bg: #f3f5f7;
+  --docs-code-text: #202d3a;
+  --docs-code-keyword: #703ab1;
+  --docs-code-string: #13663c;
+  --docs-code-comment: #596674;
+  --docs-code-meta: #8a4700;
+  --docs-note-bg: #eef5ff;
+  --docs-note-border: #2464b5;
+  --docs-warn-bg: #fff6df;
+  --docs-warn-border: #916100;
+  --docs-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --docs-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --docs-text-sm: .875rem;
+  --docs-text-base: 1rem;
+  --docs-leading: 1.8;
+  --docs-space-1: .25rem;
+  --docs-space-2: .5rem;
+  --docs-space-3: .75rem;
+  --docs-space-4: 1rem;
+  --docs-space-6: 1.5rem;
+  --docs-space-8: 2rem;
+  --docs-space-12: 3rem;
+  --docs-radius: .375rem;
+  --docs-header-height: 4rem;
+  --docs-reading-width: 46rem;
+  --docs-site-width: 90rem;
+  --docs-rail-width: 13rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --docs-bg: #17191c;
+    --docs-panel: #202329;
+    --docs-text: #eceef2;
+    --docs-muted: #b4bdca;
+    --docs-border: #414750;
+    --docs-link: #a4c8ff;
+    --docs-link-hover: #d1e3ff;
+    --docs-selected: #263b58;
+    --docs-focus: #c4a7ff;
+    --docs-code-bg: #22262d;
+    --docs-code-text: #e7edf5;
+    --docs-code-keyword: #d3afff;
+    --docs-code-string: #9fddb7;
+    --docs-code-comment: #b1bbca;
+    --docs-code-meta: #f1c28a;
+    --docs-note-bg: #202f43;
+    --docs-note-border: #92beff;
+    --docs-warn-bg: #39301f;
+    --docs-warn-border: #eac375;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --docs-bg: #17191c;
+  --docs-panel: #202329;
+  --docs-text: #eceef2;
+  --docs-muted: #b4bdca;
+  --docs-border: #414750;
+  --docs-link: #a4c8ff;
+  --docs-link-hover: #d1e3ff;
+  --docs-selected: #263b58;
+  --docs-focus: #c4a7ff;
+  --docs-code-bg: #22262d;
+  --docs-code-text: #e7edf5;
+  --docs-code-keyword: #d3afff;
+  --docs-code-string: #9fddb7;
+  --docs-code-comment: #b1bbca;
+  --docs-code-meta: #f1c28a;
+  --docs-note-bg: #202f43;
+  --docs-note-border: #92beff;
+  --docs-warn-bg: #39301f;
+  --docs-warn-border: #eac375;
+}

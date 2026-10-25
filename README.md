@@ -10,7 +10,7 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 기록.
 | 렌더링된 노트 (웹/모바일에서 바로 보기) | https://raspberrypi.bobcat-fort.ts.net/csapp/ |
 | 최신 강의노트 (Ch8.1-8.2.4 Exceptional Control Flow) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [레포 소스](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [Markdown 강의노트](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.md) |
 | 이전 강의노트 (Ch6 Memory Hierarchy) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [레포 소스](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [요약 wrapper](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.md) |
-| 전체 목차 | [wiki/index.md](wiki/index.md) |
+| 전체 목차 | [웹 목차](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/) · [wiki/index.md](wiki/index.md) |
 | 교재 PDF | https://i.hyeon.me/csapp.pdf |
 | 스터디 whiteboard | [현재](https://i.hyeon.me/csapp) · [과거 아카이브](https://i.hyeon.me/csapp-archive) |
 
@@ -46,7 +46,7 @@ AGENTS.md              ← 이 레포의 작성 규칙 (에이전트/사람 공�
 - **웹/모바일 (권장)**: 라즈베리파이 홈서버에 셀프호스팅되어 있어, 아래 주소로 어느 기기에서든
   렌더링된 노트를 바로 볼 수 있다 (Dokku 배포 + Tailscale Funnel 공개).
   - 최신 강의노트: `https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html`
-  - csapp 전체 (파일 목록): `https://raspberrypi.bobcat-fort.ts.net/csapp/`
+  - csapp 학습 문서 목차: `https://raspberrypi.bobcat-fort.ts.net/csapp/`
 - **로컬**: 클론 후 HTML 파일을 브라우저로 연다.
   ```bash
   git clone git@github.com:baksohyeon/csapp-code.git

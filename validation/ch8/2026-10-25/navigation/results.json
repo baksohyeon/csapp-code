@@ -1,0 +1,50 @@
+{
+  "base": "http://127.0.0.1:8765/",
+  "checkedAt": "2026-10-25T10:32:13.281Z",
+  "results": [
+    {
+      "test": "home, collection, Chapter 7/8, index, deep links, back/forward, reload, legacy redirect, assets, 404",
+      "pass": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "scheme": "light",
+      "articleWidth": 343,
+      "themePersistence": true,
+      "violations": []
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "scheme": "light",
+      "articleWidth": 736,
+      "themePersistence": true,
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "scheme": "light",
+      "articleWidth": 736,
+      "themePersistence": true,
+      "violations": []
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "scheme": "dark",
+      "articleWidth": 343,
+      "themePersistence": true,
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "scheme": "dark",
+      "articleWidth": 736,
+      "themePersistence": true,
+      "violations": []
+    }
+  ]
+}

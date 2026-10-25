@@ -1,23 +1,10 @@
-<!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="CSAPP 3판 8.1~8.2.4: 예외, 프로세스, 가상 주소 공간, 권한 전환과 Linux LAB"><link rel="icon" href="data:,"><title>CSAPP Ch8 · Exceptional Control Flow</title><style>:root{color-scheme:light;--paper:rgb(247,249,252);--surface:white;--ink:rgb(18,28,42);--muted:rgb(78,94,114);--line:rgb(210,221,234);--primary:rgb(11,87,208);--accent:rgb(0,105,112);--soft:rgb(232,241,254);--code:rgb(19,29,45);--code-ink:rgb(231,238,247);--warn:rgb(131,84,0);--warn-bg:rgb(255,247,221);--radius:18px;--sans:Inter,"Noto Sans KR",system-ui,-apple-system,sans-serif;--mono:Menlo,Consolas,monospace}
-@media(prefers-color-scheme:dark){:root{color-scheme:dark;--paper:rgb(14,21,32);--surface:rgb(21,29,41);--ink:rgb(235,240,247);--muted:rgb(185,200,219);--line:rgb(66,83,106);--primary:rgb(153,194,255);--accent:rgb(116,221,209);--soft:rgb(30,51,80);--code:rgb(9,16,26);--code-ink:rgb(232,239,248);--warn:rgb(251,211,123);--warn-bg:rgb(65,49,20)}}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.85 var(--sans);word-break:keep-all;overflow-wrap:anywhere}a{color:var(--primary);text-underline-offset:4px}a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}.skip{position:absolute;left:8px;top:-100px}.skip:focus{top:8px;background:var(--surface);padding:12px;z-index:10}.layout{max-width:1040px;margin:auto;padding:30px 24px 70px;min-width:0}.hero,section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:30px 34px;margin-bottom:24px;min-width:0}.eyebrow{color:var(--accent);font-size:13px;letter-spacing:.04em;font-weight:700;margin:0 0 14px}.hero h1{font-size:clamp(30px,4vw,46px);line-height:1.2;margin:0 0 16px;max-width:22ch}.hero p{color:var(--muted)}.hero-points{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.hero-point{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}.hero-point b{display:block;font-size:15px;color:var(--primary)}h2{font-size:clamp(25px,3vw,32px);line-height:1.35;margin:0 0 22px}h3{font-size:22px;line-height:1.45;margin:32px 0 12px}p{margin:14px 0}li{margin:9px 0}ul,ol{padding-left:24px}.side-nav{display:none}.toc{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:20px 0}.toc summary{font-weight:700;cursor:pointer;min-height:44px}.toc a,.side-nav a{display:block;padding:8px 2px;min-height:44px}.toc ol{margin:0;padding-left:22px}.toc li{margin:0}figure{margin:24px 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}figure img{display:block;width:100%;max-width:420px;height:auto;margin:auto}figcaption{color:var(--muted);font-size:14px;line-height:1.65;margin-top:14px}.table-wrap{overflow-x:auto;max-width:100%;margin:20px 0;border:1px solid var(--line);border-radius:10px;-webkit-overflow-scrolling:touch}table{width:100%;min-width:620px;border-collapse:collapse;font-size:15px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--soft)}tr:last-child td{border-bottom:0}td:last-child,th:last-child{border-right:0}.table-wrap:focus-visible{outline:3px solid var(--accent)}code,pre{font-family:var(--mono)}:not(pre)>code{font-size:.9em;background:var(--soft);border-radius:4px;padding:2px 4px}pre{overflow-x:auto;max-width:100%;padding:20px;border-radius:12px;background:var(--code);color:var(--code-ink);font-size:14px;line-height:1.65;white-space:pre}pre code{padding:0;border:0;background:transparent;color:inherit}blockquote{margin:22px 0;padding:10px 20px;border-left:4px solid var(--accent);background:var(--soft);border-radius:0 12px 12px 0}blockquote.warning{border-color:var(--warn);background:var(--warn-bg)}.source-ref{font-size:.84em;white-space:normal}#출처 li{margin:20px 0;font-size:15px}.hljs-keyword,.hljs-built_in,.hljs-type{color:rgb(159,197,255)}.hljs-string,.hljs-number{color:rgb(157,226,202)}.hljs-comment{color:rgb(171,187,209)}.hljs-meta{color:rgb(243,206,137)}footer{color:var(--muted);font-size:14px}button{font:inherit}
-@media(min-width:1200px){.side-nav{display:block;position:fixed;inset:0 auto 0 0;width:240px;padding:28px 22px;border-right:1px solid var(--line);background:var(--surface);overflow-y:auto;font-size:14px}.side-nav p{font-weight:700;color:var(--accent)}.layout{margin-left:260px;margin-right:auto;width:calc(100% - 280px);max-width:1040px}.side-nav a{line-height:1.5;text-decoration:none}}
-@media(max-width:760px){body{font-size:16px;line-height:1.8}.layout{padding:16px 12px 50px}.hero,section{padding:24px 16px;margin-bottom:18px}.hero-points{grid-template-columns:1fr 1fr}.hero h1{font-size:31px}h3{font-size:20px}figure{padding:0;border:0}table{min-width:560px}pre{padding:15px;font-size:13px}.toc{padding:14px}blockquote{padding:8px 14px}}
-@media(max-width:360px){.hero-points{grid-template-columns:1fr}.hero h1{font-size:28px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-@media print{body{background:white;color:black;font-size:11pt}.side-nav,.skip,.toc{display:none}.layout{width:auto;max-width:none;margin:0;padding:0}.hero,section{border:0;padding:12px 0;border-radius:0}.hero-points{display:none}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:rgb(240,240,240);color:black}.table-wrap{overflow:visible}table{min-width:0;font-size:10pt}figure{break-inside:avoid}a{color:inherit}}
-</style></head>
-<body><a class="skip" href="#content">본문으로 건너뛰기</a>
-<aside class="side-nav" aria-label="고정 목차"><p>CSAPP CHAPTER 8</p><a href="#요약과-학습-지도">요약과 학습 지도</a><a href="#기초-개념과-교재-대응">기초 개념과 교재 대응</a><a href="#81-exceptions">8.1 Exceptions</a><a href="#82-processes-실행-흐름">8.2 Processes: 실행 흐름</a><a href="#823-private-address-space">8.2.3 Private Address Space</a><a href="#824-user-and-kernel-modes">8.2.4 User and Kernel Modes</a><a href="#보충-서버-동시성과-런타임">보충: 서버 동시성과 런타임</a><a href="#lab와-적용-로드맵">LAB와 적용 로드맵</a><a href="#심층-사례-strace-관측-실패-디버깅">심층 사례: strace 관측 실패 디버깅</a><a href="#적용-조건과-미확인">적용 조건과 미확인</a><a href="#출처">출처</a></aside>
-<div class="layout"><header class="hero"><p class="eyebrow">CSAPP 3e · 2026-10-04 강의노트</p><h1>Exceptional<br>Control Flow</h1><p>사건 처리부터 실행 흐름, 주소 공간과 CPU 권한까지.<br>교재 모델과 공식 구현을 연결하고 Linux LAB으로 확인한다.</p><div class="hero-points"><div class="hero-point"><b>Exception</b>사건과 제어 이전</div><div class="hero-point"><b>Process</b>이어지는 실행 흐름</div><div class="hero-point"><b>Memory</b>주소 변환과 보호</div><div class="hero-point"><b>Privilege</b>커널 진입과 복귀</div></div></header>
-<main id="content"><section id="요약과-학습-지도"><h2>요약과 학습 지도</h2>
-<p>프로세스는 실행 흐름과 가상 주소 공간을 제공한다. CPU의 예외 처리와 권한 검사는 운영체제가 이 실행 환경을 관리하는 기반이다.</p><details class="toc" open><summary>학습 목차</summary><ol><li><a href="#요약과-학습-지도">요약과 학습 지도</a></li><li><a href="#기초-개념과-교재-대응">기초 개념과 교재 대응</a></li><li><a href="#81-exceptions">8.1 Exceptions</a></li><li><a href="#82-processes-실행-흐름">8.2 Processes: 실행 흐름</a></li><li><a href="#823-private-address-space">8.2.3 Private Address Space</a></li><li><a href="#824-user-and-kernel-modes">8.2.4 User and Kernel Modes</a></li><li><a href="#보충-서버-동시성과-런타임">보충: 서버 동시성과 런타임</a></li><li><a href="#lab와-적용-로드맵">LAB와 적용 로드맵</a></li><li><a href="#심층-사례-strace-관측-실패-디버깅">심층 사례: strace 관측 실패 디버깅</a></li><li><a href="#적용-조건과-미확인">적용 조건과 미확인</a></li><li><a href="#출처">출처</a></li></ol></details>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="CSAPP §8.1~§8.2.4 예외·프로세스·주소 공간과 Linux 실습"><link rel="icon" href="data:,"><title>Ch8 · Exceptional Control Flow | CSAPP</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../../assets/site/tokens.css"><link rel="stylesheet" href="../../assets/site/docs.css"><script defer src="../../assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../../../">CSAPP <span>학습 문서</span></a><nav aria-label="사이트"><a href="../../">전체 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="../../../">CSAPP</a></li><li><a href="../../">강의노트</a></li><li>2026</li><li aria-current="page">Chapter 8</li></ol></nav><div class="docs-grid"><aside class="docs-collection"><nav aria-label="강의 목록"><p class="docs-nav-title">강의노트 · 2026</p><ul><li><a href="2026-07-05-csapp-ch6-memory-hierarchy.html">Ch6 · Memory Hierarchy</a></li><li><a href="../../../chapter07/chapter-7.6.1.html">Ch7 · Symbol Resolution</a></li><li><a href="2026-10-04-csapp-ch8-exceptional-control-flow.html" aria-current="page">Ch8 · Exceptional Control Flow</a></li></ul></nav></aside><main class="docs-main" id="content"><details class="docs-mobile-nav"><summary>강의 목록</summary><nav aria-label="강의 목록"><p class="docs-nav-title">강의노트 · 2026</p><ul><li><a href="2026-07-05-csapp-ch6-memory-hierarchy.html">Ch6 · Memory Hierarchy</a></li><li><a href="../../../chapter07/chapter-7.6.1.html">Ch7 · Symbol Resolution</a></li><li><a href="2026-10-04-csapp-ch8-exceptional-control-flow.html" aria-current="page">Ch8 · Exceptional Control Flow</a></li></ul></nav></details><article class="docs-article"><header><p class="docs-kicker">CSAPP 3판 · §8.1~§8.2.4 · 2026-10-04</p><h1>Exceptional Control Flow</h1><p class="docs-lead">예외, 프로세스, 가상 주소 공간과 권한 전환을 Linux 실습으로 연결한다.</p></header><section data-section="summary"><span class="anchor-alias" id="요약과-학습-지도" aria-hidden="true"></span><h2 id="summary">요약과 학습 지도<a class="heading-link" href="#summary" aria-label="요약과 학습 지도 고정 링크">#</a></h2>
+<p>프로세스는 실행 흐름과 가상 주소 공간을 제공한다. CPU의 예외 처리와 권한 검사는 운영체제가 이 실행 환경을 관리하는 기반이다.</p><details class="toc"><summary>이 문서의 목차</summary><nav aria-label="본문 목차"><ul><li><a href="#summary" data-section="summary">요약과 학습 지도</a></li><li><a href="#foundations" data-section="foundations">기초 개념과 교재 대응</a></li><li><a href="#exceptions" data-section="exceptions">8.1 Exceptions</a></li><li><a href="#processes" data-section="processes">8.2 Processes: 실행 흐름</a></li><li><a href="#address-space" data-section="address-space">8.2.3 Private Address Space</a></li><li><a href="#modes" data-section="modes">8.2.4 User and Kernel Modes</a></li><li><a href="#runtimes" data-section="runtimes">보충: 서버 동시성과 런타임</a></li><li><a href="#labs" data-section="labs">LAB와 적용 로드맵</a></li><li class="nested"><a href="#lab-debugging" data-section="lab-debugging">실습 디버깅 사례</a></li><li><a href="#conditions" data-section="conditions">적용 조건과 미확인</a></li><li><a href="#references" data-section="references">출처</a></li></ul></nav></details>
 <p><strong>범위:</strong> CSAPP 3판 §8.1~§8.2.4. <strong>확인 기준일:</strong> 2026-10-25 KST. 노트 생성일과 스터디 세션 표기는 2026-10-04를 유지한다.</p>
 <p><a href="2026-10-04-csapp-ch8-exceptional-control-flow.html">HTML 강의노트</a> · <a href="../../../examples/0002-exceptional-control-flow/">실습 소스</a> · <a href="../../notes/2026-10-25-csapp-ch8-validation.md">검증 보고서</a></p>
 <p><strong>읽는 기준:</strong> <code>[CSAPP]</code>는 교재 범위·모델, <code>[LECTURE]</code>는 기존 강의 메모에 명시된 확장 범위, <code>[OFFICIAL]</code>은 공식 문서·구현, <code>[COMMENTARY]</code>는 작성자 설명이다. <code>[사실]</code>, <code>[미확인]</code>, <code>[추론]</code>, <code>[제안]</code>은 근거 상태다. LAB의 EXPECTED는 예상이며 OBSERVED는 실제 관측이다.</p>
-</section><section id="기초-개념과-교재-대응"><h2>기초 개념과 교재 대응</h2>
-<h3 id="eli10-실행-순서를-잠시-맡기기">ELI10: 실행 순서를 잠시 맡기기</h3>
+</section><section data-section="foundations"><span class="anchor-alias" id="기초-개념과-교재-대응" aria-hidden="true"></span><h2 id="foundations">기초 개념과 교재 대응<a class="heading-link" href="#foundations" aria-label="기초 개념과 교재 대응 고정 링크">#</a></h2>
+<span class="anchor-alias" id="eli10-실행-순서를-잠시-맡기기" aria-hidden="true"></span><h3 id="detail-1">ELI10: 실행 순서를 잠시 맡기기<a class="heading-link" href="#detail-1" aria-label="ELI10: 실행 순서를 잠시 맡기기 고정 링크">#</a></h3>
 <p>[COMMENTARY] 도서관에서 책을 읽다가 직원에게 대출을 요청한다고 생각해 보자. 읽던 위치를 기억하고 직원의 처리를 기다린 뒤 돌아온다. 예외 처리에서도 CPU와 운영체제는 재개에 필요한 상태를 보존하고 handler로 제어를 옮긴다. 이 비유의 책갈피는 재개 위치를 설명한다. 실제 복귀 주소와 종료 여부는 사건 종류에 따라 달라진다.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -57,7 +44,7 @@
 </table></div>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/abstraction-layers.svg" alt="프로그램에서 하드웨어까지의 실행 계층과 syscall 경계" loading="lazy"><figcaption>프로그램에서 하드웨어까지의 실행 계층과 syscall 경계</figcaption></figure>
 <p>[OFFICIAL][사실] libc와 언어 runtime은 사용자 공간에서 동작할 수 있다. syscall은 커널 진입 인터페이스다. CPU exception, Linux signal, 언어 exception·panic은 각 계층의 메커니즘이다. syscall을 직접 호출하는 경로도 있다. <a class="source-ref" href="#source-s3">[S3]</a><a class="source-ref" href="#source-s7">[S7]</a><a class="source-ref" href="#source-s10">[S10]</a></p>
-<h3 id="교재-절-대응표">교재 절 대응표</h3>
+<span class="anchor-alias" id="교재-절-대응표" aria-hidden="true"></span><h3 id="detail-2">교재 절 대응표<a class="heading-link" href="#detail-2" aria-label="교재 절 대응표 고정 링크">#</a></h3>
 <p>[CSAPP][사실] 공식 3판 목차에서 이번 범위는 §8.1~§8.2.4다. §8.2.5 Context Switches는 다음 범위로 연결한다. 아래 쪽수는 북미판 공식 목차의 인쇄 쪽수다. <a class="source-ref" href="#source-s1">[S1]</a></p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -115,8 +102,8 @@
 </tr>
 </tbody>
 </table></div>
-</section><section id="81-exceptions"><h2>8.1 Exceptions</h2>
-<h3 id="811-exception-handling">8.1.1 Exception Handling</h3>
+</section><section data-section="exceptions"><span class="anchor-alias" id="81-exceptions" aria-hidden="true"></span><h2 id="exceptions">8.1 Exceptions<a class="heading-link" href="#exceptions" aria-label="8.1 Exceptions 고정 링크">#</a></h2>
+<span class="anchor-alias" id="811-exception-handling" aria-hidden="true"></span><h3 id="exception-handling">8.1.1 Exception Handling<a class="heading-link" href="#exception-handling" aria-label="8.1.1 Exception Handling 고정 링크">#</a></h3>
 <p>[CSAPP][사실] 현재 프로그램 바깥의 사건과 명령어 실행 중 생기는 사건을 처리하려면, 정상적인 분기·함수 호출 이외의 제어 이전이 필요하다. CSAPP의 exception 모델은 사건에 따라 운영체제 handler로 제어를 옮긴다. 교재 그림과 CMU 강의 자료에서 이 구조를 확인할 수 있다. <a class="source-ref" href="#source-s2">[S2]</a><a class="source-ref" href="#source-s18">[S18]</a></p>
 <ol>
 <li>CPU가 사건을 인식한다.</li>
@@ -126,7 +113,7 @@
 </ol>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg" alt="사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름" loading="lazy"><figcaption>사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름</figcaption></figure>
 <p>[OFFICIAL][사실] x86의 interrupt/exception vector와 IDT는 handler 선택에 사용된다. 64비트 <code>SYSCALL</code> 진입은 MSR에 설정된 경로를 사용한다. syscall의 구체적인 진입 경로는 ISA 규칙을 함께 읽는다. <a class="source-ref" href="#source-s4">[S4]</a></p>
-<h3 id="812-classes-of-exceptions">8.1.2 Classes of Exceptions</h3>
+<span class="anchor-alias" id="812-classes-of-exceptions" aria-hidden="true"></span><h3 id="exception-classes">8.1.2 Classes of Exceptions<a class="heading-link" href="#exception-classes" aria-label="8.1.2 Classes of Exceptions 고정 링크">#</a></h3>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -168,10 +155,10 @@
 <blockquote>
 <p><strong>REMIND</strong> Fault의 재시도 가능성은 원인이 해결됐을 때의 복귀 모델이다. 접근 위반처럼 프로세스 종료로 이어지는 fault도 있다. <a class="source-ref" href="#source-s4">[S4]</a><a class="source-ref" href="#source-s7">[S7]</a></p>
 </blockquote>
-<h3 id="813-linuxx86-64-divide-error와-signal">8.1.3 Linux/x86-64: divide error와 signal</h3>
+<span class="anchor-alias" id="813-linuxx86-64-divide-error와-signal" aria-hidden="true"></span><h3 id="linux-exceptions">8.1.3 Linux/x86-64: divide error와 signal<a class="heading-link" href="#linux-exceptions" aria-label="8.1.3 Linux/x86-64: divide error와 signal 고정 링크">#</a></h3>
 <p>[OFFICIAL][사실] x86의 <code>DIV</code>·<code>IDIV</code>는 제수가 0이거나 몫이 목적지 범위에 들어가지 않으면 divide-error fault <code>#DE</code>를 발생시킨다. Linux는 산술 오류를 <code>SIGFPE</code> 같은 signal로 사용자 프로세스에 전달한다. 기본 동작은 signal 종류와 프로세스 설정에 따라 결정된다. <a class="source-ref" href="#source-s4">[S4]</a> (Event 0)<a class="source-ref" href="#source-s7">[S7]</a></p>
 <p>[COMMENTARY] 원인을 조사할 때 <code>명령어 → CPU 예외 → 커널 처리 → signal → 프로세스 동작</code>을 따라간다. C의 정수 0 나눗셈 예제에는 undefined behavior가 있으므로, 재현하려면 생성된 명령어와 컴파일 옵션까지 확인해야 한다. 여기서는 해당 fault 실험을 실행하지 않았다. <a class="source-ref" href="#source-s19">[S19]</a></p>
-<h3 id="system-call과-함수-호출-abi">System call과 함수 호출 ABI</h3>
+<span class="anchor-alias" id="system-call과-함수-호출-abi" aria-hidden="true"></span><h3 id="syscall-abi">System call과 함수 호출 ABI<a class="heading-link" href="#syscall-abi" aria-label="System call과 함수 호출 ABI 고정 링크">#</a></h3>
 <p>[OFFICIAL][사실] ABI는 호출 경계에서 인자·반환값을 전달하는 규약이다. Linux syscall 규약은 아키텍처별로 정의된다. 다음 표의 x86-64는 LP64, arm64는 AArch64 Linux 기준이다. <a class="source-ref" href="#source-s3">[S3]</a></p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -210,19 +197,19 @@
 </tbody>
 </table></div>
 <p>[OFFICIAL][사실] System V AMD64 C 함수 호출의 4번째 정수·포인터 인자는 <code>rcx</code>다. Linux x86-64 syscall의 4번째 인자는 <code>r10</code>이다. <code>SYSCALL</code> 명령은 <code>rcx</code>와 <code>r11</code>을 사용해 복귀 위치·flags를 저장한다. libc wrapper는 커널 오류를 <code>-1</code> 반환과 <code>errno</code>로 변환한다. <a class="source-ref" href="#source-s3">[S3]</a><a class="source-ref" href="#source-s4">[S4]</a><a class="source-ref" href="#source-s20">[S20]</a></p>
-<h3 id="stdinstdoutstderr와-strace">stdin·stdout·stderr와 strace</h3>
+<span class="anchor-alias" id="stdinstdoutstderr와-strace" aria-hidden="true"></span><h3 id="stdio-tracing">stdin·stdout·stderr와 strace<a class="heading-link" href="#stdio-tracing" aria-label="stdin·stdout·stderr와 strace 고정 링크">#</a></h3>
 <p>[OFFICIAL][사실] 일반적인 프로세스 시작 상태에서 표준 입력·출력·오류의 file descriptor는 0·1·2다. libc의 <code>stdin</code>·<code>stdout</code>·<code>stderr</code>는 <code>FILE</code> stream이며 버퍼링을 제공한다. <code>write(fd, ...)</code>는 fd를 사용한다. <a class="source-ref" href="#source-s8">[S8]</a><a class="source-ref" href="#source-s9">[S9]</a></p>
 <p>[COMMENTARY] <code>printf()</code> 호출 횟수와 <code>write</code> syscall 횟수는 버퍼링에 따라 달라진다. strace는 syscall·signal을 관측한다. 아래 출력은 LAB의 EXPECTED 예시다.</p>
-<pre><code class="language-text">write(1, &quot;hello, world\n&quot;, 13) = 13
+<pre tabindex="0" aria-label="코드 예제"><code class="language-text">write(1, &quot;hello, world\n&quot;, 13) = 13
 exit_group(0)                  = ?
 </code></pre>
 <p>[OFFICIAL][사실] <code>exit_group</code>은 호출 프로세스의 thread group을 종료하고 복귀하지 않는다. 종료 syscall과 반환하는 syscall의 복귀 경로는 구분해 읽는다. <a class="source-ref" href="#source-s6">[S6]</a></p>
-</section><section id="82-processes-실행-흐름"><h2>8.2 Processes: 실행 흐름</h2>
+</section><section data-section="processes"><span class="anchor-alias" id="82-processes-실행-흐름" aria-hidden="true"></span><h2 id="processes">8.2 Processes: 실행 흐름<a class="heading-link" href="#processes" aria-label="8.2 Processes: 실행 흐름 고정 링크">#</a></h2>
 <p>[CSAPP][사실] 프로세스는 실행 중인 프로그램의 인스턴스다. 논리적 제어 흐름과 가상 주소 공간은 프로그램이 시스템을 사용하는 핵심 추상화다. <a class="source-ref" href="#source-s18">[S18]</a></p>
-<h3 id="821-logical-control-flow">8.2.1 Logical Control Flow</h3>
+<span class="anchor-alias" id="821-logical-control-flow" aria-hidden="true"></span><h3 id="logical-flow">8.2.1 Logical Control Flow<a class="heading-link" href="#logical-flow" aria-label="8.2.1 Logical Control Flow 고정 링크">#</a></h3>
 <p>[CSAPP][사실] 한 프로세스의 program counter가 가리킨 명령어들을 시간순으로 보면 그 프로세스의 logical control flow를 얻는다. CPU가 다른 프로세스를 실행하는 동안에도 이 흐름의 상태가 보존되어 다음 실행으로 이어진다. <a class="source-ref" href="#source-s18">[S18]</a></p>
 <p>[COMMENTARY] 한 사람이 책 두 권을 번갈아 읽어도 각 책의 읽기 순서는 이어진다. 이 비유는 실행 순서의 보존을 설명한다. 실제 프로세스 상태에는 레지스터·메모리·OS 자원이 포함된다.</p>
-<h3 id="822-concurrent-flows">8.2.2 Concurrent Flows</h3>
+<span class="anchor-alias" id="822-concurrent-flows" aria-hidden="true"></span><h3 id="concurrent-flows">8.2.2 Concurrent Flows<a class="heading-link" href="#concurrent-flows" aria-label="8.2.2 Concurrent Flows 고정 링크">#</a></h3>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -253,9 +240,9 @@ exit_group(0)                  = ?
 <p>[CSAPP][사실] 단일 코어에서도 흐름의 전체 실행 기간은 겹칠 수 있다. 병렬 실행은 여러 코어에서 같은 시점에 명령어를 진행하는 상황이다. <a class="source-ref" href="#source-s18">[S18]</a></p>
 <p>[OFFICIAL][사실] Pike는 구조와 실행의 관점을 제시한다. OSTEP은 thread마다 PC·레지스터·stack이 있고 주소 공간을 공유한다는 모델에서 동기화로 전개한다. <a class="source-ref" href="#source-s12">[S12]</a><a class="source-ref" href="#source-s13">[S13]</a></p>
 <p>[COMMENTARY] 타임라인의 색 막대는 실제 CPU 실행 구간이다. concurrency는 막대 하나의 겹침과 각 흐름의 시작~종료 구간을 구분해 판단한다. LAB의 출력 순서만으로 서로 다른 코어의 병렬 실행을 입증할 수 있는 범위는 제한된다.</p>
-</section><section id="823-private-address-space"><h2>8.2.3 Private Address Space</h2>
+</section><section data-section="address-space"><span class="anchor-alias" id="823-private-address-space" aria-hidden="true"></span><h2 id="address-space">8.2.3 Private Address Space<a class="heading-link" href="#address-space" aria-label="8.2.3 Private Address Space 고정 링크">#</a></h2>
 <p>[CSAPP][사실] 프로세스는 자신의 가상 주소 공간을 사용한다. CPU의 MMU와 운영체제가 관리하는 page table이 주소 변환과 접근 보호를 지원한다. <a class="source-ref" href="#source-s18">[S18]</a><a class="source-ref" href="#source-s4">[S4]</a></p>
-<h3 id="eli10-건물마다-같은-방-번호">ELI10: 건물마다 같은 방 번호</h3>
+<span class="anchor-alias" id="eli10-건물마다-같은-방-번호" aria-hidden="true"></span><h3 id="detail-3">ELI10: 건물마다 같은 방 번호<a class="heading-link" href="#detail-3" aria-label="ELI10: 건물마다 같은 방 번호 고정 링크">#</a></h3>
 <p>[COMMENTARY] 서로 다른 건물에 모두 101호가 있을 수 있다. 가상 주소는 건물 안의 방 번호에, 주소 변환 상태는 어느 건물인지 알려주는 정보에 비유할 수 있다. 같은 가상 주소도 프로세스의 mapping에 따라 서로 다른 물리 페이지로 이어진다. 공유 mapping은 두 프로세스가 같은 물리 페이지를 사용하는 예다.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -285,7 +272,7 @@ exit_group(0)                  = ?
 </table></div>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/virtual-address-space.svg" alt="프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조" loading="lazy"><figcaption>프로세스별 가상 주소가 다른 물리 페이지 또는 공유 페이지로 연결되는 구조</figcaption></figure>
 <p>[OFFICIAL][사실] <code>MAP_PRIVATE</code>는 copy-on-write mapping을, <code>MAP_SHARED</code>는 공유 mapping을 지정한다. private mapping도 fork 직후 등에는 물리 페이지를 공유할 수 있다. <a class="source-ref" href="#source-s15">[S15]</a></p>
-<h3 id="교재-주소-공간과-실제-mapping">교재 주소 공간과 실제 mapping</h3>
+<span class="anchor-alias" id="교재-주소-공간과-실제-mapping" aria-hidden="true"></span><h3 id="detail-4">교재 주소 공간과 실제 mapping<a class="heading-link" href="#detail-4" aria-label="교재 주소 공간과 실제 mapping 고정 링크">#</a></h3>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -330,7 +317,7 @@ exit_group(0)                  = ?
 <p>[OFFICIAL][사실] <code>/proc/PID/maps</code>는 가상 주소 구간과 접근 권한을 보여준다. <code>r/w/x</code>는 읽기·쓰기·실행, <code>s/p</code>는 공유·private copy-on-write를 나타낸다. <a class="source-ref" href="#source-s10">[S10]</a></p>
 <p>[OFFICIAL][사실] pagemap은 가상 페이지 단위 정보를 제공한다. Linux 4.2부터 <code>CAP_SYS_ADMIN</code>이 없으면 PFN 필드가 0으로 가려질 수 있다. 파일 접근 자체에도 ptrace 권한 검사가 적용된다. kernel 문서와 man-pages의 비트 설명은 버전별로 대조해야 한다. <a class="source-ref" href="#source-s11">[S11]</a></p>
 <p>[COMMENTARY] 주소 배치·ASLR·공유 영역·KPTI 설정은 실행 환경의 조건이다. 이 노트의 그림은 주소 변환 모델을 표현하며 특정 커널의 전체 page-table 배치를 확정하지 않는다. 실제 mapping은 LAB에서 확인한다.</p>
-</section><section id="824-user-and-kernel-modes"><h2>8.2.4 User and Kernel Modes</h2>
+</section><section data-section="modes"><span class="anchor-alias" id="824-user-and-kernel-modes" aria-hidden="true"></span><h2 id="modes">8.2.4 User and Kernel Modes<a class="heading-link" href="#modes" aria-label="8.2.4 User and Kernel Modes 고정 링크">#</a></h2>
 <p>[CSAPP][사실] CPU의 실행 권한은 사용자 코드의 접근과 특권 동작을 제한한다. 운영체제는 커널 진입·복귀 경계를 관리한다. <a class="source-ref" href="#source-s18">[S18]</a></p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -365,18 +352,18 @@ exit_group(0)                  = ?
 </table></div>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg" alt="같은 task의 syscall 진입과 사용자 공간 복귀" loading="lazy"><figcaption>같은 task의 syscall 진입과 사용자 공간 복귀</figcaption></figure>
 <p>[COMMENTARY] syscall이 같은 task로 복귀하는 경우에도 권한 전환은 일어난다. task 변경 여부는 스케줄링의 별도 질문이다.</p>
-<h3 id="x86-특권-명령과-조건">x86 특권 명령과 조건</h3>
+<span class="anchor-alias" id="x86-특권-명령과-조건" aria-hidden="true"></span><h3 id="detail-5">x86 특권 명령과 조건<a class="heading-link" href="#detail-5" aria-label="x86 특권 명령과 조건 고정 링크">#</a></h3>
 <p>[OFFICIAL][사실] control register에 쓰는 <code>mov %rax, %cr3</code>와 <code>hlt</code>에는 특권 조건이 있다. <code>cli</code>·<code>sti</code>는 CPL·IOPL과 가상화 관련 제어 조건에 따라 동작한다. 일반 Linux 사용자 프로그램은 허용된 커널 인터페이스로 권한 동작을 요청한다. <a class="source-ref" href="#source-s4">[S4]</a> (Vol.2A/2B)</p>
-<pre><code class="language-asm">mov %rax, %cr3    # 주소 변환 상태 변경
+<pre tabindex="0" aria-label="코드 예제"><code class="language-asm">mov %rax, %cr3    # 주소 변환 상태 변경
 hlt               # 특권 조건에서 CPU 대기
 </code></pre>
 <p>[OFFICIAL][사실] 전원 끄기 syscall은 <code>CAP_SYS_BOOT</code> 등 권한 조건을 검사한다. power-off의 실제 결과는 플랫폼에 의존한다. orderly shutdown의 사용자 공간 서비스 정리와 raw <code>reboot(POWER_OFF)</code> 요청은 각 단계의 책임을 구분해야 한다. man-pages는 호출 전 <code>sync</code>가 없을 때 데이터 손실 가능성을 명시한다. <a class="source-ref" href="#source-s5">[S5]</a></p>
 <blockquote class="warning">
 <p><strong>WARNING</strong> 이 노트의 종료·전원 제어 설명은 문서 분석이다. 실습에서는 host의 reboot·shutdown을 실행하지 않는다.</p>
 </blockquote>
-</section><section id="보충-서버-동시성과-런타임"><h2>보충: 서버 동시성과 런타임</h2>
+</section><section data-section="runtimes"><span class="anchor-alias" id="보충-서버-동시성과-런타임" aria-hidden="true"></span><h2 id="runtimes">보충: 서버 동시성과 런타임<a class="heading-link" href="#runtimes" aria-label="보충: 서버 동시성과 런타임 고정 링크">#</a></h2>
 <p>[LECTURE] 기존 강의 메모는 C10K, blocking I/O, green thread, Go/Erlang을 확장 주제로 다룬다. 아래 구현 설명과 Rust 보충은 공식 자료 및 작성자 해설로 읽는다.</p>
-<h3 id="많은-요청이-io를-기다릴-때">많은 요청이 I/O를 기다릴 때</h3>
+<span class="anchor-alias" id="많은-요청이-io를-기다릴-때" aria-hidden="true"></span><h3 id="detail-6">많은 요청이 I/O를 기다릴 때<a class="heading-link" href="#detail-6" aria-label="많은 요청이 I/O를 기다릴 때 고정 링크">#</a></h3>
 <p>[OFFICIAL][사실] C10K 원문은 많은 client connection을 다루는 I/O 전략과 OS 설정을 비교한다. 이 명칭은 서버 아키텍처를 설명하는 역사적 문제다. <a class="source-ref" href="#source-s14">[S14]</a></p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -406,10 +393,10 @@ hlt               # 특권 조건에서 CPU 대기
 </table></div>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg" alt="blocking worker와 readiness 기반 task 재개의 비교" loading="lazy"><figcaption>blocking worker와 readiness 기반 task 재개의 비교</figcaption></figure>
 <p>[COMMENTARY][추론] 동시 connection 증가 시에는 thread 수·stack·대기 시간·CPU를 함께 측정해야 한다. thread-per-request의 한계 수치는 workload와 환경으로 결정된다. 이 문서는 성능 benchmark 수치를 제시하지 않는다.</p>
-<h3 id="scheduling과-function-coloring">Scheduling과 function coloring</h3>
+<span class="anchor-alias" id="scheduling과-function-coloring" aria-hidden="true"></span><h3 id="detail-7">Scheduling과 function coloring<a class="heading-link" href="#detail-7" aria-label="Scheduling과 function coloring 고정 링크">#</a></h3>
 <p>[COMMENTARY] Cooperative scheduling은 task의 yield·대기 지점에서 실행 기회를 넘기는 방식이다. Preemptive scheduling은 scheduler가 실행 중인 작업을 중단할 수 있는 방식이다. green thread는 runtime이 관리하는 실행 단위를 설명할 때 쓰는 용어이며 구체적인 선점·I/O 동작은 구현별로 확인한다.</p>
 <p>[COMMENTARY] function coloring은 async 함수와 호출 체인의 작성 제약을 설명하는 비공식 표현이다. Rust에서는 <code>async</code> 함수가 Future를 만들고 <code>.await</code>로 결과를 기다린다. executor가 future를 poll하며, poll 중 긴 blocking 작업을 하면 해당 worker가 점유된다. <a class="source-ref" href="#source-s17">[S17]</a></p>
-<h3 id="go-gmp-실행-중인-g와-io-대기-g">Go G/M/P: 실행 중인 G와 I/O 대기 G</h3>
+<span class="anchor-alias" id="go-gmp-실행-중인-g와-io-대기-g" aria-hidden="true"></span><h3 id="detail-8">Go G/M/P: 실행 중인 G와 I/O 대기 G<a class="heading-link" href="#detail-8" aria-label="Go G/M/P: 실행 중인 G와 I/O 대기 G 고정 링크">#</a></h3>
 <p>[OFFICIAL][사실] 아래 구조는 Go <code>go1.26.0</code> runtime 문서·소스를 기준으로 한다. <a class="source-ref" href="#source-s16">[S16]</a></p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -440,34 +427,34 @@ hlt               # 특권 조건에서 CPU 대기
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg" alt="실행 중인 G P M과 netpoll에서 대기하는 G의 관계" loading="lazy"><figcaption>실행 중인 G P M과 netpoll에서 대기하는 G의 관계</figcaption></figure>
 <p>[OFFICIAL][사실] 사용자 Go 코드를 실행하는 M에는 P가 필요하다. 지원되는 network I/O는 netpoll로 G를 대기시킬 수 있다. syscall 진입·복귀와 P 회수는 <code>entersyscall</code>, <code>entersyscallblock</code>, <code>retake</code> 등의 경로에서 관리한다. 모든 blocking call이 같은 경로를 따르는지 확인하려면 호출 구현도 읽어야 한다. <a class="source-ref" href="#source-s16">[S16]</a></p>
 <p>[OFFICIAL][사실] Go 1.14는 지원 플랫폼에서 비동기 선점을 도입했다. 현재 scheduler를 설명할 때 함수 호출·협력적 대기 지점과 비동기 선점의 조건을 함께 읽는다. <a class="source-ref" href="#source-s21">[S21]</a></p>
-<h3 id="erlangbeam과-native-blocking">Erlang/BEAM과 native blocking</h3>
+<span class="anchor-alias" id="erlangbeam과-native-blocking" aria-hidden="true"></span><h3 id="detail-9">Erlang/BEAM과 native blocking<a class="heading-link" href="#detail-9" aria-label="Erlang/BEAM과 native blocking 고정 링크">#</a></h3>
 <p>[OFFICIAL][사실] Erlang/OTP <code>29.1.2</code> 문서는 긴 NIF 작업이 일반 scheduler의 응답성을 떨어뜨릴 수 있다고 설명한다. 긴 native 작업은 dirty scheduler에 배치할 수 있다. CPU-bound와 I/O-bound 분류를 맞춰야 하며, CPU 작업을 dirty I/O로 잘못 분류하면 일반 scheduler가 영향을 받을 수 있다. <a class="source-ref" href="#source-s22">[S22]</a></p>
 <p>[COMMENTARY] runtime task의 수와 OS thread 수, native 작업의 배치 위치를 각각 확인한다. Go·BEAM·Rust의 실행 단위를 비교할 때 메모리 격리·선점·I/O 지원도 함께 비교한다.</p>
-</section><section id="lab와-적용-로드맵"><h2>LAB와 적용 로드맵</h2>
-<h3 id="환경과-재현-명령">환경과 재현 명령</h3>
+</section><section data-section="labs"><span class="anchor-alias" id="lab와-적용-로드맵" aria-hidden="true"></span><h2 id="labs">LAB와 적용 로드맵<a class="heading-link" href="#labs" aria-label="LAB와 적용 로드맵 고정 링크">#</a></h2>
+<span class="anchor-alias" id="환경과-재현-명령" aria-hidden="true"></span><h3 id="lab-environment">환경과 재현 명령<a class="heading-link" href="#lab-environment" aria-label="환경과 재현 명령 고정 링크">#</a></h3>
 <p>[제안] Linux/x86-64에서 syscall과 mapping을 확인한 뒤 프로그램의 요청 대기 구조를 조사한다. 실습 소스는 <a href="../../../examples/0002-exceptional-control-flow/hello.c">hello.c</a>, <a href="../../../examples/0002-exceptional-control-flow/flows.c">flows.c</a>, <a href="../../../examples/0002-exceptional-control-flow/maps.c">maps.c</a>다.</p>
-<pre><code class="language-bash"><span class="hljs-comment"># 레포 root에서 실행</span>
+<pre tabindex="0" aria-label="코드 예제"><code class="language-bash"><span class="hljs-comment"># 레포 root에서 실행</span>
 <span class="hljs-comment"># macOS ARM64에서는 Docker의 amd64 실행 지원이 필요하다.</span>
 docker build --platform linux/amd64 -t csapp-ch8-lab:amd64 \
   examples/0002-exceptional-control-flow
 docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-add=SYS_PTRACE \
   csapp-ch8-lab:amd64
 </code></pre>
-<h3 id="lab-1-syscall종료-경계">LAB 1: syscall·종료 경계</h3>
+<span class="anchor-alias" id="lab-1-syscall종료-경계" aria-hidden="true"></span><h3 id="lab-syscall">LAB 1: syscall·종료 경계<a class="heading-link" href="#lab-syscall" aria-label="LAB 1: syscall·종료 경계 고정 링크">#</a></h3>
 <ol>
 <li><code>hello.c</code>를 <code>gcc -std=c11 -Wall -Wextra -Werror -O0 -g</code>로 컴파일한다.</li>
 <li><code>strace -qq -e trace=write,exit_group ./hello</code>를 실행한다.</li>
 <li>fd·길이·반환값과 <code>exit_group</code>을 읽는다.</li>
 </ol>
 <p>[EXPECTED] <code>write(1, &quot;hello, world\n&quot;, 13) = 13</code>과 종료 호출이 보인다. 짧은 문자열 출력 성공을 검사하는 학습 예제다. 일반 출력 루프는 partial write와 <code>EINTR</code> 처리도 필요하다. <a class="source-ref" href="#source-s8">[S8]</a></p>
-<h3 id="lab-2-두-프로세스-흐름">LAB 2: 두 프로세스 흐름</h3>
+<span class="anchor-alias" id="lab-2-두-프로세스-흐름" aria-hidden="true"></span><h3 id="lab-processes">LAB 2: 두 프로세스 흐름<a class="heading-link" href="#lab-processes" aria-label="LAB 2: 두 프로세스 흐름 고정 링크">#</a></h3>
 <ol>
 <li><code>flows.c</code>가 <code>fork</code>로 만든 부모·자식을 확인한다.</li>
 <li>각 PID의 <code>step=0,1,2</code> 순서를 읽는다.</li>
 <li>전체 출력 순서를 다시 실행해 비교한다.</li>
 </ol>
 <p>[EXPECTED] 부모·자식이 각각 세 줄을 출력한다. 매 실행의 교차 순서는 달라질 수 있다. CPU 코어의 동시 사용은 별도 tracing·CPU affinity 조건을 갖춰 측정한다.</p>
-<h3 id="lab-3-주소와-mapping">LAB 3: 주소와 mapping</h3>
+<span class="anchor-alias" id="lab-3-주소와-mapping" aria-hidden="true"></span><h3 id="lab-mapping">LAB 3: 주소와 mapping<a class="heading-link" href="#lab-mapping" aria-label="LAB 3: 주소와 mapping 고정 링크">#</a></h3>
 <ol>
 <li><code>maps.c</code>가 <code>MAP_PRIVATE|MAP_ANONYMOUS</code>로 만든 주소와 PID를 출력한다.</li>
 <li>실행 중 <code>/proc/PID/maps</code>에서 그 주소를 포함한 구간을 찾는다.</li>
@@ -475,7 +462,7 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 <li>pagemap의 present 비트를 읽고 PFN 접근 조건을 기록한다.</li>
 </ol>
 <p>[EXPECTED] 쓰기 후 해당 가상 페이지의 mapping과 상태가 보인다. PFN이 0이면 권한으로 가려졌을 가능성을 먼저 확인한다. 이 결과만으로 물리 주소를 확정하지 않는다. <a class="source-ref" href="#source-s10">[S10]</a><a class="source-ref" href="#source-s11">[S11]</a></p>
-<h3 id="관측과-다음-적용">관측과 다음 적용</h3>
+<span class="anchor-alias" id="관측과-다음-적용" aria-hidden="true"></span><h3 id="lab-results">관측과 다음 적용<a class="heading-link" href="#lab-results" aria-label="관측과 다음 적용 고정 링크">#</a></h3>
 <p>[사실][OBSERVED] 2026-10-25에 OrbStack Linux에서 다음 결과를 얻었다. GCC 12.2.0, strace 6.1, Debian bookworm 컨테이너 기준이다.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
@@ -542,19 +529,19 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 </tr>
 </tbody>
 </table></div>
-<h3 id="확인-질문">확인 질문</h3>
+<span class="anchor-alias" id="확인-질문" aria-hidden="true"></span><h3 id="quiz">확인 질문<a class="heading-link" href="#quiz" aria-label="확인 질문 고정 링크">#</a></h3>
 <ul>
 <li><strong>같은 가상 주소의 데이터는?</strong> 프로세스의 mapping과 공유 관계로 결정된다.</li>
 <li><strong>syscall과 context switch의 관계는?</strong> syscall은 커널 진입이다. 다른 task 실행 여부는 스케줄링 결과로 확인한다.</li>
 <li><strong>fault 뒤 같은 명령어를 재실행하는 이유는?</strong> 원인을 해결한 뒤 해당 메모리 접근 등을 다시 수행하기 위해서다.</li>
 <li><strong>Go에서 P와 CPU 코어는?</strong> P는 runtime 자원이다. 실제 코어 실행 배치는 OS scheduler와 실행 환경에 따른다.</li>
 </ul>
-</section><section id="심층-사례-strace-관측-실패-디버깅"><h2>심층 사례: strace 관측 실패 디버깅</h2>
+<span class="anchor-alias" id="심층-사례-strace-관측-실패-디버깅" aria-hidden="true"></span><h3 id="lab-debugging">심층 사례: strace 관측 실패 디버깅<a class="heading-link" href="#lab-debugging" aria-label="심층 사례: strace 관측 실패 디버깅 고정 링크">#</a></h3>
 <p>[사실][OBSERVED] 프로그램은 출력했지만 syscall trace가 비어 있었다. Orb의 기존 Ubuntu amd64에서 재현한 뒤, <strong>x86-64 커널을 부팅한 QEMU에서 전체 LAB을 두 번 통과했다.</strong></p>
 <p>이 사례는 앞의 syscall·프로세스·주소 공간 LAB을 검증하는 과정이다. 아래에서는 관측한 사실, 세운 가설, 확인 실험, 실행 환경 선택의 근거를 차례로 연결한다. LAB의 관측 공백은 해소했고, Orb/Rosetta 내부의 정확한 결함 위치는 미확인이다.</p>
 <p>표기: **[관측]**은 실제 실행, **[공식]**은 1차 자료, **[가설]**은 추론, **[결정]<strong>은 조치다. <strong>[판정]</strong>·</strong>[해석]**은 관측에 대한 작성자 설명이다. 예상은 EXPECTED로 표시한다.</p>
-<h3 id="1-먼저-무엇을-검증하려-했는가">1. 먼저 무엇을 검증하려 했는가</h3>
-<h4 id="lab의-목표">LAB의 목표</h4>
+<span class="anchor-alias" id="1-먼저-무엇을-검증하려-했는가" aria-hidden="true"></span><h4 id="debug-goals">1. 먼저 무엇을 검증하려 했는가<a class="heading-link" href="#debug-goals" aria-label="1. 먼저 무엇을 검증하려 했는가 고정 링크">#</a></h4>
+<span class="anchor-alias" id="lab의-목표" aria-hidden="true"></span><h5 id="detail-10">LAB의 목표<a class="heading-link" href="#detail-10" aria-label="LAB의 목표 고정 링크">#</a></h5>
 <p>학습 목표는 Linux 프로그램이 커널 기능을 호출하는 경계를 직접 보는 것이다.
 다음 세 예제를 사용했다.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
@@ -585,12 +572,12 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 </table></div>
 <p><a href="../../../examples/0002-exceptional-control-flow/">소스와 실행 스크립트</a>를 함께 읽으면 된다.</p>
 <p><code>hello.c</code>의 핵심은 다음과 같다.</p>
-<pre><code class="language-c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span> message[] = <span class="hljs-string">&quot;hello, world\n&quot;</span>;
+<pre tabindex="0" aria-label="코드 예제"><code class="language-c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span> message[] = <span class="hljs-string">&quot;hello, world\n&quot;</span>;
 <span class="hljs-type">ssize_t</span> written = write(STDOUT_FILENO, message, <span class="hljs-keyword">sizeof</span> message - <span class="hljs-number">1</span>);
 </code></pre>
 <p>문자열은 newline을 포함해 13바이트다. 전체 코드의 반환값 검사는 이 짧은 출력이 성공했는지 확인한다.
 일반적인 출력 코드는 partial write와 <code>EINTR</code>도 처리해야 한다. <a href="https://man7.org/linux/man-pages/man2/write.2.html">공식: write(2)</a></p>
-<h4 id="성공-조건을-구체적인-문장으로-쓰기">성공 조건을 구체적인 문장으로 쓰기</h4>
+<span class="anchor-alias" id="성공-조건을-구체적인-문장으로-쓰기" aria-hidden="true"></span><h5 id="detail-11">성공 조건을 구체적인 문장으로 쓰기<a class="heading-link" href="#detail-11" aria-label="성공 조건을 구체적인 문장으로 쓰기 고정 링크">#</a></h5>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -618,28 +605,28 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 </tbody>
 </table></div>
 <p><code>./hello</code>의 성공은 두 번째 행까지의 근거다. syscall 관측에는 세 번째 행의 출력이 필요하다.</p>
-<h3 id="2-strace는-어떤-경계를-관측하는가">2. strace는 어떤 경계를 관측하는가</h3>
+<span class="anchor-alias" id="2-strace는-어떤-경계를-관측하는가" aria-hidden="true"></span><h4 id="debug-tracing">2. strace는 어떤 경계를 관측하는가<a class="heading-link" href="#debug-tracing" aria-label="2. strace는 어떤 경계를 관측하는가 고정 링크">#</a></h4>
 <p><strong>[공식]</strong> <code>ptrace</code>는 한 프로세스가 다른 프로세스의 실행과 레지스터 등을 관측·제어할 수 있게 하는
 Linux 인터페이스다. syscall tracing과 debugger 구현에 사용한다.
 <a href="https://man7.org/linux/man-pages/man2/ptrace.2.html">ptrace(2)</a></p>
 <p><strong>[공식]</strong> strace는 프로그램의 syscall과 signal을 추적한다.
 <a href="https://strace.io/">프로젝트 문서</a>와 <a href="https://man7.org/linux/man-pages/man1/strace.1.html">strace(1)</a></p>
-<h4 id="eli10-달리는-차와-계기판">ELI10: 달리는 차와 계기판</h4>
+<span class="anchor-alias" id="eli10-달리는-차와-계기판" aria-hidden="true"></span><h5 id="detail-12">ELI10: 달리는 차와 계기판<a class="heading-link" href="#detail-12" aria-label="ELI10: 달리는 차와 계기판 고정 링크">#</a></h5>
 <p>자동차가 움직이는지 확인하는 일과 계기판이 속도를 정확하게 표시하는지 확인하는 일은 서로 다른 검사다.
 프로그램의 출력은 차가 움직였다는 관측에, strace 출력은 계기판의 관측에 대응한다.
 실제 strace는 커널 tracing 인터페이스와 아키텍처별 상태를 사용한다. 계기판 비유는 이 구현 세부까지 설명하지 않는다.</p>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg" alt="프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로" loading="lazy"><figcaption>프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로</figcaption></figure>
-<h3 id="3-첫-증상-출력은-있고-trace는-없다">3. 첫 증상: 출력은 있고 trace는 없다</h3>
-<h4 id="기대한-결과">기대한 결과</h4>
+<span class="anchor-alias" id="3-첫-증상-출력은-있고-trace는-없다" aria-hidden="true"></span><h4 id="debug-symptom">3. 첫 증상: 출력은 있고 trace는 없다<a class="heading-link" href="#debug-symptom" aria-label="3. 첫 증상: 출력은 있고 trace는 없다 고정 링크">#</a></h4>
+<span class="anchor-alias" id="기대한-결과" aria-hidden="true"></span><h5 id="detail-13">기대한 결과<a class="heading-link" href="#detail-13" aria-label="기대한 결과 고정 링크">#</a></h5>
 <p>다음은 EXPECTED 예시다. 공백 정렬은 strace 버전에 따라 달라질 수 있다.</p>
-<pre><code class="language-text">write(1, &quot;hello, world\n&quot;, 13) = 13
+<pre tabindex="0" aria-label="코드 예제"><code class="language-text">write(1, &quot;hello, world\n&quot;, 13) = 13
 exit_group(0)                  = ?
 </code></pre>
-<h4 id="실제-관측">실제 관측</h4>
+<span class="anchor-alias" id="실제-관측" aria-hidden="true"></span><h5 id="detail-14">실제 관측<a class="heading-link" href="#detail-14" aria-label="실제 관측 고정 링크">#</a></h5>
 <p><strong>[관측]</strong> OrbStack Docker의 Linux/amd64 환경에서 hello 프로그램은 실행됐다.
 필터링된 trace에는 필요한 syscall 행이 나타나지 않아 LAB이 멈췄다.</p>
 <p><a href="../../../validation/ch8/2026-10-25/lab-amd64-strace-incomplete.txt">당시 로그</a>:</p>
-<pre><code class="language-text">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
+<pre tabindex="0" aria-label="코드 예제"><code class="language-text">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
 gcc (Debian 12.2.0-14+deb12u1) 12.2.0
 strace -- version 6.1
 hello, world
@@ -649,10 +636,10 @@ hello, world
 <p><strong>[가설]</strong> 프로그램 로직 이외에 tracing 도구와 실행 환경의 조합을 조사할 필요가 있다.
 ARM64 통과는 스크립트가 적어도 한 환경에서 정상 동작했다는 근거다.
 x86-64 전체 환경에서의 정확성을 보장하는 근거는 별도 검사가 필요하다.</p>
-<h3 id="4-orb-cli로-기존-ubuntu를-직접-확인했다">4. orb CLI로 기존 Ubuntu를 직접 확인했다</h3>
-<h4 id="환경을-먼저-목록화한다">환경을 먼저 목록화한다</h4>
+<span class="anchor-alias" id="4-orb-cli로-기존-ubuntu를-직접-확인했다" aria-hidden="true"></span><h4 id="debug-orb">4. orb CLI로 기존 Ubuntu를 직접 확인했다<a class="heading-link" href="#debug-orb" aria-label="4. orb CLI로 기존 Ubuntu를 직접 확인했다 고정 링크">#</a></h4>
+<span class="anchor-alias" id="환경을-먼저-목록화한다" aria-hidden="true"></span><h5 id="detail-15">환경을 먼저 목록화한다<a class="heading-link" href="#detail-15" aria-label="환경을 먼저 목록화한다 고정 링크">#</a></h5>
 <p>실제로 사용한 조회 명령은 다음과 같다.</p>
-<pre><code class="language-sh"><span class="hljs-built_in">command</span> -v orb orbctl
+<pre tabindex="0" aria-label="코드 예제"><code class="language-sh"><span class="hljs-built_in">command</span> -v orb orbctl
 orbctl list
 orbctl info ubuntu
 orb -m ubuntu <span class="hljs-built_in">uname</span> -a
@@ -661,33 +648,33 @@ orb -m ubuntu sh -c <span class="hljs-string">&#x27;command -v gcc; command -v s
 <p><strong>[관측]</strong> 이미 실행 중인 <code>ubuntu</code> 머신이 있었다.
 <code>orbctl info</code>는 Ubuntu 25.04, architecture amd64를 표시했다.
 처음에는 Python만 있었고 GCC와 strace가 없었다.</p>
-<h4 id="첫-실패는-도구-부재였다">첫 실패는 도구 부재였다</h4>
-<pre><code class="language-text">verify.sh: gcc: not found
+<span class="anchor-alias" id="첫-실패는-도구-부재였다" aria-hidden="true"></span><h5 id="detail-16">첫 실패는 도구 부재였다<a class="heading-link" href="#detail-16" aria-label="첫 실패는 도구 부재였다 고정 링크">#</a></h5>
+<pre tabindex="0" aria-label="코드 예제"><code class="language-text">verify.sh: gcc: not found
 verify.sh: strace: not found
 </code></pre>
 <p><strong>[판정]</strong> 이 결과는 필수 도구가 준비되지 않았다는 뜻이다.
 이 단계의 로그로 tracing 호환성을 평가할 수 있는 범위는 없다.</p>
 <p><strong>[결정]</strong> 해당 Ubuntu에 필요한 패키지를 설치하고 같은 LAB을 다시 실행했다.
 실제 설치는 이 머신의 시스템 패키지에 변화를 만든다.</p>
-<pre><code class="language-sh">orb -m ubuntu -u root sh -c \
+<pre tabindex="0" aria-label="코드 예제"><code class="language-sh">orb -m ubuntu -u root sh -c \
   <span class="hljs-string">&#x27;apt-get update &amp;&amp; apt-get install -y gcc libc6-dev strace&#x27;</span>
 orb -m ubuntu sh examples/0002-exceptional-control-flow/verify.sh
 </code></pre>
-<h4 id="도구-설치-뒤의-실패를-따로-기록한다">도구 설치 뒤의 실패를 따로 기록한다</h4>
+<span class="anchor-alias" id="도구-설치-뒤의-실패를-따로-기록한다" aria-hidden="true"></span><h5 id="detail-17">도구 설치 뒤의 실패를 따로 기록한다<a class="heading-link" href="#detail-17" aria-label="도구 설치 뒤의 실패를 따로 기록한다 고정 링크">#</a></h5>
 <p><strong>[관측]</strong> GCC 14.2.0·strace 6.14가 준비된 뒤에도 LAB은 exit 1이었다.
 <a href="../../../validation/ch8/2026-10-25/lab-orb-amd64.txt">Orb amd64 로그</a>:</p>
-<pre><code class="language-text">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
+<pre tabindex="0" aria-label="코드 예제"><code class="language-text">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
 gcc (Ubuntu 14.2.0-19ubuntu2) 14.2.0
 strace -- version 6.14
 hello, world
 </code></pre>
-<h4 id="예제를-더-작게-줄였다">예제를 더 작게 줄였다</h4>
-<pre><code class="language-sh">orb -m ubuntu strace -e trace=write,exit_group /bin/echo hello
+<span class="anchor-alias" id="예제를-더-작게-줄였다" aria-hidden="true"></span><h5 id="detail-18">예제를 더 작게 줄였다<a class="heading-link" href="#detail-18" aria-label="예제를 더 작게 줄였다 고정 링크">#</a></h5>
+<pre tabindex="0" aria-label="코드 예제"><code class="language-sh">orb -m ubuntu strace -e trace=write,exit_group /bin/echo hello
 </code></pre>
 <p><strong>[관측]</strong> 아래 mode 메시지가 반복됐고 마지막에 <code>hello</code>와 종료 코드 0이 나타났다.
 필요한 <code>write</code>·<code>exit_group</code> trace는 나타나지 않았다.
 아래는 직접 관측한 출력 일부이며 전체 반복 횟수는 생략했다. <a href="../../../validation/ch8/2026-10-25/debug-note/orb-echo-trace.txt">최소 재현 trace</a>에서 전체 결과를 확인한다.</p>
-<pre><code class="language-text">[ Process PID=2682 runs in x32 mode. ]
+<pre tabindex="0" aria-label="코드 예제"><code class="language-text">[ Process PID=2682 runs in x32 mode. ]
 [ Process PID=2682 runs in 64 bit mode. ]
 ...
 hello
@@ -697,9 +684,9 @@ hello
 따라서 조사 우선순위를 예제의 C 로직에서 tracing·실행 환경의 조합으로 옮겼다.</p>
 <p>이 메시지만으로 프로그램이 실제 x32 ABI로 반복 전환했다고 결론 내리지 않았다.
 관측 도구가 보고한 상태와 실제 target 상태를 대조할 추가 근거가 필요하기 때문이다.</p>
-<h3 id="5-왜-uname의-x86_64만으로-충분하지-않았는가">5. 왜 uname의 x86_64만으로 충분하지 않았는가</h3>
+<span class="anchor-alias" id="5-왜-uname의-x86_64만으로-충분하지-않았는가" aria-hidden="true"></span><h4 id="debug-architecture">5. 왜 uname의 x86_64만으로 충분하지 않았는가<a class="heading-link" href="#debug-architecture" aria-label="5. 왜 uname의 x86_64만으로 충분하지 않았는가 고정 링크">#</a></h4>
 <p><strong>[관측]</strong> 다음 설정과 등록 상태를 조회했다.</p>
-<pre><code class="language-sh">orbctl config get rosetta
+<pre tabindex="0" aria-label="코드 예제"><code class="language-sh">orbctl config get rosetta
 orb -m ubuntu <span class="hljs-built_in">cat</span> /proc/sys/fs/binfmt_misc/rosetta
 </code></pre>
 <p>설정 값은 <code>true</code>, 등록된 interpreter 표기는 <code>[rosetta]</code>였다.</p>
@@ -710,7 +697,7 @@ orb -m ubuntu <span class="hljs-built_in">cat</span> /proc/sys/fs/binfmt_misc/ro
 <p><strong>[해석]</strong> <code>amd64</code> 이미지·실행 파일·호환 환경과 x86-64 커널 전체 부팅은 구분해서 기록해야 한다.
 <code>uname</code>은 환경 식별의 단서이며, 이번 실행에서 tracing 경계가 기대대로 동작하는지는 실제 trace로 검사한다.</p>
 <figure><img src="../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg" alt="amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교" loading="lazy"><figcaption>amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교</figcaption></figure>
-<h3 id="6-가설을-어떻게-좁혔는가">6. 가설을 어떻게 좁혔는가</h3>
+<span class="anchor-alias" id="6-가설을-어떻게-좁혔는가" aria-hidden="true"></span><h4 id="debug-hypotheses">6. 가설을 어떻게 좁혔는가<a class="heading-link" href="#debug-hypotheses" aria-label="6. 가설을 어떻게 좁혔는가 고정 링크">#</a></h4>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -763,12 +750,12 @@ orb -m ubuntu <span class="hljs-built_in">cat</span> /proc/sys/fs/binfmt_misc/ro
 <code>write(...) = 13</code>의 공백 수를 고정해 비교하던 부분을 정규식으로 고쳤다.
 ARM64 trace에는 syscall 행이 있었으므로 이 수정으로 검사를 진행할 수 있었다.
 Orb amd64의 syscall 행 누락은 그 수정 뒤에도 남았다.</p>
-<pre><code class="language-sh"><span class="hljs-comment"># 공백 정렬을 허용하면서 필요한 의미를 검사한다.</span>
+<pre tabindex="0" aria-label="코드 예제"><code class="language-sh"><span class="hljs-comment"># 공백 정렬을 허용하면서 필요한 의미를 검사한다.</span>
 grep -E <span class="hljs-string">&#x27;write\(1, &quot;hello, world\\n&quot;, 13\)[[:space:]]+= 13&#x27;</span> trace.txt
 </code></pre>
 <p><strong>[판정]</strong> 프로그램 실행, trace 생성, trace 해석, 검사 스크립트의 포맷 가정을 나눠야 한다.
 이번 사례에서는 공백 비교와 trace 누락을 각각 수정·조사했다.</p>
-<h3 id="7-왜-qemu-full-system을-선택했는가">7. 왜 QEMU full-system을 선택했는가</h3>
+<span class="anchor-alias" id="7-왜-qemu-full-system을-선택했는가" aria-hidden="true"></span><h4 id="debug-decision">7. 왜 QEMU full-system을 선택했는가<a class="heading-link" href="#debug-decision" aria-label="7. 왜 QEMU full-system을 선택했는가 고정 링크">#</a></h4>
 <p><strong>[목표]</strong> x86-64 Linux의 syscall·프로세스·mapping LAB을 실제로 통과시키고 근거를 남기는 것이다.
 이 단계의 목표는 Orb 내부 구현의 결함 위치를 찾는 것과 구분했다.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
@@ -820,8 +807,8 @@ TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이
 별도 guest를 만들면 Orb의 전역 설정을 바꾸지 않고 x86-64 커널의 관측 경로를 검사할 수 있었다.</p>
 <p>이 비교에서는 커널·부팅 방식 등 여러 조건이 함께 바뀐다.
 따라서 특정 Rosetta 함수나 특정 커널 코드가 원인이라고 분리해 증명한 실험으로 해석하지 않는다.</p>
-<h3 id="8-qemu-환경을-어떻게-만들었는가">8. QEMU 환경을 어떻게 만들었는가</h3>
-<h4 id="용어-세-개">용어 세 개</h4>
+<span class="anchor-alias" id="8-qemu-환경을-어떻게-만들었는가" aria-hidden="true"></span><h4 id="debug-setup">8. QEMU 환경을 어떻게 만들었는가<a class="heading-link" href="#debug-setup" aria-label="8. QEMU 환경을 어떻게 만들었는가 고정 링크">#</a></h4>
+<span class="anchor-alias" id="용어-세-개" aria-hidden="true"></span><h5 id="detail-19">용어 세 개<a class="heading-link" href="#detail-19" aria-label="용어 세 개 고정 링크">#</a></h5>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -844,7 +831,7 @@ TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이
 </tr>
 </tbody>
 </table></div>
-<h4 id="구성-순서와-이유">구성 순서와 이유</h4>
+<span class="anchor-alias" id="구성-순서와-이유" aria-hidden="true"></span><h5 id="detail-20">구성 순서와 이유<a class="heading-link" href="#detail-20" aria-label="구성 순서와 이유 고정 링크">#</a></h5>
 <ol>
 <li><strong>기존 Dockerfile로 amd64 LAB image를 준비한다.</strong> GCC·strace·Python·예제의 사용자 공간 구성을 재사용한다.</li>
 <li><strong>image의 파일 트리를 export한다.</strong> Docker를 rootfs를 만드는 도구로 사용한다.</li>
@@ -860,7 +847,7 @@ TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이
 <p>정적 링크 init은 필요한 라이브러리를 실행 파일에 포함한다.
 이 선택은 초기 부팅 시 동적 loader 경로에 대한 의존을 줄인다.</p>
 <p>실제 사용한 QEMU 옵션의 핵심은 다음과 같다.</p>
-<pre><code class="language-sh">qemu-system-x86_64 \
+<pre tabindex="0" aria-label="코드 예제"><code class="language-sh">qemu-system-x86_64 \
   -accel tcg -machine q35 -cpu max -m 1536 -smp 2 \
   -nographic -no-reboot -nic none \
   -kernel /path/to/vmlinuz \
@@ -870,15 +857,15 @@ TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이
 <p><code>console=ttyS0</code>는 serial console로 로그를 받고, <code>rdinit=/init</code>은 initramfs의 전용 init을 실행하도록 지정한다. <a href="https://docs.kernel.org/admin-guide/kernel-parameters.html">Kernel parameters</a>
 <code>-nic none</code>은 guest의 가상 network 장치를 만들지 않는다. <a href="https://www.qemu.org/docs/master/system/invocation.html">QEMU Invocation</a> kernel·패키지 준비 단계에는 host의 인터넷 연결을 사용한다.</p>
 <p><strong>[재현]</strong> 위 파일 구성을 직접 만들지 않아도 다음 명령으로 같은 절차를 실행할 수 있다.</p>
-<pre><code class="language-sh"><span class="hljs-comment"># 레포 root에서. Docker와 QEMU가 준비되어 있어야 한다.</span>
+<pre tabindex="0" aria-label="코드 예제"><code class="language-sh"><span class="hljs-comment"># 레포 root에서. Docker와 QEMU가 준비되어 있어야 한다.</span>
 python3 tools/ch8/qemu-lab.py /tmp/csapp-x86-result.txt
 </code></pre>
 <p><a href="../../../tools/ch8/qemu-lab.py">재현 도구</a>는 guest process와 임시 rootfs를 정리한다.
 완료 시 init은 결과 marker를 출력하고 대기하며, host의 실행 도구가 QEMU process를 종료한다.
 실제 host의 shutdown·reboot는 실행하지 않는다.</p>
-<h3 id="9-실제로-무엇을-확인했는가">9. 실제로 무엇을 확인했는가</h3>
+<span class="anchor-alias" id="9-실제로-무엇을-확인했는가" aria-hidden="true"></span><h4 id="debug-results">9. 실제로 무엇을 확인했는가<a class="heading-link" href="#debug-results" aria-label="9. 실제로 무엇을 확인했는가 고정 링크">#</a></h4>
 <p><strong>[관측]</strong> 첫 실행의 핵심 결과다. 주소·PID·PFN은 그 실행의 값이다.</p>
-<pre><code class="language-text">Linux 6.18.58-0-lts x86_64 GNU/Linux
+<pre tabindex="0" aria-label="코드 예제"><code class="language-text">Linux 6.18.58-0-lts x86_64 GNU/Linux
 gcc (Debian 12.2.0-14+deb12u1) 12.2.0
 strace -- version 6.1
 write(1, &quot;hello, world\n&quot;, 13)          = 13
@@ -942,15 +929,15 @@ CSAPP_QEMU_EXIT=0
 <a href="../../../validation/ch8/2026-10-25/lab-x86-system-reproduced.txt">재실행 로그</a></p>
 <p>kernel URL·SHA-256·image ID·QEMU 버전은 <a href="../../../validation/ch8/2026-10-25/x86-system-environment.json">환경 기록</a>에 있다.
 현재 재현 도구의 kernel URL과 Debian package는 업데이트될 수 있다. 과거와 동일한 바이트를 재현하려면 이 기록의 hash·image ID도 대조해야 한다.</p>
-<h3 id="10-해결한-범위와-남은-질문">10. 해결한 범위와 남은 질문</h3>
-<h4 id="확인된-결론">확인된 결론</h4>
+<span class="anchor-alias" id="10-해결한-범위와-남은-질문" aria-hidden="true"></span><h4 id="debug-limits">10. 해결한 범위와 남은 질문<a class="heading-link" href="#debug-limits" aria-label="10. 해결한 범위와 남은 질문 고정 링크">#</a></h4>
+<span class="anchor-alias" id="확인된-결론" aria-hidden="true"></span><h5 id="detail-21">확인된 결론<a class="heading-link" href="#detail-21" aria-label="확인된 결론 고정 링크">#</a></h5>
 <ul>
 <li>Orb CLI의 기존 Ubuntu amd64를 실제로 시도했고 tracing 증상을 재현했다.</li>
 <li>x86-64 커널을 포함한 QEMU full-system에서 같은 LAB을 두 번 통과했다.</li>
 <li>x86-64 syscall LAB의 관측 공백을 대체 실행 경로로 해소했다.</li>
 <li>글로벌 Rosetta 설정은 유지했다.</li>
 </ul>
-<h4 id="근본-원인에-대한-현재-판단">근본 원인에 대한 현재 판단</h4>
+<span class="anchor-alias" id="근본-원인에-대한-현재-판단" aria-hidden="true"></span><h5 id="detail-22">근본 원인에 대한 현재 판단<a class="heading-link" href="#detail-22" aria-label="근본 원인에 대한 현재 판단 고정 링크">#</a></h5>
 <p><strong>[가설]</strong> 해당 Orb amd64 번역 실행과 syscall tracing 사이의 호환성 문제가 유력한 조사 방향이다.
 근거는 예제를 줄여도 유지된 증상, 두 strace 버전에서의 재현, 실제 번역 설정,
 ARM64와 QEMU full-system에서의 성공이다.</p>
@@ -959,7 +946,7 @@ Rosetta 설정을 바꾼 A/B, <code>ptrace</code> 요청·반환값·레지스�
 OrbStack·Rosetta·strace의 더 작은 재현 코드와 버전별 대조가 후속 조사다.</p>
 <p><strong>[중단 기준]</strong> 이 작업의 LAB 검증 목표는 충족됐다.
 Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 이어갈 수 있다.</p>
-<h3 id="11-다른-문제에-적용하는-디버깅-순서">11. 다른 문제에 적용하는 디버깅 순서</h3>
+<span class="anchor-alias" id="11-다른-문제에-적용하는-디버깅-순서" aria-hidden="true"></span><h4 id="debug-method">11. 다른 문제에 적용하는 디버깅 순서<a class="heading-link" href="#debug-method" aria-label="11. 다른 문제에 적용하는 디버깅 순서 고정 링크">#</a></h4>
 <ol>
 <li><strong>성공 조건을 쪼갠다.</strong> 실행·관측·해석의 각 결과가 무엇이어야 하는지 적는다.</li>
 <li><strong>도구와 환경을 목록화한다.</strong> 실행 파일 경로, 버전, ISA, 커널, 권한, 번역 계층을 확인한다.</li>
@@ -970,14 +957,14 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 <li><strong>재실행 가능한 근거를 남긴다.</strong> 명령·환경·원본 로그·종료 코드·성공 조건을 보관한다.</li>
 <li><strong>결론의 범위를 제한한다.</strong> 검증 경로 확보와 도구 자체의 원인 규명을 각각 보고한다.</li>
 </ol>
-<h4 id="디버깅-사례-확인-질문">디버깅 사례 확인 질문</h4>
+<span class="anchor-alias" id="디버깅-사례-확인-질문" aria-hidden="true"></span><h5 id="detail-23">디버깅 사례 확인 질문<a class="heading-link" href="#detail-23" aria-label="디버깅 사례 확인 질문 고정 링크">#</a></h5>
 <ul>
 <li><strong>프로그램이 출력하고 종료 코드 0이면 LAB도 성공인가?</strong> LAB이 요구한 trace와 상태 검사까지 확인한다.</li>
 <li><strong>uname이 x86_64면 ptrace 호환성도 확인된 것인가?</strong> 실제 tracing 결과와 커널·번역 실행 경로를 함께 확인한다.</li>
 <li><strong>QEMU에서 통과하면 Rosetta 결함을 확정할 수 있는가?</strong> 여러 환경 조건이 함께 바뀌었으므로 구체적인 결함 위치는 추가 실험으로 좁힌다.</li>
 <li><strong>왜 동일 PID·주소·PFN을 기대하지 않는가?</strong> 실행마다 변하는 값이며 검사의 목적은 관계·권한·동작을 확인하는 데 있다.</li>
 </ul>
-</section><section id="적용-조건과-미확인"><h2>적용 조건과 미확인</h2>
+</section><section data-section="conditions"><span class="anchor-alias" id="적용-조건과-미확인" aria-hidden="true"></span><h2 id="conditions">적용 조건과 미확인<a class="heading-link" href="#conditions" aria-label="적용 조건과 미확인 고정 링크">#</a></h2>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
 <thead>
 <tr>
@@ -1024,7 +1011,7 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 </tr>
 </tbody>
 </table></div>
-</section><section id="출처"><h2>출처</h2>
+</section><section data-section="references"><span class="anchor-alias" id="출처" aria-hidden="true"></span><h2 id="references">출처<a class="heading-link" href="#references" aria-label="출처 고정 링크">#</a></h2>
 <p>확인 날짜는 모두 <strong>2026-10-25 KST</strong>다. 동적 문서의 변경 가능성과 아래 명시 버전을 함께 읽는다. 링크를 열어 필요한 절로 이동한다.</p>
 <ul>
 <li id="source-s1">
@@ -1115,4 +1102,4 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 <p><strong><a class="source-ref" href="#source-s29">[S29]</a> Linux kernel parameters</strong>: <a href="https://docs.kernel.org/admin-guide/kernel-parameters.html">공식 문서</a>, console·rdinit.</p>
 </li>
 </ul>
-</section></main><footer>CSAPP 스터디 · 확인 기준일 2026-10-25 KST · <a href="2026-10-04-csapp-ch8-exceptional-control-flow.md">Markdown</a></footer></div></body></html>
+</section><footer class="docs-footer"><nav class="docs-pagination" aria-label="이전 강의와 원문"><a href="../../../chapter07/chapter-7.6.1.html">← Ch7 · Symbol Resolution</a><a href="2026-10-04-csapp-ch8-exceptional-control-flow.md">Markdown 원문</a></nav><p>확인 기준일 2026-10-25 KST</p></footer></article></main><aside class="docs-outline"><nav aria-label="이 문서에서"><p class="docs-nav-title">이 문서에서</p><ul><li><a href="#summary" data-section="summary">요약과 학습 지도</a></li><li><a href="#foundations" data-section="foundations">기초 개념과 교재 대응</a></li><li><a href="#exceptions" data-section="exceptions">8.1 Exceptions</a></li><li><a href="#processes" data-section="processes">8.2 Processes: 실행 흐름</a></li><li><a href="#address-space" data-section="address-space">8.2.3 Private Address Space</a></li><li><a href="#modes" data-section="modes">8.2.4 User and Kernel Modes</a></li><li><a href="#runtimes" data-section="runtimes">보충: 서버 동시성과 런타임</a></li><li><a href="#labs" data-section="labs">LAB와 적용 로드맵</a></li><li class="nested"><a href="#lab-debugging" data-section="lab-debugging">실습 디버깅 사례</a></li><li><a href="#conditions" data-section="conditions">적용 조건과 미확인</a></li><li><a href="#references" data-section="references">출처</a></li></ul></nav></aside></div></body></html>

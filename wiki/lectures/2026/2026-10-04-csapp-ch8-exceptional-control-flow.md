@@ -33,7 +33,7 @@ source_url: https://i.hyeon.me/csapp
 - [8.2.4 User and Kernel Modes](#824-user-and-kernel-modes)
 - [보충: 서버 동시성과 런타임](#보충-서버-동시성과-런타임)
 - [LAB와 적용 로드맵](#lab와-적용-로드맵)
-- [실습 디버깅 사례](#심층-사례-strace-관측-실패-디버깅)
+  - [실습 디버깅 사례](#lab-debugging)
 - [적용 조건과 미확인](#적용-조건과-미확인)
 - [출처](#출처)
 
@@ -342,7 +342,7 @@ ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지
 - **fault 뒤 같은 명령어를 재실행하는 이유는?** 원인을 해결한 뒤 해당 메모리 접근 등을 다시 수행하기 위해서다.
 - **Go에서 P와 CPU 코어는?** P는 runtime 자원이다. 실제 코어 실행 배치는 OS scheduler와 실행 환경에 따른다.
 
-## 심층 사례: strace 관측 실패 디버깅
+### 심층 사례: strace 관측 실패 디버깅
 
 [사실][OBSERVED] 프로그램은 출력했지만 syscall trace가 비어 있었다. Orb의 기존 Ubuntu amd64에서 재현한 뒤, **x86-64 커널을 부팅한 QEMU에서 전체 LAB을 두 번 통과했다.**
 
@@ -350,9 +350,9 @@ ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지
 
 표기: **[관측]**은 실제 실행, **[공식]**은 1차 자료, **[가설]**은 추론, **[결정]**은 조치다. **[판정]**·**[해석]**은 관측에 대한 작성자 설명이다. 예상은 EXPECTED로 표시한다.
 
-### 1. 먼저 무엇을 검증하려 했는가
+#### 1. 먼저 무엇을 검증하려 했는가
 
-#### LAB의 목표
+##### LAB의 목표
 
 학습 목표는 Linux 프로그램이 커널 기능을 호출하는 경계를 직접 보는 것이다.
 다음 세 예제를 사용했다.
@@ -375,7 +375,7 @@ ssize_t written = write(STDOUT_FILENO, message, sizeof message - 1);
 문자열은 newline을 포함해 13바이트다. 전체 코드의 반환값 검사는 이 짧은 출력이 성공했는지 확인한다.
 일반적인 출력 코드는 partial write와 `EINTR`도 처리해야 한다. [공식: write(2)](https://man7.org/linux/man-pages/man2/write.2.html)
 
-#### 성공 조건을 구체적인 문장으로 쓰기
+##### 성공 조건을 구체적인 문장으로 쓰기
 
 | 검사 | 성공 조건 |
 |---|---|
@@ -386,7 +386,7 @@ ssize_t written = write(STDOUT_FILENO, message, sizeof message - 1);
 
 `./hello`의 성공은 두 번째 행까지의 근거다. syscall 관측에는 세 번째 행의 출력이 필요하다.
 
-### 2. strace는 어떤 경계를 관측하는가
+#### 2. strace는 어떤 경계를 관측하는가
 
 **[공식]** `ptrace`는 한 프로세스가 다른 프로세스의 실행과 레지스터 등을 관측·제어할 수 있게 하는
 Linux 인터페이스다. syscall tracing과 debugger 구현에 사용한다.
@@ -395,7 +395,7 @@ Linux 인터페이스다. syscall tracing과 debugger 구현에 사용한다.
 **[공식]** strace는 프로그램의 syscall과 signal을 추적한다.
 [프로젝트 문서](https://strace.io/)와 [strace(1)](https://man7.org/linux/man-pages/man1/strace.1.html)
 
-#### ELI10: 달리는 차와 계기판
+##### ELI10: 달리는 차와 계기판
 
 자동차가 움직이는지 확인하는 일과 계기판이 속도를 정확하게 표시하는지 확인하는 일은 서로 다른 검사다.
 프로그램의 출력은 차가 움직였다는 관측에, strace 출력은 계기판의 관측에 대응한다.
@@ -403,9 +403,9 @@ Linux 인터페이스다. syscall tracing과 debugger 구현에 사용한다.
 
 ![프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg)
 
-### 3. 첫 증상: 출력은 있고 trace는 없다
+#### 3. 첫 증상: 출력은 있고 trace는 없다
 
-#### 기대한 결과
+##### 기대한 결과
 
 다음은 EXPECTED 예시다. 공백 정렬은 strace 버전에 따라 달라질 수 있다.
 
@@ -414,7 +414,7 @@ write(1, "hello, world\n", 13) = 13
 exit_group(0)                  = ?
 ```
 
-#### 실제 관측
+##### 실제 관측
 
 **[관측]** OrbStack Docker의 Linux/amd64 환경에서 hello 프로그램은 실행됐다.
 필터링된 trace에는 필요한 syscall 행이 나타나지 않아 LAB이 멈췄다.
@@ -435,9 +435,9 @@ hello, world
 ARM64 통과는 스크립트가 적어도 한 환경에서 정상 동작했다는 근거다.
 x86-64 전체 환경에서의 정확성을 보장하는 근거는 별도 검사가 필요하다.
 
-### 4. orb CLI로 기존 Ubuntu를 직접 확인했다
+#### 4. orb CLI로 기존 Ubuntu를 직접 확인했다
 
-#### 환경을 먼저 목록화한다
+##### 환경을 먼저 목록화한다
 
 실제로 사용한 조회 명령은 다음과 같다.
 
@@ -453,7 +453,7 @@ orb -m ubuntu sh -c 'command -v gcc; command -v strace; command -v python3'
 `orbctl info`는 Ubuntu 25.04, architecture amd64를 표시했다.
 처음에는 Python만 있었고 GCC와 strace가 없었다.
 
-#### 첫 실패는 도구 부재였다
+##### 첫 실패는 도구 부재였다
 
 ```text
 verify.sh: gcc: not found
@@ -472,7 +472,7 @@ orb -m ubuntu -u root sh -c \
 orb -m ubuntu sh examples/0002-exceptional-control-flow/verify.sh
 ```
 
-#### 도구 설치 뒤의 실패를 따로 기록한다
+##### 도구 설치 뒤의 실패를 따로 기록한다
 
 **[관측]** GCC 14.2.0·strace 6.14가 준비된 뒤에도 LAB은 exit 1이었다.
 [Orb amd64 로그](../../../validation/ch8/2026-10-25/lab-orb-amd64.txt):
@@ -484,7 +484,7 @@ strace -- version 6.14
 hello, world
 ```
 
-#### 예제를 더 작게 줄였다
+##### 예제를 더 작게 줄였다
 
 ```sh
 orb -m ubuntu strace -e trace=write,exit_group /bin/echo hello
@@ -508,7 +508,7 @@ hello
 이 메시지만으로 프로그램이 실제 x32 ABI로 반복 전환했다고 결론 내리지 않았다.
 관측 도구가 보고한 상태와 실제 target 상태를 대조할 추가 근거가 필요하기 때문이다.
 
-### 5. 왜 uname의 x86_64만으로 충분하지 않았는가
+#### 5. 왜 uname의 x86_64만으로 충분하지 않았는가
 
 **[관측]** 다음 설정과 등록 상태를 조회했다.
 
@@ -530,7 +530,7 @@ orb -m ubuntu cat /proc/sys/fs/binfmt_misc/rosetta
 
 ![amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg)
 
-### 6. 가설을 어떻게 좁혔는가
+#### 6. 가설을 어떻게 좁혔는가
 
 | 가설 | 확인 방법 | 실제 결과 | 그때의 판단 |
 |---|---|---|---|
@@ -554,7 +554,7 @@ grep -E 'write\(1, "hello, world\\n", 13\)[[:space:]]+= 13' trace.txt
 **[판정]** 프로그램 실행, trace 생성, trace 해석, 검사 스크립트의 포맷 가정을 나눠야 한다.
 이번 사례에서는 공백 비교와 trace 누락을 각각 수정·조사했다.
 
-### 7. 왜 QEMU full-system을 선택했는가
+#### 7. 왜 QEMU full-system을 선택했는가
 
 **[목표]** x86-64 Linux의 syscall·프로세스·mapping LAB을 실제로 통과시키고 근거를 남기는 것이다.
 이 단계의 목표는 Orb 내부 구현의 결함 위치를 찾는 것과 구분했다.
@@ -577,9 +577,9 @@ TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이
 이 비교에서는 커널·부팅 방식 등 여러 조건이 함께 바뀐다.
 따라서 특정 Rosetta 함수나 특정 커널 코드가 원인이라고 분리해 증명한 실험으로 해석하지 않는다.
 
-### 8. QEMU 환경을 어떻게 만들었는가
+#### 8. QEMU 환경을 어떻게 만들었는가
 
-#### 용어 세 개
+##### 용어 세 개
 
 | 용어 | 이번 작업에서의 의미 |
 |---|---|
@@ -587,7 +587,7 @@ TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이
 | initramfs | 커널이 초기 파일시스템으로 사용할 cpio archive |
 | init | 커널이 처음 실행할 사용자 프로그램. 이번 guest는 작은 전용 init 사용 |
 
-#### 구성 순서와 이유
+##### 구성 순서와 이유
 
 1. **기존 Dockerfile로 amd64 LAB image를 준비한다.** GCC·strace·Python·예제의 사용자 공간 구성을 재사용한다.
 2. **image의 파일 트리를 export한다.** Docker를 rootfs를 만드는 도구로 사용한다.
@@ -629,7 +629,7 @@ python3 tools/ch8/qemu-lab.py /tmp/csapp-x86-result.txt
 완료 시 init은 결과 marker를 출력하고 대기하며, host의 실행 도구가 QEMU process를 종료한다.
 실제 host의 shutdown·reboot는 실행하지 않는다.
 
-### 9. 실제로 무엇을 확인했는가
+#### 9. 실제로 무엇을 확인했는가
 
 **[관측]** 첫 실행의 핵심 결과다. 주소·PID·PFN은 그 실행의 값이다.
 
@@ -666,16 +666,16 @@ CSAPP_QEMU_EXIT=0
 kernel URL·SHA-256·image ID·QEMU 버전은 [환경 기록](../../../validation/ch8/2026-10-25/x86-system-environment.json)에 있다.
 현재 재현 도구의 kernel URL과 Debian package는 업데이트될 수 있다. 과거와 동일한 바이트를 재현하려면 이 기록의 hash·image ID도 대조해야 한다.
 
-### 10. 해결한 범위와 남은 질문
+#### 10. 해결한 범위와 남은 질문
 
-#### 확인된 결론
+##### 확인된 결론
 
 - Orb CLI의 기존 Ubuntu amd64를 실제로 시도했고 tracing 증상을 재현했다.
 - x86-64 커널을 포함한 QEMU full-system에서 같은 LAB을 두 번 통과했다.
 - x86-64 syscall LAB의 관측 공백을 대체 실행 경로로 해소했다.
 - 글로벌 Rosetta 설정은 유지했다.
 
-#### 근본 원인에 대한 현재 판단
+##### 근본 원인에 대한 현재 판단
 
 **[가설]** 해당 Orb amd64 번역 실행과 syscall tracing 사이의 호환성 문제가 유력한 조사 방향이다.
 근거는 예제를 줄여도 유지된 증상, 두 strace 버전에서의 재현, 실제 번역 설정,
@@ -688,7 +688,7 @@ OrbStack·Rosetta·strace의 더 작은 재현 코드와 버전별 대조가 후
 **[중단 기준]** 이 작업의 LAB 검증 목표는 충족됐다.
 Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 이어갈 수 있다.
 
-### 11. 다른 문제에 적용하는 디버깅 순서
+#### 11. 다른 문제에 적용하는 디버깅 순서
 
 1. **성공 조건을 쪼갠다.** 실행·관측·해석의 각 결과가 무엇이어야 하는지 적는다.
 2. **도구와 환경을 목록화한다.** 실행 파일 경로, 버전, ISA, 커널, 권한, 번역 계층을 확인한다.
@@ -699,12 +699,13 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 7. **재실행 가능한 근거를 남긴다.** 명령·환경·원본 로그·종료 코드·성공 조건을 보관한다.
 8. **결론의 범위를 제한한다.** 검증 경로 확보와 도구 자체의 원인 규명을 각각 보고한다.
 
-#### 디버깅 사례 확인 질문
+##### 디버깅 사례 확인 질문
 
 - **프로그램이 출력하고 종료 코드 0이면 LAB도 성공인가?** LAB이 요구한 trace와 상태 검사까지 확인한다.
 - **uname이 x86_64면 ptrace 호환성도 확인된 것인가?** 실제 tracing 결과와 커널·번역 실행 경로를 함께 확인한다.
 - **QEMU에서 통과하면 Rosetta 결함을 확정할 수 있는가?** 여러 환경 조건이 함께 바뀌었으므로 구체적인 결함 위치는 추가 실험으로 좁힌다.
 - **왜 동일 PID·주소·PFN을 기대하지 않는가?** 실행마다 변하는 값이며 검사의 목적은 관계·권한·동작을 확인하는 데 있다.
+
 
 
 ## 적용 조건과 미확인

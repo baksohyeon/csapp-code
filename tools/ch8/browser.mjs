@@ -38,16 +38,17 @@ for(const theme of ['light','dark']){
     e.scrollLeft=100;return {overflow:e.scrollWidth>e.clientWidth+1,scrolled:e.scrollLeft>0};
    });
    const brokenAnchors=[...document.querySelectorAll('a[href^="#"]')].filter(e=>!document.getElementById(decodeURI(e.getAttribute('href').slice(1)))).map(e=>e.getAttribute('href'));
-   return {pageOverflow:Math.max(0,root.scrollWidth-root.clientWidth),ellipsisDeclarations:ellipsis.length,truncateCount:clipped.length,scrollY:moved,documentHeight:root.scrollHeight,figures,tables,brokenAnchors,iframes:document.querySelectorAll('iframe').length,sectionCount:document.querySelectorAll('main>section').length};
+   return {pageOverflow:Math.max(0,root.scrollWidth-root.clientWidth),ellipsisDeclarations:ellipsis.length,truncateCount:clipped.length,scrollY:moved,documentHeight:root.scrollHeight,figures,tables,brokenAnchors,iframes:document.querySelectorAll('iframe').length,sectionCount:document.querySelectorAll('.docs-article>section').length};
   });
-  await page.locator('.toc a[href="#82-processes-실행-흐름"]').click();
+  if(width<1344) await page.locator('.toc').evaluate(e=>e.open=true);
+  await page.locator(width<1344?'.toc a[href="#processes"]':'.docs-outline a[href="#processes"]').click();
   await page.waitForTimeout(100);
-  metrics.anchorNavigation=await page.evaluate(()=>location.hash==='#82-processes-실행-흐름'||decodeURI(location.hash)==='#82-processes-실행-흐름');
+  metrics.anchorNavigation=await page.evaluate(()=>location.hash==='#processes');
   await page.evaluate(()=>{document.querySelectorAll('.table-wrap').forEach(e=>e.scrollLeft=0);window.scrollTo(0,0);});
   const screenshot=`${width}x${height}-${theme}.jpg`;
   await page.screenshot({path:path.join(out,screenshot),type:'jpeg',quality:75});
   if(width===375){
-   for(const id of ['81-exceptions','823-private-address-space','lab와-적용-로드맵','심층-사례-strace-관측-실패-디버깅']){
+   for(const id of ['exceptions','address-space','labs','lab-debugging']){
     await page.locator(`[id="${id}"]`).evaluate(e=>e.scrollIntoView({block:'start'}));
     await page.screenshot({path:path.join(out,`${id}-${theme}.jpg`),type:'jpeg',quality:75});
    }
