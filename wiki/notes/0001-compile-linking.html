@@ -1,0 +1,124 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>컴파일과 링커 | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../assets/site/tokens.css"><link rel="stylesheet" href="../assets/site/docs.css"><link rel="stylesheet" href="../assets/site/github-dark.css"><script defer src="../assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../">CSAPP Wiki</a></li><li aria-current="page">컴파일과 링커</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><p class="docs-kicker">학습 기록 · 2025-11-26</p><h1>컴파일과 링커</h1>
+<p><img src="../assets/0001/image-0001-00.png" alt="image-0001-00"></p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-1" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-1" class="hljs language-bash"><span class="hljs-comment"># -o 는 출력 파일 이름을 지정하는 옵션, 없으면 a.out 으로 생성된다.</span>
+<span class="hljs-comment"># 컴파일 후 실행 파일 생성</span>
+$ gcc hello.c -o hello
+$ ./hello
+Hello, World!
+</code></pre></div>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-2" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-2" class="hljs language-bash"><span class="hljs-comment"># -c 는 링킹 없이 컴파일만 하고, 실행 파일 대신 오브젝트 파일(.o)을 생성한다.</span>
+$ gcc -c hello.c
+$ <span class="hljs-built_in">ls</span>
+hello.c hello.o
+</code></pre></div>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-3" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-3" class="hljs language-bash"><span class="hljs-comment"># -S 는 컴파일만 하고 어셈블리 코드 파일(.s)을 생성한다.</span>
+$ gcc -S hello.c
+$ <span class="hljs-built_in">ls</span>
+hello.c hello.s
+</code></pre></div>
+<h2 id="link-time-error-링크-타임-에러">Link Time Error (링크 타임 에러)</h2>
+<p>Link time error는 컴파일은 성공했지만, 링킹 단계에서 발생하는 오류이다. 주로 함수나 변수의 정의를 찾을 수 없을 때 발생한다.</p>
+<h3 id="링크-타임-에러가-발생하는-경우">링크 타임 에러가 발생하는 경우</h3>
+<ol>
+<li><strong>함수 선언만 있고 정의가 없는 경우</strong></li>
+<li><strong>외부 라이브러리를 링크하지 않은 경우</strong></li>
+<li><strong>심볼 이름이 맞지 않는 경우</strong></li>
+</ol>
+<h3 id="실제-예제로-링크-타임-에러-확인하기">실제 예제로 링크 타임 에러 확인하기</h3>
+<p><a href="../../examples/0001-compile-linking/">examples/0001-compile-linking</a>에 있는 <code>hello.c</code>와 <code>sum.c</code>를 사용하여 링크 타임 에러를 확인해보자.</p>
+<h4 id="1-helloc만-컴파일하는-경우-링크-에러-발생">1. hello.c만 컴파일하는 경우 (링크 에러 발생)</h4>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-4" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-4" class="hljs language-bash"><span class="hljs-comment"># hello.c만 컴파일하면 sum 함수의 정의를 찾을 수 없어서 링크 에러 발생</span>
+$ gcc hello.c -o hello
+Undefined symbols <span class="hljs-keyword">for</span> architecture arm64:
+  <span class="hljs-string">&quot;_sum&quot;</span>, referenced from:
+      _main <span class="hljs-keyword">in</span> hello-xxxxxx.o
+ld: symbol(s) not found <span class="hljs-keyword">for</span> architecture arm64
+clang: error: linker <span class="hljs-built_in">command</span> failed with <span class="hljs-built_in">exit</span> code 1 (use -v to see invocation)
+</code></pre></div>
+<p>(macOS Apple clang 기준. Linux gcc에서는 <code>undefined reference to `sum'</code> +
+<code>collect2: error: ld returned 1 exit status</code> 형태로 나온다.)</p>
+<p><strong>왜 에러가 발생할까?</strong></p>
+<ul>
+<li><code>hello.c</code>에서 <code>sum</code> 함수를 선언(<code>int sum(int num);</code>)했지만</li>
+<li>실제 구현은 <code>sum.c</code>에 있어서 링커가 <code>sum</code> 함수의 정의를 찾을 수 없음</li>
+</ul>
+<h4 id="2-개별-컴파일-후-링킹하는-방법">2. 개별 컴파일 후 링킹하는 방법</h4>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-5" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-5" class="hljs language-bash"><span class="hljs-comment"># 각각 오브젝트 파일로 컴파일 (문제없음)</span>
+$ gcc -c hello.c    <span class="hljs-comment"># hello.o 생성</span>
+$ gcc -c sum.c      <span class="hljs-comment"># sum.o 생성</span>
+
+<span class="hljs-comment"># 오브젝트 파일들을 링크하여 실행파일 생성</span>
+$ gcc hello.o sum.o -o hello
+$ ./hello
+Hello, World! 4950
+</code></pre></div>
+<h4 id="3-한-번에-컴파일하고-링킹하는-방법">3. 한 번에 컴파일하고 링킹하는 방법</h4>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-6" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-6" class="hljs language-bash"><span class="hljs-comment"># 모든 소스파일을 한번에 컴파일 및 링킹</span>
+$ gcc hello.c sum.c -o hello
+$ ./hello
+Hello, World! 4950
+</code></pre></div>
+<h3 id="링크-타임-에러-vs-컴파일-타임-에러">링크 타임 에러 vs 컴파일 타임 에러</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 표"><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>컴파일 타임 에러</th>
+<th>링크 타임 에러</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>발생 시점</strong></td>
+<td>소스코드를 오브젝트 파일로 변환할 때</td>
+<td>오브젝트 파일들을 실행파일로 결합할 때</td>
+</tr>
+<tr>
+<td><strong>주요 원인</strong></td>
+<td>문법 오류, 타입 불일치, 선언되지 않은 변수 등</td>
+<td>정의되지 않은 함수/변수, 라이브러리 누락 등</td>
+</tr>
+<tr>
+<td><strong>에러 메시지</strong></td>
+<td><code>error: undeclared identifier</code></td>
+<td><code>undefined reference to</code> 또는 <code>undefined symbols</code></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="forward-declaration의-역할">Forward Declaration의 역할</h3>
+<div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="document-code-7" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="document-code-7" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">sum</span><span class="hljs-params">(<span class="hljs-type">int</span> num)</span>; <span class="hljs-comment">// forward declaration</span>
+</code></pre></div>
+<ul>
+<li><strong>컴파일 단계</strong>: 컴파일러에게 &quot;sum이라는 함수가 존재한다&quot;고 알려줌</li>
+<li><strong>링킹 단계</strong>: 링커가 실제 sum 함수의 구현을 찾아서 연결함</li>
+<li><strong>장점</strong>: 함수의 정의 순서에 상관없이 사용 가능</li>
+</ul>
+<h2 id="실습">실습</h2>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-8" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-8" class="hljs language-bash"><span class="hljs-comment"># 1. 링크 에러 발생시키기</span>
+$ gcc hello.c -o hello
+
+<span class="hljs-comment"># 2. 올바른 링킹</span>
+$ gcc hello.c sum.c -o hello
+$ ./hello
+
+<span class="hljs-comment"># 3. 개별 컴파일 후 링킹</span>
+$ gcc -c hello.c
+$ gcc -c sum.c  
+$ gcc hello.o sum.o -o hello
+$ ./hello
+</code></pre></div>
+<p><img src="../assets/0001/image-0001-01.png" alt="image-0001-01"></p>
+<h2 id="실습-산출물에-대하여">실습 산출물에 대하여</h2>
+<p><code>examples/0001-compile-linking/</code>의 <code>hello.o</code>, <code>sum.o</code>는 이 노트의 링킹 실습이 직접
+참조하는 오브젝트 파일이라 레포에 함께 추적한다. CPU 아키텍처/플랫폼에 의존하는
+산출물이므로 다른 환경에서는 아래 명령으로 재생성한다:</p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-9" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-9" class="hljs language-bash"><span class="hljs-built_in">cd</span> examples/0001-compile-linking
+gcc -c hello.c   <span class="hljs-comment"># hello.o</span>
+gcc -c sum.c     <span class="hljs-comment"># sum.o</span>
+</code></pre></div>
+<h2 id="관련">관련</h2>
+<ul>
+<li>토픽: <a href="../topics/compile-linking.html">컴파일 · 링킹 (Compile &amp; Linking)</a></li>
+<li>실습: <a href="../../examples/0001-compile-linking/">examples/0001-compile-linking</a></li>
+</ul>
+<footer class="docs-footer"><a href="../">← CSAPP Wiki</a> · <a href="0001-compile-linking.md">Markdown 원문</a></footer></article></main></body></html>

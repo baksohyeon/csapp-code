@@ -1,0 +1,391 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>Ch7 ELF 실습 | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../../wiki/assets/site/tokens.css"><link rel="stylesheet" href="../../wiki/assets/site/docs.css"><link rel="stylesheet" href="../../wiki/assets/site/github-dark.css"><script defer src="../../wiki/assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../../wiki/">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../../wiki/">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../../wiki/">CSAPP Wiki</a></li><li aria-current="page">Ch7 ELF 실습</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><h1>Ch7 ELF 실습</h1><p>실습 설명을 읽고 소스를 확인한다. 원본 파일 링크는 소스 텍스트를 연다.</p><details class="source-file"><summary>archive-cycle/main.c</summary><p><a href="archive-cycle/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-1" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-1" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-keyword">extern</span> <span class="hljs-type">int</span> <span class="hljs-title function_">x</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;x(3) = %d\n&quot;</span>, x(<span class="hljs-number">3</span>));
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>archive-cycle/x.c</summary><p><a href="archive-cycle/x.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-2" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-2" class="hljs language-c"><span class="hljs-keyword">extern</span> <span class="hljs-type">int</span> <span class="hljs-title function_">y</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">x</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>
+{
+    <span class="hljs-keyword">return</span> y(value) + <span class="hljs-number">1</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>archive-cycle/x_helper.c</summary><p><a href="archive-cycle/x_helper.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-3" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-3" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">x_helper</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>
+{
+    <span class="hljs-keyword">return</span> value * <span class="hljs-number">2</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>archive-cycle/y.c</summary><p><a href="archive-cycle/y.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-4" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-4" class="hljs language-c"><span class="hljs-keyword">extern</span> <span class="hljs-type">int</span> <span class="hljs-title function_">x_helper</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">y</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>
+{
+    <span class="hljs-keyword">return</span> x_helper(value) + <span class="hljs-number">10</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>aslr-pie/addresses.c</summary><p><a href="aslr-pie/addresses.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-5" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-5" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-type">int</span> stack_value = <span class="hljs-number">0</span>;
+    <span class="hljs-type">int</span> *heap_value = <span class="hljs-built_in">malloc</span>(<span class="hljs-keyword">sizeof</span>(*heap_value));
+
+    <span class="hljs-keyword">if</span> (heap_value == <span class="hljs-literal">NULL</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;main=%p stack=%p heap=%p\n&quot;</span>,
+           (<span class="hljs-type">void</span> *)&amp;main, (<span class="hljs-type">void</span> *)&amp;stack_value, (<span class="hljs-type">void</span> *)heap_value);
+    <span class="hljs-built_in">free</span>(heap_value);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>common-common/main.c</summary><p><a href="common-common/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-6" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-6" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">int</span> x;
+<span class="hljs-type">void</span> <span class="hljs-title function_">update</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    x = <span class="hljs-number">15213</span>;
+    update();
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;x = %d\n&quot;</span>, x);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>common-common/worker.c</summary><p><a href="common-common/worker.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-7" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-7" class="hljs language-c"><span class="hljs-type">int</span> x;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">update</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    x = <span class="hljs-number">15212</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>common-mismatch/main.c</summary><p><a href="common-mismatch/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-8" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-8" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">int</span> y = <span class="hljs-number">0x3b6c</span>;
+<span class="hljs-type">int</span> x = <span class="hljs-number">0x3b6d</span>;
+<span class="hljs-type">void</span> <span class="hljs-title function_">overwrite</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    overwrite();
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;x = 0x%x y = 0x%x\n&quot;</span>, x, y);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>common-mismatch/worker.c</summary><p><a href="common-mismatch/worker.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-9" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-9" class="hljs language-c"><span class="hljs-type">double</span> x;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">overwrite</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    x = <span class="hljs-number">-0.0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>common-size/large.c</summary><p><a href="common-size/large.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-10" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-10" class="hljs language-c"><span class="hljs-type">char</span> arena[<span class="hljs-number">32</span>];
+
+</code></pre></div>
+</details><details class="source-file"><summary>common-size/main.c</summary><p><a href="common-size/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-11" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-11" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-keyword">extern</span> <span class="hljs-type">char</span> arena[];
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    arena[<span class="hljs-number">31</span>] = <span class="hljs-number">42</span>;
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;arena[31]=%d\n&quot;</span>, arena[<span class="hljs-number">31</span>]);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>common-size/small.c</summary><p><a href="common-size/small.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-12" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-12" class="hljs language-c"><span class="hljs-type">char</span> arena[<span class="hljs-number">4</span>];
+
+</code></pre></div>
+</details><details class="source-file"><summary>compiler-driver/main.c</summary><p><a href="compiler-driver/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-13" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-13" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-keyword">extern</span> <span class="hljs-type">int</span> <span class="hljs-title function_">foo</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-type">int</span> input;
+
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">scanf</span>(<span class="hljs-string">&quot;%d&quot;</span>, &amp;input) != <span class="hljs-number">1</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;output is %d\n&quot;</span>, foo(input));
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>compiler-driver/utils.c</summary><p><a href="compiler-driver/utils.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-14" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-14" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">foo</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>
+{
+    <span class="hljs-keyword">return</span> value * value * value;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>duplicate-function/main.c</summary><p><a href="duplicate-function/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-15" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-15" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">helper</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+}
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> helper() != <span class="hljs-number">1</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>duplicate-function/other.c</summary><p><a href="duplicate-function/other.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-16" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-16" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">helper</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>explicit-weak/main.c</summary><p><a href="explicit-weak/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-17" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-17" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">int</span> hook = <span class="hljs-number">7</span>;
+<span class="hljs-type">int</span> <span class="hljs-title function_">provider_value</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;hook=%d provider-sees=%d\n&quot;</span>, hook, provider_value());
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>explicit-weak/provider.c</summary><p><a href="explicit-weak/provider.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-18" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-18" class="hljs language-c"><span class="hljs-type">int</span> hook __attribute__((weak)) = <span class="hljs-number">3</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">provider_value</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> hook;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>lto-dead-code/main.c</summary><p><a href="lto-dead-code/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-19" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-19" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">cube</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;cube(3) = %d\n&quot;</span>, cube(<span class="hljs-number">3</span>));
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>lto-dead-code/math.c</summary><p><a href="lto-dead-code/math.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-20" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-20" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">cube</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span>
+{
+    <span class="hljs-keyword">return</span> x * x * x;
+}
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">unused_helper</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span>
+{
+    <span class="hljs-keyword">return</span> x + <span class="hljs-number">1000</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>static-internal/main.c</summary><p><a href="static-internal/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-21" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-21" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">static</span> <span class="hljs-type">int</span> x = <span class="hljs-number">11</span>;
+<span class="hljs-type">int</span> <span class="hljs-title function_">other_value</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;main.x=%d other.x=%d\n&quot;</span>, x, other_value());
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>static-internal/other.c</summary><p><a href="static-internal/other.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-22" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-22" class="hljs language-c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> x = <span class="hljs-number">22</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">other_value</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> x;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>static-library/addvec.c</summary><p><a href="static-library/addvec.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-23" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-23" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;vector.h&quot;</span></span>
+
+<span class="hljs-type">int</span> addvec_calls;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">addvec</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">int</span> *left, <span class="hljs-type">const</span> <span class="hljs-type">int</span> *right, <span class="hljs-type">int</span> *result, <span class="hljs-type">int</span> length)</span>
+{
+    <span class="hljs-type">int</span> index;
+
+    ++addvec_calls;
+    <span class="hljs-keyword">for</span> (index = <span class="hljs-number">0</span>; index &lt; length; ++index) {
+        result[index] = left[index] + right[index];
+    }
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>static-library/main.c</summary><p><a href="static-library/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-24" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-24" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;vector.h&quot;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-type">int</span> left[<span class="hljs-number">2</span>] = {<span class="hljs-number">1</span>, <span class="hljs-number">2</span>};
+    <span class="hljs-type">int</span> right[<span class="hljs-number">2</span>] = {<span class="hljs-number">3</span>, <span class="hljs-number">4</span>};
+    <span class="hljs-type">int</span> result[<span class="hljs-number">2</span>];
+
+    addvec(left, right, result, <span class="hljs-number">2</span>);
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;result = [%d, %d]\n&quot;</span>, result[<span class="hljs-number">0</span>], result[<span class="hljs-number">1</span>]);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>static-library/multvec.c</summary><p><a href="static-library/multvec.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-25" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-25" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;vector.h&quot;</span></span>
+
+<span class="hljs-type">int</span> multvec_calls;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">multvec</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">int</span> *left, <span class="hljs-type">const</span> <span class="hljs-type">int</span> *right, <span class="hljs-type">int</span> *result, <span class="hljs-type">int</span> length)</span>
+{
+    <span class="hljs-type">int</span> index;
+
+    ++multvec_calls;
+    <span class="hljs-keyword">for</span> (index = <span class="hljs-number">0</span>; index &lt; length; ++index) {
+        result[index] = left[index] * right[index];
+    }
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>static-library/vector.h</summary><p><a href="static-library/vector.h">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-26" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-26" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> VECTOR_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> VECTOR_H</span>
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">addvec</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">int</span> *left, <span class="hljs-type">const</span> <span class="hljs-type">int</span> *right, <span class="hljs-type">int</span> *result, <span class="hljs-type">int</span> length)</span>;
+<span class="hljs-type">void</span> <span class="hljs-title function_">multvec</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">int</span> *left, <span class="hljs-type">const</span> <span class="hljs-type">int</span> *right, <span class="hljs-type">int</span> *result, <span class="hljs-type">int</span> length)</span>;
+
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+
+</code></pre></div>
+</details><details class="source-file"><summary>storage-layout/symbols.c</summary><p><a href="storage-layout/symbols.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-27" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-27" class="hljs language-c"><span class="hljs-type">int</span> tentative;
+<span class="hljs-type">int</span> zero = <span class="hljs-number">0</span>;
+<span class="hljs-type">int</span> initialized = <span class="hljs-number">7</span>;
+<span class="hljs-type">static</span> <span class="hljs-type">int</span> local_zero;
+<span class="hljs-type">static</span> <span class="hljs-type">int</span> local_initialized = <span class="hljs-number">9</span>;
+<span class="hljs-keyword">extern</span> <span class="hljs-type">int</span> only_declared;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">read_locals</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> local_zero + local_initialized;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>strong-common/main.c</summary><p><a href="strong-common/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-28" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-28" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">int</span> x = <span class="hljs-number">15213</span>;
+<span class="hljs-type">void</span> <span class="hljs-title function_">update</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    update();
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;x = %d\n&quot;</span>, x);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>strong-common/worker.c</summary><p><a href="strong-common/worker.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-29" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-29" class="hljs language-c"><span class="hljs-type">int</span> x;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">update</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    x = <span class="hljs-number">15212</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>strong-strong/main.c</summary><p><a href="strong-strong/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-30" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-30" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">int</span> conflict = <span class="hljs-number">1</span>;
+<span class="hljs-type">int</span> <span class="hljs-title function_">from_other</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;conflict=%d other=%d\n&quot;</span>, conflict, from_other());
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>strong-strong/other.c</summary><p><a href="strong-strong/other.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-31" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-31" class="hljs language-c"><span class="hljs-type">int</span> conflict = <span class="hljs-number">2</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">from_other</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> conflict;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-function/default.c</summary><p><a href="weak-function/default.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-32" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-32" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">foo</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> __<span class="hljs-title function_">attribute__</span><span class="hljs-params">((weak))</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">foo</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-function/main.c</summary><p><a href="weak-function/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-33" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-33" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">foo</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;foo() = %d\n&quot;</span>, foo());
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-function/override.c</summary><p><a href="weak-function/override.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-34" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-34" class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">foo</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-undefined/main.c</summary><p><a href="weak-undefined/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-35" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-35" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-keyword">extern</span> <span class="hljs-type">void</span> <span class="hljs-title function_">optional_hook</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> __<span class="hljs-title function_">attribute__</span><span class="hljs-params">((weak))</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-keyword">if</span> (optional_hook != <span class="hljs-literal">NULL</span>) {
+        optional_hook();
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;optional_hook: absent&quot;</span>);
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-undefined/provider.c</summary><p><a href="weak-undefined/provider.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-36" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-36" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">optional_hook</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;optional_hook: present&quot;</span>);
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-weak/left.c</summary><p><a href="weak-weak/left.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-37" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-37" class="hljs language-c"><span class="hljs-type">int</span> choice __attribute__((weak)) = <span class="hljs-number">11</span>;
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-weak/main.c</summary><p><a href="weak-weak/main.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-38" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-38" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+
+<span class="hljs-keyword">extern</span> <span class="hljs-type">int</span> choice;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;choice=%d\n&quot;</span>, choice);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>weak-weak/right.c</summary><p><a href="weak-weak/right.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-39" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-39" class="hljs language-c"><span class="hljs-type">int</span> choice __attribute__((weak)) = <span class="hljs-number">22</span>;
+
+</code></pre></div>
+</details><footer class="docs-footer"><a href="../../wiki/">← CSAPP Wiki</a></footer></article></main></body></html>

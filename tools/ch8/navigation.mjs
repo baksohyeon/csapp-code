@@ -12,7 +12,7 @@ const context=await browser.newContext({viewport:{width:1440,height:900},reduced
 const page=await context.newPage();const results=[];
 try{
  let response=await page.goto(base);assert.equal(response.status(),200);
- assert.equal(await page.locator('h1').innerText(),'컴퓨터 시스템 학습 문서');
+ await page.waitForURL(new URL('wiki/',base).href);assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');
  await page.getByRole('link',{name:'Ch8 · Exceptional Control Flow',exact:true}).click();
  assert.equal(page.url(),url);
  await page.locator('.docs-hero-nav a').filter({hasText:'Ch7'}).click();
@@ -31,7 +31,7 @@ try{
  assert.equal(await page.locator('[id="심층-사례-strace-관측-실패-디버깅"]').count(),1);
  await page.goto(new URL('wiki/notes/2026-10-25-x86-strace-debugging.html',base).href);
  await page.waitForURL(url+'#lab-debugging');
- await page.locator('.docs-header').getByRole('link',{name:'전체 목차',exact:true}).click();
+ await page.locator('.docs-header').getByRole('link',{name:'학습 목차',exact:true}).click();
  assert.equal(page.url(),new URL('wiki/',base).href);
  assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');
  response=await page.request.get(new URL('this-page-does-not-exist',base).href);assert.equal(response.status(),404);

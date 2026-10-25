@@ -1,4 +1,4 @@
-import {readFile,writeFile} from 'node:fs/promises';
+import {readFile,writeFile,readdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 const base='https://raspberrypi.bobcat-fort.ts.net/csapp/';
@@ -8,8 +8,10 @@ const files=[
  ...['abstraction-layers','exception-flow','concurrency-timeline','virtual-address-space','user-kernel-mode','blocking-io','go-gmp'].map(n=>`wiki/assets/${stem}/${n}.svg`),
  'wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html',
  'chapter07/chapter-7.6.1.html','README.md','index.html','wiki/index.html',
- ...['tokens.css','docs.css','docs.js'].map(n=>`wiki/assets/site/${n}`),
+ ...['tokens.css','docs.css','docs.js','github-dark.css','highlight-LICENSE'].map(n=>`wiki/assets/site/${n}`),
 ];
+for(const dir of ['wiki/notes','wiki/topics','wiki/type'])for(const name of await readdir(dir))if(name.endsWith('.html'))files.push(dir+'/'+name);
+files.push('examples/0001-compile-linking/index.html','examples/0002-exceptional-control-flow/index.html','chapter07/examples/index.html');
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const results=await Promise.all(files.map(async file=>{
  const r=await fetch(new URL(file,base),{signal:AbortSignal.timeout(30000)});

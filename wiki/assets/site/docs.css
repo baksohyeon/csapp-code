@@ -61,10 +61,6 @@ body.docs-page { margin: 0; color: var(--docs-text); background: var(--docs-bg);
 .docs-article blockquote { margin: var(--docs-space-6) 0; padding: var(--docs-space-2) var(--docs-space-4); border-left: 4px solid var(--docs-note-border); background: var(--docs-note-bg); }
 .docs-article blockquote.warning { background: var(--docs-warn-bg); border-color: var(--docs-warn-border); }
 .source-ref { font-size: .875em; }
-.hljs-keyword, .hljs-type, .hljs-built_in { color: var(--docs-code-keyword); }
-.hljs-string, .hljs-number { color: var(--docs-code-string); }
-.hljs-comment { color: var(--docs-code-comment); }
-.hljs-meta { color: var(--docs-code-meta); }
 .docs-footer { margin-top: var(--docs-space-12); border-top: 1px solid var(--docs-border); padding-top: var(--docs-space-6); color: var(--docs-muted); font-size: var(--docs-text-sm); }
 .docs-pagination { display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--docs-space-4); }
 .docs-home { max-width: var(--docs-reading-width); margin: auto; padding: var(--docs-space-8) var(--docs-space-6); }
@@ -121,8 +117,6 @@ body.docs-page { background: linear-gradient(90deg, color-mix(in srgb, var(--doc
 .docs-grid { max-width: 70rem; padding-top: 0; gap: 1.75rem; }
 .docs-article section { margin: 0 0 1.5rem; padding: clamp(1.25rem, 3vw, 2rem); background: var(--docs-surface); border: 1px solid var(--docs-border); border-radius: 1.25rem; box-shadow: var(--docs-shadow); }
 .docs-article h2, .docs-article section[data-section="summary"] > h2 { margin: 0 0 1.5rem; padding: 0; border: 0; font-size: clamp(1.5rem, 2.5vw, 2rem); letter-spacing: -.035em; line-height: 1.3; }
-.docs-article section { counter-increment: chapter-section; }
-.docs-article > section > h2::before { content: counter(chapter-section, decimal-leading-zero); display: inline-block; margin: .15rem .7rem 0 0; padding: .15rem .4rem; border-radius: .35rem; background: var(--docs-selected); color: var(--docs-link); font: 750 .75rem/1.4 var(--docs-mono); vertical-align: middle; letter-spacing: 0; }
 .docs-article h3 { padding-bottom: .5rem; border-bottom: 1px solid var(--docs-border); letter-spacing: -.02em; }
 .docs-article p { line-height: 1.85; }
 .docs-article figure { padding: 1rem; border: 1px solid var(--docs-border); border-radius: var(--docs-radius); background: var(--docs-panel); }
@@ -154,7 +148,20 @@ body.docs-page { background: linear-gradient(90deg, color-mix(in srgb, var(--doc
 }
 @media print { .docs-hero { width: 100%; box-shadow: none; } .docs-article section { box-shadow: none; border: 0; padding: 0; } .docs-grid { display: block; } .docs-outline { display: none; } }
 .docs-article pre { background: var(--docs-pre-bg); color: var(--docs-pre-text); border-color: var(--docs-pre-border); }
-.docs-article pre .hljs-keyword, .docs-article pre .hljs-type, .docs-article pre .hljs-built_in { color: var(--docs-pre-keyword); }
-.docs-article pre .hljs-string, .docs-article pre .hljs-number { color: var(--docs-pre-string); }
-.docs-article pre .hljs-comment { color: var(--docs-pre-comment); }
-.docs-article pre .hljs-meta { color: var(--docs-pre-meta); }
+
+/* Code uses the complete vendored GitHub syntax theme, not a partial token palette. */
+.code-block { max-width: 100%; margin: 1.5rem 0; border: 1px solid var(--docs-border); border-radius: .75rem; overflow: hidden; background: var(--docs-pre-bg); }
+.code-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem 1rem; background: var(--docs-panel); color: var(--docs-muted); font: 600 .75rem/1.6 var(--docs-mono); border-bottom: 1px solid var(--docs-border); }
+.code-copy { cursor: pointer; min-height: 2rem; padding: .25rem .65rem; border: 1px solid var(--docs-border); border-radius: .375rem; background: var(--docs-surface); color: var(--docs-text); font: inherit; }
+.docs-article .code-block pre { margin: 0; border: 0; border-radius: 0; background: #0d1117; color: #c9d1d9; padding: 1.25rem; }
+.code-block code { display: block; }
+.wiki-jump { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0 2rem; }
+.wiki-jump a { padding: .5rem .875rem; border: 1px solid var(--docs-border); border-radius: 999px; background: var(--docs-panel); text-decoration: none; font-size: .875rem; }
+.wiki-catalog h2, .reference-document h2 { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--docs-border); }
+.wiki-catalog .lecture-list .docs-kicker { font: 650 .75rem/1.6 var(--docs-mono); color: var(--docs-link); margin: 0 0 .5rem; }
+.wiki-catalog > ul a, .reference-document a { text-decoration-thickness: 1px; }
+.wiki-maintenance, .source-file { margin-top: 1.5rem; border: 1px solid var(--docs-border); padding: 1rem 1.25rem; border-radius: var(--docs-radius); background: var(--docs-panel); }
+.wiki-maintenance summary, .source-file summary { cursor: pointer; min-height: 2rem; font-weight: 650; overflow-wrap: anywhere; }
+.reference-document { min-width: 0; }
+.reference-document img { max-width: 100%; height: auto; }
+@media (max-width: 40rem) { .docs-home { padding: 1.25rem; } .docs-home .lecture-list li { padding: 1.25rem; } .code-toolbar { padding-inline: .75rem; } }

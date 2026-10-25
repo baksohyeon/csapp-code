@@ -1,0 +1,135 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>Ch8 Linux LAB | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../../wiki/assets/site/tokens.css"><link rel="stylesheet" href="../../wiki/assets/site/docs.css"><link rel="stylesheet" href="../../wiki/assets/site/github-dark.css"><script defer src="../../wiki/assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../../wiki/">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../../wiki/">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../../wiki/">CSAPP Wiki</a></li><li aria-current="page">Ch8 Linux LAB</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><h1>Ch8 Linux LAB</h1><p>실습 설명을 읽고 소스를 확인한다. 원본 파일 링크는 소스 텍스트를 연다.</p>
+<p>소스는 <code>hello.c</code>(write), <code>flows.c</code>(fork), <code>maps.c</code>(private anonymous mapping)다.
+바이너리는 임시 디렉터리에 생성하고 종료 시 삭제한다.</p>
+<p>레포 root에서:</p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-1" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-1" class="hljs language-bash">docker build --platform linux/amd64 -t csapp-ch8-lab:amd64 examples/0002-exceptional-control-flow
+docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-add=SYS_PTRACE csapp-ch8-lab:amd64
+</code></pre></div>
+<p>Linux/x86-64 native 환경의 전체 LAB 명령이다. macOS ARM64의 amd64 에뮬레이션에서는
+ptrace/strace가 syscall을 완전히 보여주지 못할 수 있다. 이 경우 아래 native ARM64 LAB을 실행하고
+관측 환경을 ARM64로 기록한다.</p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-2" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-2" class="hljs language-bash">docker build --platform linux/arm64 -t csapp-ch8-lab:arm64 examples/0002-exceptional-control-flow
+docker run --<span class="hljs-built_in">rm</span> --platform linux/arm64 --cap-add=SYS_PTRACE csapp-ch8-lab:arm64
+</code></pre></div>
+<p>필요 도구가 설치된 Linux host에서는 <code>sh examples/0002-exceptional-control-flow/verify.sh</code>로 실행한다.
+스크립트는 syscall, 부모·자식 출력, <code>rw-p</code> mapping을 검사한다. pagemap 권한 거절은 그 상태를
+출력한다. PFN 0은 권한에 의해 가려진 값일 수 있다. kernel·container 정책에 따라 ptrace 자체가
+제한되면 syscall LAB은 실패하며 결과를 생략해 성공으로 처리하지 않는다.</p>
+<p>베이스 이미지는 Debian bookworm-slim이며 패키지 업데이트에 따라 결과 환경이 달라질 수 있다.
+실행 시 kernel·ISA·GCC·strace 버전을 출력한다.</p>
+<p>Apple Silicon에서 x86-64 커널을 포함한 전체 LAB 검증:</p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-3" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-3" class="hljs language-bash">python3 tools/ch8/qemu-lab.py
+</code></pre></div>
+<p>QEMU full-system TCG로 별도 guest를 실행한다. Orb의 amd64 userspace에서 strace trace가
+불완전할 때 사용할 수 있다. guest 종료 뒤 임시 rootfs를 자동 정리한다.</p>
+<details class="source-file"><summary>flows.c</summary><p><a href="flows.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-1" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-1" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> _POSIX_C_SOURCE 200809L</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/wait.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;time.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+    setvbuf(<span class="hljs-built_in">stdout</span>, <span class="hljs-literal">NULL</span>, _IONBF, <span class="hljs-number">0</span>);
+    <span class="hljs-type">pid_t</span> child = fork();
+    <span class="hljs-keyword">if</span> (child &lt; <span class="hljs-number">0</span>) { perror(<span class="hljs-string">&quot;fork&quot;</span>); <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>; }
+    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">timespec</span> <span class="hljs-title">pause</span> =</span> {.tv_sec = <span class="hljs-number">0</span>, .tv_nsec = <span class="hljs-number">20000000</span>};
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">3</span>; ++i) {
+        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s pid=%ld step=%d\n&quot;</span>, child == <span class="hljs-number">0</span> ? <span class="hljs-string">&quot;child&quot;</span> : <span class="hljs-string">&quot;parent&quot;</span>,
+               (<span class="hljs-type">long</span>)getpid(), i);
+        nanosleep(&amp;pause, <span class="hljs-literal">NULL</span>);
+    }
+    <span class="hljs-keyword">if</span> (child &gt; <span class="hljs-number">0</span>) {
+        <span class="hljs-type">int</span> status;
+        <span class="hljs-keyword">if</span> (waitpid(child, &amp;status, <span class="hljs-number">0</span>) &lt; <span class="hljs-number">0</span>) { perror(<span class="hljs-string">&quot;waitpid&quot;</span>); <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>; }
+        <span class="hljs-keyword">return</span> WIFEXITED(status) ? WEXITSTATUS(status) : <span class="hljs-number">1</span>;
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>hello.c</summary><p><a href="hello.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-2" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-2" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+    <span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span> message[] = <span class="hljs-string">&quot;hello, world\n&quot;</span>;
+    <span class="hljs-type">ssize_t</span> written = write(STDOUT_FILENO, message, <span class="hljs-keyword">sizeof</span> message - <span class="hljs-number">1</span>);
+    <span class="hljs-keyword">return</span> written == (<span class="hljs-type">ssize_t</span>)(<span class="hljs-keyword">sizeof</span> message - <span class="hljs-number">1</span>) ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>maps.c</summary><p><a href="maps.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-3" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-3" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> _GNU_SOURCE</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/mman.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+    <span class="hljs-type">long</span> size = sysconf(_SC_PAGESIZE);
+    <span class="hljs-keyword">if</span> (size &lt;= <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+    <span class="hljs-type">char</span> *page = mmap(<span class="hljs-literal">NULL</span>, (<span class="hljs-type">size_t</span>)size, PROT_READ | PROT_WRITE,
+                      MAP_PRIVATE | MAP_ANONYMOUS, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>);
+    <span class="hljs-keyword">if</span> (page == MAP_FAILED) { perror(<span class="hljs-string">&quot;mmap&quot;</span>); <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>; }
+    page[<span class="hljs-number">0</span>] = <span class="hljs-string">&#x27;A&#x27;</span>;
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;pid=%ld page=%p value=%c\n&quot;</span>, (<span class="hljs-type">long</span>)getpid(), (<span class="hljs-type">void</span> *)page, page[<span class="hljs-number">0</span>]);
+    fflush(<span class="hljs-built_in">stdout</span>);
+    sleep(<span class="hljs-number">3</span>);
+    <span class="hljs-keyword">return</span> munmap(page, (<span class="hljs-type">size_t</span>)size) == <span class="hljs-number">0</span> ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>verify.sh</summary><p><a href="verify.sh">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-4" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-4" class="hljs language-bash"><span class="hljs-meta">#!/bin/sh</span>
+<span class="hljs-built_in">set</span> -eu
+lab_dir=$(CDPATH= <span class="hljs-built_in">cd</span> -- <span class="hljs-string">&quot;<span class="hljs-subst">$(dirname -- <span class="hljs-string">&quot;<span class="hljs-variable">$0</span>&quot;</span>)</span>&quot;</span> &amp;&amp; <span class="hljs-built_in">pwd</span>)
+lab_build=$(<span class="hljs-built_in">mktemp</span> -d)
+<span class="hljs-built_in">trap</span> <span class="hljs-string">&#x27;rm -rf &quot;$lab_build&quot;&#x27;</span> EXIT
+<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-variable">$lab_build</span>&quot;</span>
+<span class="hljs-built_in">uname</span> -srmo
+gcc --version | <span class="hljs-built_in">head</span> -1
+strace --version | <span class="hljs-built_in">head</span> -1
+<span class="hljs-keyword">for</span> name <span class="hljs-keyword">in</span> hello flows maps; <span class="hljs-keyword">do</span>
+    gcc -std=c11 -Wall -Wextra -Werror -O0 -g <span class="hljs-string">&quot;<span class="hljs-variable">$lab_dir</span>/<span class="hljs-variable">$name</span>.c&quot;</span> -o <span class="hljs-string">&quot;<span class="hljs-variable">$name</span>&quot;</span>
+<span class="hljs-keyword">done</span>
+strace -qq -e trace=write,exit_group -o trace.txt ./hello &gt; hello.txt
+<span class="hljs-built_in">cat</span> hello.txt trace.txt
+<span class="hljs-built_in">test</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(cat hello.txt)</span>&quot;</span> = <span class="hljs-string">&#x27;hello, world&#x27;</span>
+grep -E <span class="hljs-string">&#x27;write\(1, &quot;hello, world\\n&quot;, 13\)[[:space:]]+= 13&#x27;</span> trace.txt
+grep -F <span class="hljs-string">&#x27;exit_group(0)&#x27;</span> trace.txt
+./flows &gt; flows.txt
+<span class="hljs-built_in">cat</span> flows.txt
+<span class="hljs-built_in">test</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(grep -c &#x27;^parent &#x27; flows.txt)</span>&quot;</span> -eq 3
+<span class="hljs-built_in">test</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(grep -c &#x27;^child &#x27; flows.txt)</span>&quot;</span> -eq 3
+./maps &gt; maps.txt &amp;
+lab_pid=$!
+python3 - <span class="hljs-string">&quot;<span class="hljs-variable">$lab_pid</span>&quot;</span> maps.txt &lt;&lt;<span class="hljs-string">&#x27;PY&#x27;</span>
+import pathlib, struct, sys, <span class="hljs-keyword">time</span>
+pid, output = sys.argv[1:]
+<span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> range(100):
+    text = pathlib.Path(output).read_text()
+    <span class="hljs-keyword">if</span> <span class="hljs-string">&#x27;page=&#x27;</span> <span class="hljs-keyword">in</span> text:
+        <span class="hljs-built_in">break</span>
+    time.sleep(.01)
+<span class="hljs-keyword">else</span>:
+    raise SystemExit(<span class="hljs-string">&#x27;mapping process did not become ready&#x27;</span>)
+<span class="hljs-built_in">print</span>(text.strip())
+address = int(text.split(<span class="hljs-string">&#x27;page=&#x27;</span>)[1].<span class="hljs-built_in">split</span>()[0], 16)
+lines = pathlib.Path(f<span class="hljs-string">&#x27;/proc/{pid}/maps&#x27;</span>).read_text().splitlines()
+mapping = next(line <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> lines
+               <span class="hljs-keyword">if</span> int(line.split(<span class="hljs-string">&#x27;-&#x27;</span>)[0], 16) &lt;= address
+               &lt; int(line.split(<span class="hljs-string">&#x27;-&#x27;</span>)[1].<span class="hljs-built_in">split</span>()[0], 16))
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;maps:&#x27;</span>, mapping.rstrip())
+assert mapping.split()[1] == <span class="hljs-string">&#x27;rw-p&#x27;</span>, mapping
+try:
+    with open(f<span class="hljs-string">&#x27;/proc/{pid}/pagemap&#x27;</span>, <span class="hljs-string">&#x27;rb&#x27;</span>) as f:
+        import os
+        f.seek((address // os.sysconf(&#x27;SC_PAGE_SIZE&#x27;)) * 8)
+        entry, = struct.unpack(<span class="hljs-string">&#x27;Q&#x27;</span>, f.read(8))
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;pagemap: present=%d PFN=%d (PFN visibility depends on CAP_SYS_ADMIN)&#x27;</span>
+          % ((entry &gt;&gt; <span class="hljs-number">63</span>) &amp; <span class="hljs-number">1</span>, entry &amp; ((<span class="hljs-number">1</span> &lt;&lt; <span class="hljs-number">55</span>) - <span class="hljs-number">1</span>)))
+    assert (entry &gt;&gt; 63) &amp; 1, <span class="hljs-string">&#x27;touched page should be resident during this short LAB&#x27;</span>
+except PermissionError as e:
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;pagemap: permission denied:&#x27;</span>, e)
+PY
+<span class="hljs-built_in">wait</span> <span class="hljs-string">&quot;<span class="hljs-variable">$lab_pid</span>&quot;</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;PASS: write/exit_group, parent-child flows, private writable mapping&#x27;</span>
+
+</code></pre></div>
+</details><footer class="docs-footer"><a href="../../wiki/">← CSAPP Wiki</a></footer></article></main></body></html>

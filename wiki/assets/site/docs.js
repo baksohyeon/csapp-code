@@ -32,3 +32,20 @@
   addEventListener('scroll', () => { if (!pending) { pending = true; requestAnimationFrame(update); } }, {passive:true});
   update();
 })();
+
+// Progressive enhancement: the code remains readable when scripts or clipboard permissions are unavailable.
+document.querySelectorAll('[data-copy-code]').forEach(button => {
+ button.addEventListener('click', async () => {
+  const code=document.getElementById(button.dataset.copyCode);
+  if(!code)return;
+  try {
+   await navigator.clipboard.writeText(code.textContent);
+   button.textContent='복사됨';
+  } catch {
+   const selection=getSelection();const range=document.createRange();range.selectNodeContents(code);selection.removeAllRanges();selection.addRange(range);
+   button.textContent='선택됨';
+  }
+  button.setAttribute('aria-live','polite');
+  setTimeout(()=>{button.textContent='복사';},2000);
+ });
+});

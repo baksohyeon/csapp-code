@@ -26,14 +26,19 @@ source_url: https://i.hyeon.me/csapp
 
 ### 목차
 
-- [기초 개념과 교재 대응](#기초-개념과-교재-대응)
+- [학습 준비와 교재 대응](#기초-개념과-교재-대응)
 - [8.1 Exceptions](#81-exceptions)
-- [8.2 Processes: 실행 흐름](#82-processes-실행-흐름)
-- [8.2.3 Private Address Space](#823-private-address-space)
-- [8.2.4 User and Kernel Modes](#824-user-and-kernel-modes)
+  - [8.1.1 Exception Handling](#811-exception-handling)
+  - [8.1.2 Classes of Exceptions](#812-classes-of-exceptions)
+  - [8.1.3 Linux/x86-64](#813-exceptions-in-linuxx86-64-systems)
+- [8.2 Processes](#82-processes)
+  - [8.2.1 Logical Control Flow](#821-logical-control-flow)
+  - [8.2.2 Concurrent Flows](#822-concurrent-flows)
+  - [8.2.3 Private Address Space](#823-private-address-space)
+  - [8.2.4 User and Kernel Modes](#824-user-and-kernel-modes)
 - [보충: 서버 동시성과 런타임](#보충-서버-동시성과-런타임)
 - [LAB와 적용 로드맵](#lab와-적용-로드맵)
-  - [실습 디버깅 사례](#lab-debugging)
+  - [실습 디버깅 사례](#심층-사례-strace-관측-실패-디버깅)
 - [적용 조건과 미확인](#적용-조건과-미확인)
 - [출처](#출처)
 
@@ -59,19 +64,24 @@ source_url: https://i.hyeon.me/csapp
 
 ### 교재 절 대응표
 
-[CSAPP][사실] 공식 3판 목차에서 이번 범위는 §8.1~§8.2.4다. §8.2.5 Context Switches는 다음 범위로 연결한다. 아래 쪽수는 북미판 공식 목차의 인쇄 쪽수다. [S1]
+[CSAPP][사실] 공식 3판 목차 PDF의 xiv쪽(PDF 14쪽)을 대조했다. 이 노트의 교재 본문은 §8.1~§8.2.4이며, §8.2.3·§8.2.4는 §8.2의 하위 절이다. 아래 쪽수는 북미판 인쇄 쪽수다. [S1]
 
 | 절 | 교재 주제 | 이 문서의 연결 |
 |---|---|---|
 | 8.1 · p.723 | Exceptions | 사건과 제어 이전 |
 | 8.1.1 · p.724 | Exception Handling | handler 선택·상태 보존 |
 | 8.1.2 · p.726 | Classes of Exceptions | 분류·재개 위치 |
-| 8.1.3 · p.729 | Linux/x86-64 | #DE·signal·syscall ABI |
+| 8.1.3 · p.729 | Exceptions in Linux/x86-64 Systems | CPU 예외·Linux 처리·system call |
 | 8.2 · p.732 | Processes | 실행 흐름·주소 공간 |
 | 8.2.1 · p.732 | Logical Control Flow | 프로세스별 명령어 흐름 |
 | 8.2.2 · p.733 | Concurrent Flows | 타임라인·병렬 실행 |
 | 8.2.3 · p.734 | Private Address Space | mapping·보호 |
 | 8.2.4 · p.734 | User and Kernel Modes | 권한·커널 진입 |
+
+[CSAPP][사실] Chapter 8 전체는 p.721에서 시작한다. 이번 노트 이후에는 §8.2.5 문맥 교환(p.736), §8.3 syscall 오류 처리(p.737), §8.4 프로세스 제어(p.738), §8.5 signal(p.756), §8.6 비지역 점프(p.781), §8.7 프로세스 도구(p.786), §8.8 요약(p.787)이 이어진다. 이 범위의 독립 강의노트는 아직 작성하지 않았다. [S1]
+
+[COMMENTARY] LAB의 `fork`·`waitpid`는 §8.4의 실습을 미리 연결하고, `/proc`·pagemap은 Chapter 9의 주소 변환 학습으로 이어진다. Go·BEAM·Rust 보충은 이 노트 뒤쪽에 둔다.
+
 
 ## 8.1 Exceptions
 
@@ -95,7 +105,7 @@ source_url: https://i.hyeon.me/csapp
 | Interrupt | 비동기 외부 사건 | 중단된 흐름 재개 | 타이머·장치 통지 |
 | Trap | 명령어와 동기인 의도적 사건 | 사건 이후 실행 계속 | syscall의 교재 모델 |
 | Fault | 명령어와 동기인 처리 필요 상태 | 해결되면 해당 명령 재시도 | page fault |
-| Abort | 심각한 상태 오류 | 안정적인 재시작 보장 없음 | double fault |
+| Abort | 심각한 하드웨어 상태 오류 | 원래 프로그램으로 복귀하지 않음 | 하드웨어 오류 |
 
 [CSAPP][사실] 이 표는 교재의 넓은 exception 분류다. [S2][S18]
 
@@ -103,13 +113,24 @@ source_url: https://i.hyeon.me/csapp
 
 > **REMIND** Fault의 재시도 가능성은 원인이 해결됐을 때의 복귀 모델이다. 접근 위반처럼 프로세스 종료로 이어지는 fault도 있다. [S4][S7]
 
-### 8.1.3 Linux/x86-64: divide error와 signal
+### 8.1.3 Exceptions in Linux/x86-64 Systems
+
+[CSAPP][사실] 이 절은 Linux/x86-64에서 예외와 system call을 구체화한다. CMU 동반 강의는 처리 가능한 page fault의 명령 재실행과 유효하지 않은 메모리 참조의 signal 전달을 비교한다. [S18] (슬라이드 15~17)
+
+| 사례 | 커널 처리 | 이어지는 실행 |
+|---|---|---|
+| 0 나눗셈 등 산술 예외 | Linux의 signal 전달 | signal의 설정·기본 동작에 따름 |
+| 처리 가능한 page fault | 필요한 페이지 상태 준비 | 원인 명령 재실행 |
+| 유효하지 않은 메모리 참조 | `SIGSEGV` 전달 | 기본 동작은 프로세스 종료 |
+| System call | 요청된 커널 서비스 실행 | 반환 가능한 호출은 다음 사용자 명령으로 복귀 |
+
+[OFFICIAL][사실] Linux signal의 기본 동작과 handler 설정은 `signal(7)`에서 확인한다. 이 표의 page fault는 학습 모델이며 모든 page fault가 디스크 I/O를 필요로 하는 것은 아니다. [S7][S18]
 
 [OFFICIAL][사실] x86의 `DIV`·`IDIV`는 제수가 0이거나 몫이 목적지 범위에 들어가지 않으면 divide-error fault `#DE`를 발생시킨다. Linux는 산술 오류를 `SIGFPE` 같은 signal로 사용자 프로세스에 전달한다. 기본 동작은 signal 종류와 프로세스 설정에 따라 결정된다. [S4] (Event 0)[S7]
 
 [COMMENTARY] 원인을 조사할 때 `명령어 → CPU 예외 → 커널 처리 → signal → 프로세스 동작`을 따라간다. C의 정수 0 나눗셈 예제에는 undefined behavior가 있으므로, 재현하려면 생성된 명령어와 컴파일 옵션까지 확인해야 한다. 여기서는 해당 fault 실험을 실행하지 않았다. [S19]
 
-### System call과 함수 호출 ABI
+#### 공식 보충: System call과 함수 호출 ABI
 
 [OFFICIAL][사실] ABI는 호출 경계에서 인자·반환값을 전달하는 규약이다. Linux syscall 규약은 아키텍처별로 정의된다. 다음 표의 x86-64는 LP64, arm64는 AArch64 Linux 기준이다. [S3]
 
@@ -123,7 +144,7 @@ source_url: https://i.hyeon.me/csapp
 
 [OFFICIAL][사실] System V AMD64 C 함수 호출의 4번째 정수·포인터 인자는 `rcx`다. Linux x86-64 syscall의 4번째 인자는 `r10`이다. `SYSCALL` 명령은 `rcx`와 `r11`을 사용해 복귀 위치·flags를 저장한다. libc wrapper는 커널 오류를 `-1` 반환과 `errno`로 변환한다. [S3][S4][S20]
 
-### stdin·stdout·stderr와 strace
+#### 실습 연결: stdin·stdout·stderr와 strace
 
 [OFFICIAL][사실] 일반적인 프로세스 시작 상태에서 표준 입력·출력·오류의 file descriptor는 0·1·2다. libc의 `stdin`·`stdout`·`stderr`는 `FILE` stream이며 버퍼링을 제공한다. `write(fd, ...)`는 fd를 사용한다. [S8][S9]
 
@@ -136,7 +157,7 @@ exit_group(0)                  = ?
 
 [OFFICIAL][사실] `exit_group`은 호출 프로세스의 thread group을 종료하고 복귀하지 않는다. 종료 syscall과 반환하는 syscall의 복귀 경로는 구분해 읽는다. [S6]
 
-## 8.2 Processes: 실행 흐름
+## 8.2 Processes
 
 [CSAPP][사실] 프로세스는 실행 중인 프로그램의 인스턴스다. 논리적 제어 흐름과 가상 주소 공간은 프로그램이 시스템을 사용하는 핵심 추상화다. [S18]
 
@@ -148,25 +169,19 @@ exit_group(0)                  = ?
 
 ### 8.2.2 Concurrent Flows
 
-| 자료 | 동시성의 관점 | 병렬성과의 연결 |
-|---|---|---|
-| CSAPP·CMU | 두 흐름의 시작~종료 시간 구간이 겹침 | 서로 다른 코어에서 동시에 진행 가능 |
-| Rob Pike | 독립 실행 부분을 조합하는 프로그램 구조 | 구조를 실제 동시 실행으로 실현 가능 |
-| OSTEP §26 | 한 프로세스 안의 여러 thread와 공유 상태 | 실행 순서·동기화 문제로 연결 |
-
 ![단일 코어 교대 실행과 두 코어 병렬 실행의 타임라인](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/concurrency-timeline.svg)
 
 [CSAPP][사실] 단일 코어에서도 흐름의 전체 실행 기간은 겹칠 수 있다. 병렬 실행은 여러 코어에서 같은 시점에 명령어를 진행하는 상황이다. [S18]
 
-[OFFICIAL][사실] Pike는 구조와 실행의 관점을 제시한다. OSTEP은 thread마다 PC·레지스터·stack이 있고 주소 공간을 공유한다는 모델에서 동기화로 전개한다. [S12][S13]
-
 [COMMENTARY] 타임라인의 색 막대는 실제 CPU 실행 구간이다. concurrency는 막대 하나의 겹침과 각 흐름의 시작~종료 구간을 구분해 판단한다. LAB의 출력 순서만으로 서로 다른 코어의 병렬 실행을 입증할 수 있는 범위는 제한된다.
 
-## 8.2.3 Private Address Space
+### 8.2.3 Private Address Space
 
-[CSAPP][사실] 프로세스는 자신의 가상 주소 공간을 사용한다. CPU의 MMU와 운영체제가 관리하는 page table이 주소 변환과 접근 보호를 지원한다. [S18][S4]
+[CSAPP][사실] 프로세스는 자신의 가상 주소 공간을 사용한다. [S18]
 
-### ELI10: 건물마다 같은 방 번호
+[OFFICIAL][사실] CPU의 MMU와 운영체제가 관리하는 page table이 주소 변환과 접근 보호를 지원한다. [S4]
+
+#### ELI10: 건물마다 같은 방 번호
 
 [COMMENTARY] 서로 다른 건물에 모두 101호가 있을 수 있다. 가상 주소는 건물 안의 방 번호에, 주소 변환 상태는 어느 건물인지 알려주는 정보에 비유할 수 있다. 같은 가상 주소도 프로세스의 mapping에 따라 서로 다른 물리 페이지로 이어진다. 공유 mapping은 두 프로세스가 같은 물리 페이지를 사용하는 예다.
 
@@ -180,7 +195,9 @@ exit_group(0)                  = ?
 
 [OFFICIAL][사실] `MAP_PRIVATE`는 copy-on-write mapping을, `MAP_SHARED`는 공유 mapping을 지정한다. private mapping도 fork 직후 등에는 물리 페이지를 공유할 수 있다. [S15]
 
-### 교재 주소 공간과 실제 mapping
+#### 교재 주소 공간과 실제 mapping
+
+[CSAPP][사실] 공식 정오표는 p.735 그림 8.13의 stack 주소 상한 표기와 `%esp`를 정정한다. 실제 stack 주소는 프로세스마다 달라지고 x86-64 stack pointer 표기는 `%rsp`다. 이 노트의 그림에는 고정 stack 주소를 넣지 않는다. [S1]
 
 | 영역 | 학습할 역할 | Linux 관측 |
 |---|---|---|
@@ -197,7 +214,7 @@ exit_group(0)                  = ?
 
 [COMMENTARY] 주소 배치·ASLR·공유 영역·KPTI 설정은 실행 환경의 조건이다. 이 노트의 그림은 주소 변환 모델을 표현하며 특정 커널의 전체 page-table 배치를 확정하지 않는다. 실제 mapping은 LAB에서 확인한다.
 
-## 8.2.4 User and Kernel Modes
+### 8.2.4 User and Kernel Modes
 
 [CSAPP][사실] CPU의 실행 권한은 사용자 코드의 접근과 특권 동작을 제한한다. 운영체제는 커널 진입·복귀 경계를 관리한다. [S18]
 
@@ -212,7 +229,7 @@ exit_group(0)                  = ?
 
 [COMMENTARY] syscall이 같은 task로 복귀하는 경우에도 권한 전환은 일어난다. task 변경 여부는 스케줄링의 별도 질문이다.
 
-### x86 특권 명령과 조건
+#### x86 특권 명령과 조건
 
 [OFFICIAL][사실] control register에 쓰는 `mov %rax, %cr3`와 `hlt`에는 특권 조건이 있다. `cli`·`sti`는 CPL·IOPL과 가상화 관련 제어 조건에 따라 동작한다. 일반 Linux 사용자 프로그램은 허용된 커널 인터페이스로 권한 동작을 요청한다. [S4] (Vol.2A/2B)
 
@@ -226,6 +243,18 @@ hlt               # 특권 조건에서 CPU 대기
 > **WARNING** 이 노트의 종료·전원 제어 설명은 문서 분석이다. 실습에서는 host의 reboot·shutdown을 실행하지 않는다.
 
 ## 보충: 서버 동시성과 런타임
+
+이 절은 교재 §8.1~§8.2.4를 읽은 뒤 연결하는 확장 자료다. Go·Erlang·Rust의 runtime 구현과 다른 저자의 동시성 정의를 다룬다.
+
+### 다른 자료의 동시성 정의
+
+| 자료 | 동시성의 관점 | 병렬성과의 연결 |
+|---|---|---|
+| CSAPP·CMU | 두 흐름의 시작~종료 시간 구간이 겹침 | 서로 다른 코어에서 동시에 진행 가능 |
+| Rob Pike | 독립 실행 부분을 조합하는 프로그램 구조 | 구조를 실제 동시 실행으로 실현 가능 |
+| OSTEP §26 | 한 프로세스 안의 여러 thread와 공유 상태 | 실행 순서·동기화 문제로 연결 |
+
+[OFFICIAL][사실] Pike는 구조와 실행의 관점을 제시한다. OSTEP은 thread마다 PC·레지스터·stack이 있고 주소 공간을 공유한다는 모델에서 동기화로 전개한다. [S12][S13]
 
 [LECTURE] 기존 강의 메모는 C10K, blocking I/O, green thread, Go/Erlang을 확장 주제로 다룬다. 아래 구현 설명과 Rust 보충은 공식 자료 및 작성자 해설로 읽는다.
 

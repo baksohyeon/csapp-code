@@ -9,7 +9,7 @@ related_to:
 
 # Ch8 검증 보고서
 
-확인 기준일: 2026-10-25 KST. 검증 진행 중이며 최종 결과는 실행 후 기록한다.
+확인 기준일: 2026-10-25 KST. 아래는 각 수정 시점에 실제 실행한 검증 기록이다.
 
 ## 원본 확인
 
@@ -208,3 +208,20 @@ Ch6·Ch7을 1440px 실제 화면으로 비교하고 Ch7의 hero·범위 배지·
 - [10개 화면 조건과 스크린샷](../../validation/ch8/2026-10-25/lecture-style/metrics.json): 가로 넘침·말줄임·브라우저 오류 0, SVG 9장, 스크롤 확인.
 - [탐색·테마·접근성 검사](../../validation/ch8/2026-10-25/lecture-style-navigation/results.json): 5개 화면·테마 조건의 axe WCAG A/AA 자동 검사 위반 0.
 - HTML parser 오류 0, Ch8 본문 동기화·Ch7 기존 검증 통과.
+
+## 교재 목차 재대조와 학습 흐름 정리
+
+### 공식 자료와 대조한 결과
+
+공식 [3판 목차·서문 PDF](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf)의 인쇄 xiv쪽(PDF 14쪽)을 확인했다. 절 번호와 p.723~734 표기는 일치했다. HTML/Markdown에서 §8.2.3과 §8.2.4의 heading level이 잘못되어 있어 §8.2 아래로 복원했다. §8.1.3의 제목도 공식 명칭을 사용한다. [구조·쪽수 대조 기록](../../validation/ch8/2026-10-25/textbook-audit.json).
+
+교재 본문 범위는 §8.1~§8.2.4다. 이후 §8.2.5~§8.8은 미작성 범위로 명시했다. syscall ABI·Linux mapping은 공식 보충, `fork` LAB은 §8.4 선행 실습, Go·BEAM·Rust는 본문 뒤의 확장 자료로 구분했다. CMU [동반 강의](https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf)의 슬라이드 15~17에 근거해 page fault·잘못된 메모리 참조 사례를 보강했고, [공식 정오표](https://csapp.cs.cmu.edu/3e/errata.html)의 p.735 stack 주소·`%rsp` 정정을 반영했다.
+
+### 학습 동선과 코드
+
+- 홈페이지의 `/csapp/`는 `/csapp/wiki/`로 이동한다. 중복 진입 목차를 없애고 Ch6→Ch7→Ch8 순서와 실제 교재 범위를 표시한다.
+- Wiki의 개념·학습 노트는 같은 디자인의 HTML로 열린다. 파일명 대신 문서 제목을 표시한다. 작성·검증 기록은 접을 수 있다.
+- C·Linux·ELF 실습에는 설명과 소스 뷰어를 제공한다. 학습 링크가 서버 디렉터리 목록으로 빠지지 않도록 했다.
+- 코드 블록은 highlight.js 11.12.0의 GitHub Dark 전체 구문 테마를 함께 배포한다. 언어 배지·복사 버튼을 제공하고 `asm`을 `x86asm`으로 매핑한다. 실행 출력은 plaintext로 유지한다. [공식 사용 문서](https://highlightjs.readthedocs.io/en/latest/readme.html), [GitHub 테마 소스](https://github.com/highlightjs/highlight.js/blob/11.12.0/src/styles/github-dark.css).
+- [학습 동선·절 계층·클립보드·페이지 검사](../../validation/ch8/2026-10-25/learning-flow/results.json): 실제 클릭·heading parent·색상 차이·복사 내용 일치를 검사했다. Wiki·노트·개념·소스 뷰어 5종의 모바일 light/데스크톱 dark 총 10개 조건에서 가로 넘침·말줄임·접근성 자동 검사 위반 0.
+- [Ch8 화면 검사](../../validation/ch8/2026-10-25/textbook-layout/metrics.json): 화면·테마 10개 조건을 렌더링하고 SVG 9장·스크롤·앵커를 검사했다.

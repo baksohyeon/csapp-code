@@ -1,0 +1,354 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>Ch8 검증 보고서 | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../assets/site/tokens.css"><link rel="stylesheet" href="../assets/site/docs.css"><link rel="stylesheet" href="../assets/site/github-dark.css"><script defer src="../assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../">CSAPP Wiki</a></li><li aria-current="page">Ch8 검증 보고서</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><p class="docs-kicker">학습 기록 · 2026-10-25</p><h1>Ch8 검증 보고서</h1>
+<p>확인 기준일: 2026-10-25 KST. 아래는 각 수정 시점에 실제 실행한 검증 기록이다.</p>
+<h2 id="원본-확인">원본 확인</h2>
+<p>GitHub origin/main에서 이전 보고의 <code>9dc088ecb019ad79dd246b06d159c26d1d80f290</code>과
+Ch8 HTML·Markdown·6개 SVG를 확인했다. 로컬을 fast-forward하고 기존 프롬프트 변경을 보존했다.
+라이브 <code>/csapp/</code>는 HTTP 200으로 응답했다. 초기 배포본의 파일 날짜는 2026-07-26이었다.
+Pi는 Tailscale SSH 추가 인증 후 연결됐다. Dokku 0.38.20, app <code>csapp</code>, deploy branch <code>main</code>을 확인했다.</p>
+<h2 id="개선한-내용">개선한 내용</h2>
+<ul>
+<li>교재 절 대응표에 §8.1·§8.2 상위 절과 북미판 인쇄 쪽수를 포함했다.</li>
+<li>ELI10 진입 설명, 사건 처리·주소 변환·runtime 계층, LAB와 적용 로드맵을 추가했다.</li>
+<li>교재 모델과 Intel taxonomy, raw syscall과 C ABI, libc stream과 fd를 연결했다.</li>
+<li>shutdown 요청·사용자 공간 정리·kernel power-off의 역할과 조건을 구체화했다.</li>
+<li>Go go1.26.0 소스, OTP 29.1.2 NIF 문서, Rust Book의 근거를 연결했다.</li>
+<li>기존 완성형 Markdown을 보존하고 동일 본문에서 HTML을 재생성하는 도구를 추가했다.</li>
+<li>SVG 6장을 모바일·dark theme에 맞춰 다시 작성하고 blocking I/O 비교 1장을 추가했다.</li>
+<li>기존 Ch6/Ch7의 CSS 토큰·hero·sidebar·표·코드·Callout 계열을 재사용했다.</li>
+</ul>
+<h2 id="주요-주장과-근거">주요 주장과 근거</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 표"><table>
+<thead>
+<tr>
+<th>주장</th>
+<th>판정</th>
+<th>근거와 조건</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ch8가 GitHub main에 존재</td>
+<td>확인</td>
+<td>origin/main 9dc088e와 실제 파일 확인</td>
+</tr>
+<tr>
+<td>당시 DNS 오류로 현재도 배포 불가</td>
+<td>현재 상태 갱신</td>
+<td>이번 요청에서 공개 HTTPS 200. Tailscale 추가 인증 후 SSH 연결</td>
+</tr>
+<tr>
+<td>3판 교재 범위·쪽수</td>
+<td>확인</td>
+<td>공식 preface3e.pdf p.xiv. §8.1 p.723~§8.2.4 p.734</td>
+</tr>
+<tr>
+<td>Interrupt/trap/fault/abort</td>
+<td>조건부 일치</td>
+<td>CSAPP 그림·CMU 자료, Intel 093 Vol.3 §7.5~7.6. 용어 범위 구분</td>
+</tr>
+<tr>
+<td>#DE 조건</td>
+<td>확인</td>
+<td>Intel 093 Event 0, divisor 0 또는 quotient overflow</td>
+</tr>
+<tr>
+<td>x86-64 syscall arg4=r10</td>
+<td>확인</td>
+<td>syscall(2) Architecture calling conventions</td>
+</tr>
+<tr>
+<td>C ABI arg4=rcx</td>
+<td>확인</td>
+<td>AMD64 psABI e1ce098의 low-level-sys-info.tex, INTEGER 인자 배치</td>
+</tr>
+<tr>
+<td>exit_group 비복귀</td>
+<td>확인</td>
+<td>exit_group(2) DESCRIPTION·RETURN VALUE</td>
+</tr>
+<tr>
+<td>maps의 r/w/x/s/p</td>
+<td>확인</td>
+<td>proc_pid_maps(5), man-pages 6.19</td>
+</tr>
+<tr>
+<td>PFN 0의 해석</td>
+<td>조건부</td>
+<td>kernel pagemap, Linux 4.2+ CAP_SYS_ADMIN 제한. 물리 주소 확정 불가</td>
+</tr>
+<tr>
+<td>Go G/M/P·P 회수</td>
+<td>확인</td>
+<td>go1.26.0 HACKING.md, proc.go의 entersyscallblock·retake·netpoll</td>
+</tr>
+<tr>
+<td>긴 NIF·dirty 분류</td>
+<td>확인</td>
+<td>OTP 29.1.2 erl_nif의 Long-running NIFs·Dirty NIFs</td>
+</tr>
+<tr>
+<td>power-off의 정리·권한</td>
+<td>보완</td>
+<td>reboot(2) CAP_SYS_BOOT·sync·플랫폼 조건. 실제 전원 제어 미실행</td>
+</tr>
+</tbody>
+</table></div>
+<p><a href="../../validation/ch8/2026-10-25/sources.json">출처 HTTP 검사</a>.
+Intel 안내 페이지는 web 도구로 열람됐으나 직접 HTTP 검사에서는 403이었다.
+공식 PDF는 직접 HTTP 200으로 내려받아 revision 093, September 2026과 관련 절을 확인했다.
+레포 README의 교재 PDF 주소는 이번 환경에서 PDF 본문을 반환하지 않았다.
+교재 범위는 공식 목차·정오표·공식 그림과 CMU 교재 동반 자료로 대조했다.
+강의 녹취 원본은 대조하지 않았으며 추정 발언을 추가하지 않았다.</p>
+<h2 id="lab-실행">LAB 실행</h2>
+<p>실행일: 2026-10-25 KST. macOS ARM64 host의 OrbStack Linux,
+Debian bookworm-slim, GCC 12.2.0, strace 6.1.
+Kernel: <code>7.2.12-orbstack-00394-gbecdd6130068</code>.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 표"><table>
+<thead>
+<tr>
+<th>검사</th>
+<th>ARM64 native</th>
+<th>x86-64 에뮬레이션</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-Wall -Wextra -Werror 컴파일</td>
+<td>PASS</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>hello·flows·maps 실행</td>
+<td>PASS</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>write 13바이트·exit_group trace</td>
+<td>PASS</td>
+<td>syscall trace 불완전</td>
+</tr>
+<tr>
+<td>부모·자식 각 3줄</td>
+<td>PASS</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>rw-p mapping·pagemap 읽기</td>
+<td>PASS, present=1 PFN=0</td>
+<td>mapping introspection 미실행</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><a href="../../validation/ch8/2026-10-25/lab-arm64.txt">ARM64 전체 출력</a></li>
+<li><a href="../../validation/ch8/2026-10-25/lab-amd64.txt">x86-64 컴파일·실행</a></li>
+<li><a href="../../validation/ch8/2026-10-25/lab-amd64-strace-incomplete.txt">x86-64 trace 불완전 기록</a></li>
+<li><a href="../../examples/0002-exceptional-control-flow/README.md">재현 명령</a></li>
+</ul>
+<p>x86-64 에뮬레이션에서 strace가 x32/64 mode 전환 메시지를 반복하며 필터된 syscall을 표시하지 않았다.
+전체 LAB의 trace 검사는 실패로 취급했다. ARM64의 관측을 x86-64 syscall register 관측으로 보고하지 않았다.
+전원 종료·host 재부팅은 실행하지 않았다.</p>
+<h2 id="구조문체회귀-검사">구조·문체·회귀 검사</h2>
+<ul>
+<li><code>node tools/ch8/verify.mjs</code>: frontmatter·날짜, 고유 ID 55개, 교재 소절 7개, 상대 링크, 공용 SVG 7장, 금지 문형, HTML/Markdown 동기화 PASS.</li>
+<li><code>node chapter07/verify-html.mjs</code>: 기존 Ch7 HTML·Markdown·링크 검사 PASS.</li>
+<li>HTML5 parser 오류 0, SVG XML parse 7개 성공: <a href="../../validation/ch8/2026-10-25/structure.json">구조 결과</a>.</li>
+<li><code>git diff --check</code>: PASS.</li>
+</ul>
+<h2 id="로컬-브라우저-검증">로컬 브라우저 검증</h2>
+<p>설치된 Google Chrome을 Playwright로 headless 실행했다.
+320×568, 375×812, 812×375, 390×844, 430×932, 768×1024, 1024×768, 1440×900의 light theme,
+375×812·1440×900의 dark theme를 검증했다.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 표"><table>
+<thead>
+<tr>
+<th>측정</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>페이지 scrollWidth-clientWidth</td>
+<td>모든 조건 0px. 허용 오차 1px</td>
+</tr>
+<tr>
+<td>ellipsis CSS 적용 요소</td>
+<td>모든 조건 0</td>
+</tr>
+<tr>
+<td>실제 truncateCount</td>
+<td>모든 조건 0</td>
+</tr>
+<tr>
+<td>실제 scrollY 이동</td>
+<td>모든 조건 700px</td>
+</tr>
+<tr>
+<td>anchor 이동·대상</td>
+<td>정상, 깨진 anchor 0</td>
+</tr>
+<tr>
+<td>SVG</td>
+<td>모두 7개 로딩·XML·aria-label 확인</td>
+</tr>
+<tr>
+<td>375px의 SVG 렌더 폭</td>
+<td>317px, viewBox 360 대비 축소. 최소 19단위 라벨은 약 16.7 CSS px</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>0개. 최상위 문서에서 측정</td>
+</tr>
+<tr>
+<td>브라우저 오류·실패 요청</td>
+<td>최종 검사 0</td>
+</tr>
+</tbody>
+</table></div>
+<p>초기 favicon 404를 inline favicon으로 수정했다. 화면 검토에서 중복 제목을 발견해 renderer의
+선행 공백 처리를 수정하고 다시 렌더링했다. 본문 표의 내부 가로 스크롤은 허용하고 페이지 넘침과 구분했다.
+전체 결과와 도판 스크린샷은 <a href="../../validation/ch8/2026-10-25/local/metrics.json">local metrics</a>에 있다.
+<a href="../../validation/ch8/2026-10-25/local/375x812-light.jpg">모바일 상단</a>,
+<a href="../../validation/ch8/2026-10-25/local/812x375-light.jpg">모바일 가로</a>,
+<a href="../../validation/ch8/2026-10-25/local/figure-3-light.jpg">실행 타임라인</a>,
+<a href="../../validation/ch8/2026-10-25/local/figure-7-dark.jpg">dark Go 도판</a>을 직접 확인했다.</p>
+<h2 id="git과-배포">Git과 배포</h2>
+<p>문서 payload 커밋 <code>a6e1812</code>를 GitHub <code>main</code>에 push하고 기존 Dokku remote로 배포했다.
+Dokku build <code>mvnl9imxumykhi</code>는 <code>succeeded</code>, exit code 0으로 종료했다.
+새 container <code>fb798948f14b</code>의 실행과 기본 uptime·port healthcheck 통과를 확인했다.
+정적 사이트의 release는 이 build ID·image·container로 식별한다. 별도 <code>releases:list</code> 명령은 이 Dokku 설치에 없다.</p>
+<ul>
+<li>라이브: <a href="https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html">Ch8 학습 문서</a></li>
+<li><a href="../../validation/ch8/2026-10-25/deployment.json">배포 상태</a></li>
+<li><a href="../../validation/ch8/2026-10-25/deployment-content.json">라이브 파일 해시</a>: Ch8 HTML·Markdown·SVG 7장, Ch6·Ch7 HTML, README 등 12개 모두 HTTP 200과 SHA-256 일치.</li>
+<li><a href="../../validation/ch8/2026-10-25/live/metrics.json">라이브 브라우저 측정</a>: 로컬과 같은 10개 viewport·theme 조건에서 가로 넘침 0·실제 말줄임 0·브라우저 오류 0·세로 스크롤 700px·SVG 7장·anchor 이동 정상.</li>
+<li><a href="../../validation/ch8/2026-10-25/live/375x812-light.jpg">라이브 모바일 화면</a>을 직접 확인했다.</li>
+</ul>
+<p><code>/csapp/</code> 경로를 유지했고 기존 Ch6·Ch7도 원본 해시와 일치했다.
+배포 진행 중 이전 container가 응답한 짧은 구간에는 Ch8 404를 관측했다.
+proxy 전환 후 재검사에서 12개 대상이 모두 정상 응답했다.
+검사 후 서버 로그 30줄에서 error·crit·emerg는 없었다.
+시작 로그의 기존 <code>charset_types</code> 중복 <code>text/html</code> 경고는 설정에서 중복 항목을 제거했고,
+동일 nginx image의 임시 container에서 <code>nginx -t</code> 성공을 확인했다.
+이 설정과 라이브 검증 증거는 후속 커밋·동기화 배포에 포함한다.</p>
+<p>이 보고서의 배포 기록은 위 payload를 직접 검증한 결과다.
+후속 보고서·증거 커밋의 SHA와 최종 배포 결과는 Git 이력 및 Dokku build 이력에서 확인한다.</p>
+<p>배포 전 app은 <code>csapp</code>, Dokku 0.38.20, branch <code>main</code>, container <code>e1970ef60d3</code>였다.
+서버 bare repo의 main은 <code>93a22e8b0187b0b0a632412685744d7a1da7e8c0</code>였다.
+기존 <code>pre-receive</code> hook이 <code>dokku git-hook csapp</code>을 호출하는 것을 확인했다.</p>
+<h2 id="남은-범위">남은 범위</h2>
+<ul>
+<li>x86-64 syscall·mapping LAB은 아래 full-system QEMU 검증으로 완료했다. syscall 인자 레지스터 직접 추적과 실제 하드웨어 성능 비교는 별도 범위다.</li>
+<li>Go·Erlang·Rust runtime 동작·성능 비교 실험은 미실행이다.</li>
+<li>스크린리더 실기기·실제 휴대폰·프린터 출력 검증은 미실행이다.</li>
+</ul>
+<h2 id="x86-64-추가-검증">x86-64 추가 검증</h2>
+<p>판단 과정과 재현 방법은 <a href="../lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html#lab-debugging">Ch8 본문의 실습 디버깅 사례</a>에 정리했다.
+통합 전 별도 렌더링의 측정 기록은 <a href="../../validation/ch8/2026-10-25/debug-note/metrics.json">초기 측정·스크린샷</a>에 보존했다. 최신 본문 통합 검증은 아래 기록을 따른다.</p>
+<p>사용자 지적 후 <code>orb</code>의 기존 <code>ubuntu</code> amd64 환경을 확인했다.
+Ubuntu 25.04에 GCC 14.2.0·strace 6.14를 설치하고
+<code>orb -m ubuntu sh examples/0002-exceptional-control-flow/verify.sh</code>를 실행했다.
+<code>hello, world</code> 출력은 성공했지만 syscall trace가 비어 전체 LAB은 exit 1이었다.
+별도 <code>strace /bin/echo hello</code>에서도 x32/64 mode 전환이 반복되고 write·exit_group이 표시되지 않았다.
+<a href="../../validation/ch8/2026-10-25/lab-orb-amd64.txt">Orb 실행 기록</a>.</p>
+<p>이어 설치된 QEMU로 <strong>x86-64 커널과 userspace를 함께 실행</strong>했다.
+Orb의 전역 Rosetta 설정은 변경하지 않았다.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 표"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>실제 관측</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QEMU</td>
+<td>11.1.2, TCG full-system, q35·CPU max</td>
+</tr>
+<tr>
+<td>Kernel</td>
+<td>Linux 6.18.58-0-lts x86_64</td>
+</tr>
+<tr>
+<td>Userspace</td>
+<td>Debian bookworm, GCC 12.2.0, strace 6.1</td>
+</tr>
+<tr>
+<td>자원</td>
+<td>virtual CPU 2개·RAM 1536 MiB·network 없음</td>
+</tr>
+<tr>
+<td>write</td>
+<td>fd=1, 요청 13바이트, 반환 13</td>
+</tr>
+<tr>
+<td>exit_group</td>
+<td>status=0, 비복귀 trace</td>
+</tr>
+<tr>
+<td>흐름</td>
+<td>부모·자식 각 3줄·순서 0→1→2</td>
+</tr>
+<tr>
+<td>mapping</td>
+<td>private anonymous rw-p</td>
+</tr>
+<tr>
+<td>pagemap</td>
+<td>present=1, PFN=255844. 해당 guest root 권한에서 관측한 값</td>
+</tr>
+<tr>
+<td>전체 결과</td>
+<td><code>CSAPP_QEMU_EXIT=0</code>, PASS</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><a href="../../validation/ch8/2026-10-25/lab-x86-system.txt">전체 x86-64 로그</a></li>
+<li><a href="../../validation/ch8/2026-10-25/x86-system-environment.json">환경·kernel hash</a></li>
+<li>재현: 레포 root에서 <code>python3 tools/ch8/qemu-lab.py</code>. 저장한 재현 도구를 다시 실행해 PASS를 확인했다. <a href="../../validation/ch8/2026-10-25/lab-x86-system-reproduced.txt">재실행 로그</a>.</li>
+<li>재현 도구: Docker, QEMU, Python 3, curl, tar, cpio, gzip.</li>
+</ul>
+<p>LAB이 끝나면 QEMU guest process와 임시 rootfs를 정리한다. host 재부팅·전원 종료는 수행하지 않는다.
+이 결과로 기존 x86-64 syscall LAB의 미검증 상태를 해소했다.</p>
+<h2 id="ch8-본문-통합-검증">Ch8 본문 통합 검증</h2>
+<p>디버깅 사례의 관측·가설·실험·선택 근거·한계·재현 절차를 Ch8의 LAB 내부 하위 절에 통합했다.
+기존 별도 노트 URL은 Ch8의 같은 절로 이동한다. wiki 목차도 Ch8를 학습 진입점으로 유지한다.</p>
+<ul>
+<li>HTML/Markdown 동기화, 고유 ID 88개·상대 링크·교재 소절·공유 SVG 9장 검사 PASS.</li>
+<li>HTML5 parser 오류 0, SVG XML 9개 parse 성공.</li>
+<li>8개 viewport light와 대표 모바일·데스크톱 dark의 총 10개 조건에서 가로 넘침 0·말줄임 0·브라우저 오류 0·scrollY 700px·SVG 9장 로딩.</li>
+<li><a href="../../validation/ch8/2026-10-25/integrated-local/metrics.json">통합 본문 측정·스크린샷</a>.</li>
+<li>본문에는 학습 설명과 증거를 두고, 배포·편집 결과는 이 보고서에 기록했다.</li>
+</ul>
+<h2 id="문서-위치탐색디자인-검증">문서 위치·탐색·디자인 검증</h2>
+<ul>
+<li>canonical 문서는 기존 <code>wiki/lectures/2026/</code>에 유지했다. 디버깅 사례는 LAB 내부 <code>#lab-debugging</code>이며 이전 한글 앵커와 별도 노트 주소도 연결된다.</li>
+<li><code>/</code>는 강의 진입 목차, <code>/wiki/</code>는 filesystem 기반 Wiki 목차를 제공한다. nginx는 실제 파일 경로를 사용하며 없는 경로는 404로 응답한다.</li>
+<li>Ch6·Ch7·Ch8 간 이동, breadcrumb, 강의 목록, 현재 문서 목차를 분리했다. 고정 앵커의 직접 열기·새로고침·뒤로/앞으로 이동과 테마 저장을 검증했다.</li>
+<li>공통 색상·폰트·간격·읽기 폭 토큰을 <code>wiki/assets/site/tokens.css</code>에 정의했다. 본문은 최대 46rem, 모바일은 화면에 맞춰 축소되며 표·코드는 내부에서 스크롤한다.</li>
+<li>모바일의 코드 스크롤 영역에 키보드 포커스를 추가했다. 375·812·1440 light 및 375·1440 dark에서 axe WCAG A/AA 자동 검사 위반 0. 자동 검사는 수동 접근성 평가 전체를 대체하지 않는다.</li>
+<li><a href="../../validation/ch8/2026-10-25/navigation/results.json">라우팅·접근성 결과와 스크린샷</a>.</li>
+<li><a href="../../validation/ch8/2026-10-25/docs-layout/metrics.json">10개 화면 조건 측정과 스크린샷</a>. 페이지 가로 넘침·말줄임·브라우저 오류 0, SVG 9장 로딩, 세로 스크롤 확인.</li>
+</ul>
+<h2 id="기존-강의-디자인에-맞춘-재조정">기존 강의 디자인에 맞춘 재조정</h2>
+<p>Ch6·Ch7을 1440px 실제 화면으로 비교하고 Ch7의 hero·범위 배지·파란 강조색·옅은 격자 배경·둥근 섹션 패널·왼쪽 study rail을 Ch8에 적용했다. 본문을 세 열에서 목차와 본문의 두 열로 조정했다. 코드 블록은 어두운 배경과 별도 구문 색상 토큰을 사용한다. 경로·고정 앵커·LAB 내부 디버깅 사례 위치는 유지한다.</p>
+<ul>
+<li><a href="../../validation/ch8/2026-10-25/lecture-style/metrics.json">10개 화면 조건과 스크린샷</a>: 가로 넘침·말줄임·브라우저 오류 0, SVG 9장, 스크롤 확인.</li>
+<li><a href="../../validation/ch8/2026-10-25/lecture-style-navigation/results.json">탐색·테마·접근성 검사</a>: 5개 화면·테마 조건의 axe WCAG A/AA 자동 검사 위반 0.</li>
+<li>HTML parser 오류 0, Ch8 본문 동기화·Ch7 기존 검증 통과.</li>
+</ul>
+<h2 id="교재-목차-재대조와-학습-흐름-정리">교재 목차 재대조와 학습 흐름 정리</h2>
+<h3 id="공식-자료와-대조한-결과">공식 자료와 대조한 결과</h3>
+<p>공식 <a href="https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf">3판 목차·서문 PDF</a>의 인쇄 xiv쪽(PDF 14쪽)을 확인했다. 절 번호와 p.723~734 표기는 일치했다. HTML/Markdown에서 §8.2.3과 §8.2.4의 heading level이 잘못되어 있어 §8.2 아래로 복원했다. §8.1.3의 제목도 공식 명칭을 사용한다. <a href="../../validation/ch8/2026-10-25/textbook-audit.json">구조·쪽수 대조 기록</a>.</p>
+<p>교재 본문 범위는 §8.1~§8.2.4다. 이후 §8.2.5~§8.8은 미작성 범위로 명시했다. syscall ABI·Linux mapping은 공식 보충, <code>fork</code> LAB은 §8.4 선행 실습, Go·BEAM·Rust는 본문 뒤의 확장 자료로 구분했다. CMU <a href="https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf">동반 강의</a>의 슬라이드 15~17에 근거해 page fault·잘못된 메모리 참조 사례를 보강했고, <a href="https://csapp.cs.cmu.edu/3e/errata.html">공식 정오표</a>의 p.735 stack 주소·<code>%rsp</code> 정정을 반영했다.</p>
+<h3 id="학습-동선과-코드">학습 동선과 코드</h3>
+<ul>
+<li>홈페이지의 <code>/csapp/</code>는 <code>/csapp/wiki/</code>로 이동한다. 중복 진입 목차를 없애고 Ch6→Ch7→Ch8 순서와 실제 교재 범위를 표시한다.</li>
+<li>Wiki의 개념·학습 노트는 같은 디자인의 HTML로 열린다. 파일명 대신 문서 제목을 표시한다. 작성·검증 기록은 접을 수 있다.</li>
+<li>C·Linux·ELF 실습에는 설명과 소스 뷰어를 제공한다. 학습 링크가 서버 디렉터리 목록으로 빠지지 않도록 했다.</li>
+<li>코드 블록은 highlight.js 11.12.0의 GitHub Dark 전체 구문 테마를 함께 배포한다. 언어 배지·복사 버튼을 제공하고 <code>asm</code>을 <code>x86asm</code>으로 매핑한다. 실행 출력은 plaintext로 유지한다. <a href="https://highlightjs.readthedocs.io/en/latest/readme.html">공식 사용 문서</a>, <a href="https://github.com/highlightjs/highlight.js/blob/11.12.0/src/styles/github-dark.css">GitHub 테마 소스</a>.</li>
+<li><a href="../../validation/ch8/2026-10-25/learning-flow/results.json">학습 동선·절 계층·클립보드·페이지 검사</a>: 실제 클릭·heading parent·색상 차이·복사 내용 일치를 검사했다. Wiki·노트·개념·소스 뷰어 5종의 모바일 light/데스크톱 dark 총 10개 조건에서 가로 넘침·말줄임·접근성 자동 검사 위반 0.</li>
+<li><a href="../../validation/ch8/2026-10-25/textbook-layout/metrics.json">Ch8 화면 검사</a>: 화면·테마 10개 조건을 렌더링하고 SVG 9장·스크롤·앵커를 검사했다.</li>
+</ul>
+<footer class="docs-footer"><a href="../">← CSAPP Wiki</a> · <a href="2026-10-25-csapp-ch8-validation.md">Markdown 원문</a></footer></article></main></body></html>

@@ -1,0 +1,38 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>메모리 계층 구조 (Memory Hierarchy) | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../assets/site/tokens.css"><link rel="stylesheet" href="../assets/site/docs.css"><link rel="stylesheet" href="../assets/site/github-dark.css"><script defer src="../assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../">CSAPP Wiki</a></li><li aria-current="page">메모리 계층 구조 (Memory Hierarchy)</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><p class="docs-kicker">개념 노트</p><h1>메모리 계층 구조 (Memory Hierarchy)</h1>
+<p>레지스터 → 캐시(L1/L2/L3) → 메인 메모리 → 디스크로 이어지는 저장 장치 계층.
+위로 갈수록 빠르고 작고 비싸며, 계층 구조가 성립하는 이유는 프로그램의
+지역성(<a href="cache-locality.html">캐시와 지역성 (Cache &amp; Locality)</a>) 때문이다. CSAPP Chapter 6의 중심 주제.</p>
+<h2 id="계층별-역할">계층별 역할</h2>
+<p>레지스터는 CPU 내부의 임시 값(루프 변수, 누산값)을 담고, L1은 코어에 가장 가까운 작은
+캐시, L2/L3는 점점 크고 느려지는 중간 캐시다. 메인 메모리(DRAM)는 캐시보다 훨씬 느리고,
+SSD/디스크는 그보다 더 느리다. 캐시는 메인 메모리의 모든 값을 들고 있는 게 아니라, 곧 쓸
+가능성이 높은 block 일부를 가까운 곳에 복사해 둔다. &quot;무엇을 가까이 둘 것인가&quot;는 프로그램의
+지역성이 결정한다. working set이 L1에 들어가면 매우 빠르고, L2/L3로 밀리면 느려지고,
+메인 메모리까지 내려가면 더 느려진다 — 이것이 memory mountain의 성능 계단이다.</p>
+<h2 id="캐시-조직-s-e-b-tag">캐시 조직: S, E, B, tag</h2>
+<p>캐시는 set, line, block으로 조직되고, 주소는 <code>[ tag | set index | block offset ]</code>으로
+해석한다. S = 2^s는 set 개수, E는 set당 line 개수(associativity), B = 2^b는 block(cache
+line) 크기, 데이터 용량은 C = S × E × B다. E = 1이면 direct-mapped, S = 1이면 fully
+associative. hit 판정은 tag 일치만으로 끝나지 않고 valid bit가 켜져 있어야 한다.
+쓰기에는 write-through/write-back, write-allocate/no-write-allocate policy가 붙는다.</p>
+<h2 id="hit-miss-amat">Hit, Miss, AMAT</h2>
+<p>miss는 세 종류로 분류한다. compulsory(cold) miss는 처음 보는 block이라 나는 miss,
+capacity miss는 working set이 캐시보다 커서 밀려나는 miss(blocking으로 완화),
+conflict miss는 공간이 남아도 같은 set에 몰려서 나는 miss(padding, associativity 증가로
+완화)다. 평균 접근 비용은 AMAT = hit time + miss rate × miss penalty. hit time 1 cycle,
+miss penalty 100 cycles라면 97% hit는 평균 4 cycles, 99% hit는 2 cycles — miss rate가
+조금만 줄어도 체감 성능이 크게 바뀌는 이유다.</p>
+<h2 id="자주-혼동하는-포인트">자주 혼동하는 포인트</h2>
+<ul>
+<li>캐시는 byte 단위가 아니라 block(보통 64B) 단위로 데이터를 가져온다. miss 한 번에
+연속된 B byte가 통째로 올라온다.</li>
+<li>capacity miss와 conflict miss의 구분: 전자는 캐시 전체가 부족한 것, 후자는 특정 set만
+몰려서 나는 것이다. 특정 stride가 같은 set만 반복해서 때리면 conflict miss다.</li>
+<li>C = S × E × B는 데이터 용량이며 valid bit, tag 같은 metadata는 제외한 값이다.</li>
+</ul>
+<h2 id="관련-문서">관련 문서</h2>
+<ul>
+<li>강의: <a href="../lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html">CSAPP Ch6 Memory Hierarchy 통합 강의노트</a></li>
+<li>하위 토픽: <a href="cache-locality.html">캐시와 지역성 (Cache &amp; Locality)</a></li>
+</ul>
+<footer class="docs-footer"><a href="../">← CSAPP Wiki</a> · <a href="memory-hierarchy.md">Markdown 원문</a></footer></article></main></body></html>

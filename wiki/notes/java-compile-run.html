@@ -1,0 +1,40 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>Java 코드 컴파일하고 실행하기 | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../assets/site/tokens.css"><link rel="stylesheet" href="../assets/site/docs.css"><link rel="stylesheet" href="../assets/site/github-dark.css"><script defer src="../assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../">CSAPP Wiki</a></li><li aria-current="page">Java 코드 컴파일하고 실행하기</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><p class="docs-kicker">학습 기록 · 2026-07-05</p><h1>Java 코드 컴파일하고 실행하기</h1>
+<p>Java 프로그램을 돌리려면 크게 두 단계가 필요하다.</p>
+<ol>
+<li><strong>컴파일(Compile)</strong>: <code>javac</code> 컴파일러로 사람이 쓴 Java 소스 코드(<code>.java</code>)를 바이트코드(<code>.class</code>)로 바꾼다.</li>
+<li><strong>실행(Execute)</strong>: <code>java</code> 명령어로 JVM(자바 가상 머신)을 띄워서 컴파일된 바이트코드를 실행시킨다.</li>
+</ol>
+<h2 id="java-파일-컴파일">Java 파일 컴파일</h2>
+<p><code>javac</code>는 <strong>Java 컴파일러</strong>다. 이건 우리가 쓴 <code>.java</code> 소스 코드를 JVM이 알아먹는 <code>.class</code> 바이트코드로 번역하는 역할을 한다.</p>
+<p><code>javac</code>가 하는 일:</p>
+<ul>
+<li><strong>소스 코드 변환</strong>: <code>.java</code> 파일을 <code>.class</code> 파일로 만든다.</li>
+<li><strong>문법 &amp; 타입 체크</strong>: 코드에 문법 오류나 타입이 안 맞는 부분이 없는지 확인하고, 문제 있으면 에러를 띄운다.</li>
+<li><strong>플랫폼 독립성</strong>: 컴파일된 <code>.class</code> 파일은 OS나 하드웨어에 상관없다. 이게 바로 Java가 &quot;한 번 짜면 어디서든 돌아간다&quot;고 하는 이유다.</li>
+</ul>
+<p>이 프로젝트처럼 패키지 구조(<code>java-datastructures</code> 폴더 안에 <code>BST</code> 패키지)가 잡혀있으면, <code>-d</code> 옵션을 붙여주는 게 좋다. 이 옵션은 컴파일된 <code>.class</code> 파일을 어디에 둘지 정해주는 건데, 원래 패키지 구조를 그대로 복사해서 만들어준다.</p>
+<p>프로젝트 루트 폴더에서 아래 명령어를 치면 <code>java-datastructures/BST</code> 폴더의 모든 자바 파일을 컴파일할 수 있다.</p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-1" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-1" class="hljs language-bash">javac -d java-datastructures java-datastructures/BST/*.java
+</code></pre></div>
+<p>이 명령어는 <code>java-datastructures/BST</code> 안의 모든 <code>.java</code> 파일을 컴파일하고, 결과물인 <code>.class</code> 파일들을 <code>java-datastructures</code> 폴더 안에 <code>BST</code> 패키지 구조를 그대로 만들어서 넣어준다. (예: <code>java-datastructures/BST/BinarySearchTree.class</code>)</p>
+<p>컴파일할 때 &quot;unchecked or unsafe operations&quot; 같은 경고가 뜰 수도 있는데, 보통 제네릭 쓸 때 타입 정보가 좀 모자라서 뜨는 거라 지금은 무시해도 된다.</p>
+<h2 id="데모-프로그램-실행">데모 프로그램 실행</h2>
+<p>컴파일이 끝났으면 <code>java</code> 명령어로 데모 프로그램을 돌려볼 수 있다. 이때 <code>-cp</code>(classpath) 옵션이 중요한데, JVM한테 실행할 <code>.class</code> 파일이 어디 있는지 알려주는 역할을 한다.</p>
+<p><strong><code>BinarySearchTreeDemo</code> 실행:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-2" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-2" class="hljs language-bash">java -<span class="hljs-built_in">cp</span> java-datastructures BST.BinarySearchTreeDemo
+</code></pre></div>
+<p><strong><code>AVLTreeDemo</code> 실행:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="document-code-3" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="document-code-3" class="hljs language-bash">java -<span class="hljs-built_in">cp</span> java-datastructures BST.AVLTreeDemo
+</code></pre></div>
+<p>이렇게 하면 각 데모 클래스 파일 안에 있는 <code>main</code> 메소드가 실행되면서, 이진 탐색 트리랑 AVL 트리가 어떻게 도는지 볼 수 있다.</p>
+<h2 id="c-컴파일과의-비교">C 컴파일과의 비교</h2>
+<p>C는 컴파일 결과가 CPU 아키텍처에 묶인 기계어(<a href="0001-compile-linking.html">컴파일과 링커</a> 참고)지만,
+Java는 플랫폼 독립적인 바이트코드를 만들고 JVM이 실행 시점에 해석/컴파일한다.
+<code>.class</code>는 어느 환경에서든 재생성 가능한 빌드 산출물이라 git으로 추적하지 않는다
+(<code>.gitignore</code>의 <code>*.class</code>).</p>
+<h2 id="관련">관련</h2>
+<ul>
+<li>토픽: <a href="../topics/compile-linking.html">컴파일 · 링킹 (Compile &amp; Linking)</a>, <a href="../topics/tree-index.html">트리와 인덱스 (Tree &amp; Index)</a> (BST/AVL 구현체가 실습 대상)</li>
+<li>실습: <a href="https://github.com/baksohyeon/csapp-code/tree/main/java-datastructures/BST/">java-datastructures/BST</a></li>
+</ul>
+<footer class="docs-footer"><a href="../">← CSAPP Wiki</a> · <a href="java-compile-run.md">Markdown 원문</a></footer></article></main></body></html>

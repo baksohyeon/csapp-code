@@ -1,0 +1,24 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>C 컴파일·링킹 실습 | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../../wiki/assets/site/tokens.css"><link rel="stylesheet" href="../../wiki/assets/site/docs.css"><link rel="stylesheet" href="../../wiki/assets/site/github-dark.css"><script defer src="../../wiki/assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../../wiki/">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../../wiki/">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../../wiki/">CSAPP Wiki</a></li><li aria-current="page">C 컴파일·링킹 실습</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><h1>C 컴파일·링킹 실습</h1><p>실습 설명을 읽고 소스를 확인한다. 원본 파일 링크는 소스 텍스트를 연다.</p><details class="source-file"><summary>hello.c</summary><p><a href="hello.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-1" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-1" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-type">int</span> <span class="hljs-title function_">sum</span><span class="hljs-params">(<span class="hljs-type">int</span> num)</span>; <span class="hljs-comment">// forward declaration </span>
+<span class="hljs-comment">// -&gt; 정의가 없어도 되고, 모르는 함수여도 일단 컴파일 냅다 해줌</span>
+<span class="hljs-comment">// linking 단계에서 정의가 필요함</span>
+<span class="hljs-comment">// -&gt; 컴파일러가 이 함수가 어디에 있는지 알 수 있도록 도와줌</span>
+<span class="hljs-comment">// .o gitignore </span>
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> {
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Hello, World! %d\n&quot;</span>, sum(<span class="hljs-number">100</span>));
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><details class="source-file"><summary>sum.c</summary><p><a href="sum.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-2" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-2" class="hljs language-c"><span class="hljs-comment">// Type your code here, or load an example.</span>
+<span class="hljs-type">int</span> <span class="hljs-title function_">sum</span><span class="hljs-params">(<span class="hljs-type">int</span> num)</span>;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">sum</span><span class="hljs-params">(<span class="hljs-type">int</span> num)</span> {
+    <span class="hljs-type">int</span> sum = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>; i &lt; num; i++) {
+        sum += i;
+    };
+    <span class="hljs-keyword">return</span> sum;
+}
+</code></pre></div>
+</details><footer class="docs-footer"><a href="../../wiki/">← CSAPP Wiki</a></footer></article></main></body></html>

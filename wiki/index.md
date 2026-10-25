@@ -5,52 +5,40 @@ status: living
 
 # CSAPP Wiki
 
-CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.
+교재 순서로 강의를 읽고, 개념 노트와 실습으로 이어가는 스터디 기록이다. 등록된 강의만 표시하며, 각 노트가 다루는 교재 범위를 함께 적는다.
 
-## 최신
+## 강의노트
 
-- [[2026-10-04-csapp-ch8-exceptional-control-flow]]: Chapter 8.1-8.2.4 Exceptional Control Flow 강의노트
-- [[2026-07-26-csapp-ch7-symbol-resolution]]: Chapter 7.6 Symbol Resolution 강의노트
-- [[2026-07-05-csapp-ch6-memory-hierarchy]] — Chapter 6 Memory Hierarchy 통합 강의노트
+- [[2026-07-05-csapp-ch6-memory-hierarchy]] — Chapter 6 메모리 계층과 지역성
+- [[2026-07-26-csapp-ch7-symbol-resolution]] — §7.6.1~§7.6.3 심볼 해석과 정적 라이브러리
+- [[2026-10-04-csapp-ch8-exceptional-control-flow]] — §8.1~§8.2.4 예외와 프로세스
 
-## 강의노트 (Lectures)
+## 개념 노트
 
-- 2026
-  - [[2026-10-04-csapp-ch8-exceptional-control-flow]]: Ch8.1-8.2.4 Exceptional Control Flow ([HTML 원본](lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html))
-  - [[2026-07-26-csapp-ch7-symbol-resolution]]: Ch7.6 Symbol Resolution ([HTML 원본](../chapter07/chapter-7.6.1.html))
-  - [[2026-07-05-csapp-ch6-memory-hierarchy]] — Ch6 Memory Hierarchy ([HTML 원본](lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html))
-
-## 노트 (Notes)
-
-- [[2026-10-25-csapp-ch8-validation]] — Ch8 기술·LAB·반응형·배포 검증 보고서
-- [[2026-10-25-csapp-ch8-learning-prompt]] — Ch8 학습 문서 개선·검증·배포 실행 프롬프트
-- [[0001-compile-linking]] — 컴파일과 링커, 링크 타임 에러 실습
-- [[java-compile-run]] — javac/java로 컴파일·실행하기 (BST/AVL 데모)
-- [[2025-09-21-study-log]] — 트리/인덱스, OLTP·OLAP, ACID 학습 로그
-
-## 토픽 (Topics)
-
-- [[compile-linking]] — 컴파일 · 링킹 · 심볼 해석
-- [[memory-hierarchy]] — 메모리 계층 구조
+- [[memory-hierarchy]] — 메모리 계층
 - [[cache-locality]] — 캐시와 지역성
-- [[tree-index]] — 트리 자료구조와 DB 인덱스
+- [[compile-linking]] — 컴파일과 링킹
+- [[tree-index]] — 트리와 인덱스
 - [[acid-innodb]] — ACID와 InnoDB
 
-## 실습 (Examples)
+## 실습과 학습 기록
 
-- [examples/0002-exceptional-control-flow](../examples/0002-exceptional-control-flow/) — syscall·프로세스·가상 주소 mapping LAB
+- [[0001-compile-linking]] — C 컴파일과 링크 오류를 재현한다.
+- [[java-compile-run]] — Java 코드 컴파일과 실행 방법을 확인한다.
+- [[2025-09-21-study-log]] — 트리·인덱스·OLTP/OLAP 학습 기록을 읽는다.
+- [Ch8 Linux LAB](../examples/0002-exceptional-control-flow/) — syscall·프로세스·mapping 코드와 실행 방법
+- [Ch7 ELF 실습](../chapter07/examples/) — 심볼·archive·링커 예제 코드
 
-- [examples/0001-compile-linking](../examples/0001-compile-linking/) — 링크 타임 에러 재현 실습 (→ [[0001-compile-linking]])
-- [chapter07/examples](../chapter07/examples/): 심볼 해석, 정적 archive, GCC 10 전후 ELF 실습 (→ [[2026-07-26-csapp-ch7-symbol-resolution]])
-- [java-datastructures/BST](../java-datastructures/BST/) — BST/AVL 트리 Java 구현 (→ [[java-compile-run]], [[tree-index]])
-- [exercises](../exercises/) — 자바 연습문제+해답 (1~10장, hwp)
+## 교재와 스터디 자료
 
-## 타입 렌즈
+- [CSAPP 3판 공식 목차](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf)
+- [CSAPP 3판 공식 정오표](https://csapp.cs.cmu.edu/3e/errata.html)
+- [교재 PDF](https://i.hyeon.me/csapp.pdf)
+- [현재 스터디 whiteboard](https://i.hyeon.me/csapp)
+- [whiteboard 아카이브](https://i.hyeon.me/csapp-archive)
 
-- [[lecture]] · [[note]] · [[topic]] · [[example]]
+## 문서 작성과 검증 기록
 
-## 외부 자료
-
-- [CSAPP PDF](https://i.hyeon.me/csapp.pdf)
-- [Current whiteboard](https://i.hyeon.me/csapp)
-- [Past whiteboard archive](https://i.hyeon.me/csapp-archive)
+- [[2026-10-25-csapp-ch8-validation]] — 기술·LAB·화면·배포 검증 기록
+- [[2026-10-25-csapp-ch8-learning-prompt]] — 학습 문서 작성 프롬프트
+- 문서 분류: [[lecture]] · [[note]] · [[topic]] · [[example]]

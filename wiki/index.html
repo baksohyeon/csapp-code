@@ -1,63 +1,34 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>전체 목차 | CSAPP</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="assets/site/tokens.css"><link rel="stylesheet" href="assets/site/docs.css"><script defer src="assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../">CSAPP <span>학습 문서</span></a><nav aria-label="사이트"><a href="./">전체 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><main id="content" class="docs-home"><article class="docs-article"><h1>CSAPP Wiki</h1>
-<p>CSAPP(Computer Systems: A Programmer's Perspective) 스터디 knowledge base.</p>
-<h2>최신</h2>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>CSAPP Wiki | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="assets/site/tokens.css"><link rel="stylesheet" href="assets/site/docs.css"><link rel="stylesheet" href="assets/site/github-dark.css"><script defer src="assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="./">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="./">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><span aria-current="page">CSAPP Wiki</span></li></ol></nav><main id="content" class="docs-home"><article class="docs-article wiki-catalog"><h1 id="csapp-wiki">CSAPP Wiki</h1>
+<p>교재 순서로 강의를 읽고, 개념 노트와 실습으로 이어가는 스터디 기록이다. 등록된 강의만 표시하며, 각 노트가 다루는 교재 범위를 함께 적는다.</p><nav class="wiki-jump" aria-label="Wiki 탐색"><a href="#강의노트">강의노트</a><a href="#개념-노트">개념 노트</a><a href="#실습과-학습-기록">실습</a><a href="#교재와-스터디-자료">참고 자료</a></nav>
+<h2 id="강의노트">강의노트</h2><ol class="lecture-list"><li><p class="docs-kicker">Chapter 6 · 2026-07-05</p><a href="lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html">Ch6 · Memory Hierarchy</a><p>메모리 계층·캐시·지역성</p></li><li><p class="docs-kicker">§7.6.1–§7.6.3 · 2026-07-26</p><a href="../chapter07/chapter-7.6.1.html">Ch7 · Symbol Resolution</a><p>심볼 해석·정적 라이브러리·링커 실습</p></li><li><p class="docs-kicker">§8.1–§8.2.4 · 2026-10-04</p><a href="lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html">Ch8 · Exceptional Control Flow</a><p>예외·프로세스·주소 공간·Linux 실습</p></li></ol>
+<h2 id="개념-노트">개념 노트</h2>
 <ul>
-<li><a href="lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html">2026-10-04-csapp-ch8-exceptional-control-flow</a>: Chapter 8.1-8.2.4 Exceptional Control Flow 강의노트</li>
-<li><a href="../chapter07/chapter-7.6.1.html">2026-07-26-csapp-ch7-symbol-resolution</a>: Chapter 7.6 Symbol Resolution 강의노트</li>
-<li><a href="lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html">2026-07-05-csapp-ch6-memory-hierarchy</a> — Chapter 6 Memory Hierarchy 통합 강의노트</li>
+<li><a href="topics/memory-hierarchy.html">메모리 계층 구조 (Memory Hierarchy)</a> — 메모리 계층</li>
+<li><a href="topics/cache-locality.html">캐시와 지역성 (Cache &amp; Locality)</a> — 캐시와 지역성</li>
+<li><a href="topics/compile-linking.html">컴파일 · 링킹 (Compile &amp; Linking)</a> — 컴파일과 링킹</li>
+<li><a href="topics/tree-index.html">트리와 인덱스 (Tree &amp; Index)</a> — 트리와 인덱스</li>
+<li><a href="topics/acid-innodb.html">ACID와 InnoDB</a> — ACID와 InnoDB</li>
 </ul>
-<h2>강의노트 (Lectures)</h2>
+<h2 id="실습과-학습-기록">실습과 학습 기록</h2>
 <ul>
-<li>2026
+<li><a href="notes/0001-compile-linking.html">컴파일과 링커</a> — C 컴파일과 링크 오류를 재현한다.</li>
+<li><a href="notes/java-compile-run.html">Java 코드 컴파일하고 실행하기</a> — Java 코드 컴파일과 실행 방법을 확인한다.</li>
+<li><a href="notes/2025-09-21-study-log.html">학습 로그</a> — 트리·인덱스·OLTP/OLAP 학습 기록을 읽는다.</li>
+<li><a href="../examples/0002-exceptional-control-flow/">Ch8 Linux LAB</a> — syscall·프로세스·mapping 코드와 실행 방법</li>
+<li><a href="../chapter07/examples/">Ch7 ELF 실습</a> — 심볼·archive·링커 예제 코드</li>
+</ul>
+<h2 id="교재와-스터디-자료">교재와 스터디 자료</h2>
 <ul>
-<li><a href="lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html">2026-10-04-csapp-ch8-exceptional-control-flow</a>: Ch8.1-8.2.4 Exceptional Control Flow (<a href="lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html">HTML 원본</a>)</li>
-<li><a href="../chapter07/chapter-7.6.1.html">2026-07-26-csapp-ch7-symbol-resolution</a>: Ch7.6 Symbol Resolution (<a href="../chapter07/chapter-7.6.1.html">HTML 원본</a>)</li>
-<li><a href="lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html">2026-07-05-csapp-ch6-memory-hierarchy</a> — Ch6 Memory Hierarchy (<a href="lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html">HTML 원본</a>)</li>
+<li><a href="https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf">CSAPP 3판 공식 목차</a></li>
+<li><a href="https://csapp.cs.cmu.edu/3e/errata.html">CSAPP 3판 공식 정오표</a></li>
+<li><a href="https://i.hyeon.me/csapp.pdf">교재 PDF</a></li>
+<li><a href="https://i.hyeon.me/csapp">현재 스터디 whiteboard</a></li>
+<li><a href="https://i.hyeon.me/csapp-archive">whiteboard 아카이브</a></li>
 </ul>
-</li>
-</ul>
-<h2>노트 (Notes)</h2>
+<details class="wiki-maintenance"><summary>문서 작성과 검증 기록</summary>
 <ul>
-<li><a href="notes/2026-10-25-csapp-ch8-validation.md">2026-10-25-csapp-ch8-validation</a> — Ch8 기술·LAB·반응형·배포 검증 보고서</li>
-<li><a href="notes/2026-10-25-csapp-ch8-learning-prompt.md">2026-10-25-csapp-ch8-learning-prompt</a> — Ch8 학습 문서 개선·검증·배포 실행 프롬프트</li>
-<li><a href="../examples/0001-compile-linking">0001-compile-linking</a> — 컴파일과 링커, 링크 타임 에러 실습</li>
-<li><a href="../java-datastructures">java-compile-run</a> — javac/java로 컴파일·실행하기 (BST/AVL 데모)</li>
-<li><a href="notes/2025-09-21-study-log.md">2025-09-21-study-log</a> — 트리/인덱스, OLTP·OLAP, ACID 학습 로그</li>
+<li><a href="notes/2026-10-25-csapp-ch8-validation.html">Ch8 검증 보고서</a> — 기술·LAB·화면·배포 검증 기록</li>
+<li><a href="notes/2026-10-25-csapp-ch8-learning-prompt.html">CSAPP Ch8 학습 문서 개선·검증·배포 프롬프트</a> — 학습 문서 작성 프롬프트</li>
+<li>문서 분류: <a href="type/lecture.html">Lecture</a> · <a href="type/note.html">Note</a> · <a href="type/topic.html">Topic</a> · <a href="type/example.html">Example</a></li>
 </ul>
-<h2>토픽 (Topics)</h2>
-<ul>
-<li><a href="topics/compile-linking.md">compile-linking</a> — 컴파일 · 링킹 · 심볼 해석</li>
-<li><a href="topics/memory-hierarchy.md">memory-hierarchy</a> — 메모리 계층 구조</li>
-<li><a href="topics/cache-locality.md">cache-locality</a> — 캐시와 지역성</li>
-<li><a href="topics/tree-index.md">tree-index</a> — 트리 자료구조와 DB 인덱스</li>
-<li><a href="topics/acid-innodb.md">acid-innodb</a> — ACID와 InnoDB</li>
-</ul>
-<h2>실습 (Examples)</h2>
-<ul>
-<li>
-<p><a href="../examples/0002-exceptional-control-flow/">examples/0002-exceptional-control-flow</a> — syscall·프로세스·가상 주소 mapping LAB</p>
-</li>
-<li>
-<p><a href="../examples/0001-compile-linking/">examples/0001-compile-linking</a> — 링크 타임 에러 재현 실습 (→ <a href="../examples/0001-compile-linking">0001-compile-linking</a>)</p>
-</li>
-<li>
-<p><a href="../chapter07/examples/">chapter07/examples</a>: 심볼 해석, 정적 archive, GCC 10 전후 ELF 실습 (→ <a href="../chapter07/chapter-7.6.1.html">2026-07-26-csapp-ch7-symbol-resolution</a>)</p>
-</li>
-<li>
-<p><a href="../java-datastructures/BST/">java-datastructures/BST</a> — BST/AVL 트리 Java 구현 (→ <a href="../java-datastructures">java-compile-run</a>, <a href="topics/tree-index.md">tree-index</a>)</p>
-</li>
-<li>
-<p><a href="../exercises/">exercises</a> — 자바 연습문제+해답 (1~10장, hwp)</p>
-</li>
-</ul>
-<h2>타입 렌즈</h2>
-<ul>
-<li><a href="type/lecture.md">lecture</a> · <a href="type/note.md">note</a> · <a href="type/topic.md">topic</a> · <a href="type/example.md">example</a></li>
-</ul>
-<h2>외부 자료</h2>
-<ul>
-<li><a href="https://i.hyeon.me/csapp.pdf">CSAPP PDF</a></li>
-<li><a href="https://i.hyeon.me/csapp">Current whiteboard</a></li>
-<li><a href="https://i.hyeon.me/csapp-archive">Past whiteboard archive</a></li>
-</ul>
-</article></main></body></html>
+</details></article></main></body></html>

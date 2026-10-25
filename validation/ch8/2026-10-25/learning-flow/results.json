@@ -1,0 +1,105 @@
+{
+  "base": "http://127.0.0.1:8765/",
+  "checkedAt": "2026-10-25T11:00:16.328Z",
+  "records": [
+    {
+      "test": "homepage/CSAPP → Wiki → chapter, readable notes, source reader, back to Wiki; textbook hierarchy; code highlight and clipboard",
+      "pass": true,
+      "linkedPages": 19,
+      "colors": {
+        "plain": "rgb(201, 209, 217)",
+        "string": "rgb(165, 214, 255)"
+      }
+    },
+    {
+      "route": "wiki/",
+      "width": 375,
+      "scheme": "light",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "wiki/",
+      "width": 1440,
+      "scheme": "dark",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "wiki/notes/0001-compile-linking.html",
+      "width": 375,
+      "scheme": "light",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "wiki/notes/0001-compile-linking.html",
+      "width": 1440,
+      "scheme": "dark",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "wiki/topics/compile-linking.html",
+      "width": 375,
+      "scheme": "light",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "wiki/topics/compile-linking.html",
+      "width": 1440,
+      "scheme": "dark",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "examples/0002-exceptional-control-flow/",
+      "width": 375,
+      "scheme": "light",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "examples/0002-exceptional-control-flow/",
+      "width": 1440,
+      "scheme": "dark",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "chapter07/examples/",
+      "width": 375,
+      "scheme": "light",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    },
+    {
+      "route": "chapter07/examples/",
+      "width": 1440,
+      "scheme": "dark",
+      "overflow": 0,
+      "truncate": 0,
+      "h1": 1,
+      "violations": []
+    }
+  ]
+}
