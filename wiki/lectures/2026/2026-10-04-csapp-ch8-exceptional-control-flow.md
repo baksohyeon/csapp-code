@@ -20,7 +20,7 @@ source_url: https://i.hyeon.me/csapp
 
 프로세스는 실행 흐름과 가상 주소 공간을 제공한다. CPU의 예외 처리와 권한 검사는 운영체제가 이 실행 환경을 관리하는 기반이다.
 
-**범위:** CSAPP 3판 §8.1~§8.2.4. **확인 기준일:** 2026-10-25 KST. 노트 생성일과 스터디 세션 표기는 2026-10-04를 유지한다.
+**범위:** CSAPP 3판 §8.1~§8.2.4. **스터디 세션:** 2026-10-04. **확인 기준일:** 2026-10-25 KST.
 
 [HTML 강의노트](2026-10-04-csapp-ch8-exceptional-control-flow.html) · [실습 소스](../../../examples/0002-exceptional-control-flow/) · [검증 보고서](../../notes/2026-10-25-csapp-ch8-validation.md)
 
@@ -48,7 +48,7 @@ source_url: https://i.hyeon.me/csapp
 
 ### ELI10: 실행 순서를 잠시 맡기기
 
-[COMMENTARY] 도서관에서 책을 읽다가 직원에게 대출을 요청한다고 생각해 보자. 읽던 위치를 기억하고 직원의 처리를 기다린 뒤 돌아온다. 예외 처리에서도 CPU와 운영체제는 재개에 필요한 상태를 보존하고 handler로 제어를 옮긴다. 이 비유의 책갈피는 재개 위치를 설명한다. 실제 복귀 주소와 종료 여부는 사건 종류에 따라 달라진다.
+[COMMENTARY] 도서관에서 책을 읽다가 대출을 요청하려면, 읽던 곳에 책갈피를 끼우고 직원에게 간다. 처리가 끝나면 책갈피를 펼쳐 이어 읽는다. 예외 처리에서도 CPU와 운영체제는 재개에 필요한 상태를 보존하고 handler로 제어를 옮긴다. 실제 복귀 위치와 종료 여부는 사건 종류에 따라 달라진다.
 
 | 용어 | 의미 | 확인할 대상 |
 |---|---|---|
@@ -64,7 +64,7 @@ source_url: https://i.hyeon.me/csapp
 
 ### 교재 절 대응표
 
-[CSAPP][사실] 공식 북미판 목차의 xiv쪽(PDF 14쪽)과 스터디 교재 Global Edition의 xv쪽(PDF 15쪽)을 대조했다. 절 순서는 같다. 이 노트의 교재 본문은 §8.1~§8.2.4이며, §8.2.3·§8.2.4는 §8.2의 하위 절이다. 아래는 각 판의 인쇄 쪽수다. 스터디 PDF 뷰어의 페이지 번호와도 구분한다. [S1][S30]
+[CSAPP][사실] 북미판과 스터디 교재 Global Edition은 절 순서가 같다. 목차는 각각 xiv쪽(PDF 14쪽), xv쪽(PDF 15쪽)에 있다. 아래 표는 각 판의 **인쇄 쪽수**다. §8.2.3·§8.2.4는 §8.2의 하위 절이다. [S1][S30]
 
 | 절 | 북미판 | Global | 교재 주제 | 학습 연결 |
 |---|---|---|---|---|
@@ -78,7 +78,7 @@ source_url: https://i.hyeon.me/csapp
 | 8.2.3 | p.734 | p.770 | Private Address Space | mapping·보호 |
 | 8.2.4 | p.734 | p.770 | User and Kernel Modes | 권한·커널 진입 |
 
-[CSAPP][사실] Chapter 8은 북미판 p.721 / Global p.757에서 시작한다. 이번 범위 다음은 아래와 같다. 이 범위의 독립 강의노트는 아직 작성하지 않았다. [S1][S30]
+[CSAPP][사실] Chapter 8은 북미판 p.721 / Global p.757에서 시작한다. §8.2.4 이후에는 문맥 교환, 프로세스 제어, signal로 이어진다. [S1][S30]
 
 | 다음 절 | 주제 | 북미판 | Global |
 |---|---|---|---|
@@ -91,14 +91,14 @@ source_url: https://i.hyeon.me/csapp
 | 8.8 | 요약 | p.787 | p.823 |
 
 
-[COMMENTARY] LAB의 `fork`·`waitpid`는 §8.4의 실습을 미리 연결하고, `/proc`·pagemap은 Chapter 9의 주소 변환 학습으로 이어진다. Go·BEAM·Rust 보충은 이 노트 뒤쪽에 둔다.
+[COMMENTARY] LAB의 `fork`·`waitpid`는 §8.4의 프로세스 제어를, `/proc`·pagemap은 Chapter 9의 주소 변환을 미리 살펴보는 실습이다.
 
 
 ## 8.1 Exceptions
 
 ### 8.1.1 Exception Handling
 
-[CSAPP][사실] 현재 프로그램 바깥의 사건과 명령어 실행 중 생기는 사건을 처리하려면, 정상적인 분기·함수 호출 이외의 제어 이전이 필요하다. CSAPP의 exception 모델은 사건에 따라 운영체제 handler로 제어를 옮긴다. 교재 그림과 CMU 강의 자료에서 이 구조를 확인할 수 있다. [S2][S18]
+[CSAPP][사실] 프로그램 실행 중에는 외부 장치의 통지나 명령어 처리 중의 오류가 발생한다. CSAPP의 exception 모델은 이런 사건을 처리할 운영체제 handler로 제어를 옮긴다. [S2][S18]
 
 1. CPU가 사건을 인식한다.
 2. 아키텍처에 정의된 진입 규칙으로 상태를 저장하고 handler를 선택한다.
@@ -107,7 +107,7 @@ source_url: https://i.hyeon.me/csapp
 
 ![사건 인식에서 handler와 재개 또는 종료까지의 예외 흐름](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/exception-flow.svg)
 
-[OFFICIAL][사실] x86의 interrupt/exception vector와 IDT는 handler 선택에 사용된다. 64비트 `SYSCALL` 진입은 MSR에 설정된 경로를 사용한다. syscall의 구체적인 진입 경로는 ISA 규칙을 함께 읽는다. [S4]
+[OFFICIAL][사실] x86의 interrupt/exception vector와 IDT는 handler 선택에 사용된다. 64비트 `SYSCALL` 명령은 MSR에 설정된 경로로 커널에 진입한다. [S4]
 
 ### 8.1.2 Classes of Exceptions
 
@@ -137,11 +137,11 @@ source_url: https://i.hyeon.me/csapp
 | 유효하지 않은 메모리 참조 | `SIGSEGV` 전달 | 기본 동작은 프로세스 종료 |
 | System call | 요청된 커널 서비스 실행 | 반환 가능한 호출은 다음 사용자 명령으로 복귀 |
 
-[OFFICIAL][사실] Linux signal의 기본 동작과 handler 설정은 `signal(7)`에서 확인한다. 이 표의 page fault는 학습 모델이며 모든 page fault가 디스크 I/O를 필요로 하는 것은 아니다. [S7][S18]
+[OFFICIAL][사실] Linux signal의 처리 방식은 기본 동작과 handler 설정에 따라 결정된다. Page fault 처리에 디스크 I/O가 필요한지는 해당 페이지의 상태에 달려 있다. [S7][S18]
 
-[OFFICIAL][사실] x86의 `DIV`·`IDIV`는 제수가 0이거나 몫이 목적지 범위에 들어가지 않으면 divide-error fault `#DE`를 발생시킨다. Linux는 산술 오류를 `SIGFPE` 같은 signal로 사용자 프로세스에 전달한다. 기본 동작은 signal 종류와 프로세스 설정에 따라 결정된다. [S4] (Event 0)[S7]
+[OFFICIAL][사실] x86의 `DIV`·`IDIV`는 제수가 0이거나 몫이 목적지 범위에 들어가지 않으면 divide-error fault `#DE`를 발생시킨다. Linux는 산술 오류를 `SIGFPE` 같은 signal로 사용자 프로세스에 전달한다. [S4] (Event 0)[S7]
 
-[COMMENTARY] 원인을 조사할 때 `명령어 → CPU 예외 → 커널 처리 → signal → 프로세스 동작`을 따라간다. C의 정수 0 나눗셈 예제에는 undefined behavior가 있으므로, 재현하려면 생성된 명령어와 컴파일 옵션까지 확인해야 한다. 여기서는 해당 fault 실험을 실행하지 않았다. [S19]
+[COMMENTARY] 오류를 조사할 때는 `명령어 → CPU 예외 → 커널 처리 → signal → 프로세스 동작` 순서로 추적한다. C의 정수 0 나눗셈은 undefined behavior이므로, fault 재현에는 컴파일 옵션과 생성된 명령어 확인이 필요하다. [S19]
 
 #### 공식 보충: System call과 함수 호출 ABI
 
@@ -159,26 +159,28 @@ source_url: https://i.hyeon.me/csapp
 
 #### 실습 연결: stdin·stdout·stderr와 strace
 
-[OFFICIAL][사실] 일반적인 프로세스 시작 상태에서 표준 입력·출력·오류의 file descriptor는 0·1·2다. libc의 `stdin`·`stdout`·`stderr`는 `FILE` stream이며 버퍼링을 제공한다. `write(fd, ...)`는 fd를 사용한다. [S8][S9]
+[OFFICIAL][사실] 표준 입력·출력·오류에 할당되는 file descriptor는 각각 0·1·2다. libc의 `stdin`·`stdout`·`stderr`는 `FILE` stream이며 버퍼링을 제공한다. `write(fd, ...)`는 fd를 사용한다. [S8][S9]
 
-[COMMENTARY] `printf()` 호출 횟수와 `write` syscall 횟수는 버퍼링에 따라 달라진다. strace는 syscall·signal을 관측한다. 아래 출력은 LAB의 EXPECTED 예시다.
+[COMMENTARY] `printf()` 호출 횟수와 `write` syscall 횟수는 버퍼링에 따라 달라진다. strace로 syscall·signal을 관측하면 실제 커널 호출을 확인할 수 있다.
+
+[EXPECTED] LAB의 예상 trace:
 
 ```text
 write(1, "hello, world\n", 13) = 13
 exit_group(0)                  = ?
 ```
 
-[OFFICIAL][사실] `exit_group`은 호출 프로세스의 thread group을 종료하고 복귀하지 않는다. 종료 syscall과 반환하는 syscall의 복귀 경로는 구분해 읽는다. [S6]
+[OFFICIAL][사실] `exit_group`은 호출 프로세스의 thread group을 종료하고 복귀하지 않는다. [S6]
 
 ## 8.2 Processes
 
-[CSAPP][사실] 프로세스는 실행 중인 프로그램의 인스턴스다. 논리적 제어 흐름과 가상 주소 공간은 프로그램이 시스템을 사용하는 핵심 추상화다. [S18]
+[CSAPP][사실] 프로세스는 실행 중인 프로그램의 인스턴스다. 프로그램은 프로세스의 논리적 제어 흐름과 가상 주소 공간을 통해 CPU와 메모리를 사용한다. [S18]
 
 ### 8.2.1 Logical Control Flow
 
 [CSAPP][사실] 한 프로세스의 program counter가 가리킨 명령어들을 시간순으로 보면 그 프로세스의 logical control flow를 얻는다. CPU가 다른 프로세스를 실행하는 동안에도 이 흐름의 상태가 보존되어 다음 실행으로 이어진다. [S18]
 
-[COMMENTARY] 한 사람이 책 두 권을 번갈아 읽어도 각 책의 읽기 순서는 이어진다. 이 비유는 실행 순서의 보존을 설명한다. 실제 프로세스 상태에는 레지스터·메모리·OS 자원이 포함된다.
+[COMMENTARY] 책 두 권에 각각 책갈피를 끼우면 번갈아 읽어도 각 책의 순서를 이어갈 수 있다. 프로세스도 실행 상태를 보존해 두었다가 이어서 실행한다. 이 상태에는 레지스터·메모리·OS 자원이 포함된다.
 
 ### 8.2.2 Concurrent Flows
 
@@ -186,7 +188,7 @@ exit_group(0)                  = ?
 
 [CSAPP][사실] 교재 Global p.769~770은 두 흐름의 실행 기간이 겹치면 concurrent flow로 정의한다. 프로세스가 CPU를 번갈아 사용하는 multitasking의 각 실행 구간을 time slice라고 부른다. 다른 코어나 컴퓨터에서 함께 진행하는 흐름은 parallel flow다. [S30]
 
-[COMMENTARY] 타임라인의 색 막대는 실제 CPU 실행 구간이다. concurrency는 막대 하나의 겹침과 각 흐름의 시작~종료 구간을 구분해 판단한다. LAB의 출력 순서만으로 서로 다른 코어의 병렬 실행을 입증할 수 있는 범위는 제한된다.
+[COMMENTARY] 타임라인의 색 막대는 CPU가 해당 흐름을 실행한 구간이다. 동시성은 각 흐름의 시작부터 종료까지의 기간이 겹치는지로 판단한다. 서로 다른 코어의 병렬 실행을 확인하려면 코어별 실행 시점이 필요하다.
 
 ### 8.2.3 Private Address Space
 
@@ -210,7 +212,7 @@ exit_group(0)                  = ?
 
 #### 교재 주소 공간과 실제 mapping
 
-[CSAPP][사실] 공식 북미판 정오표는 p.735 그림 8.13의 stack 주소 상한 표기와 `%esp`를 정정한다. 실제 stack 주소는 프로세스마다 달라지고 x86-64 stack pointer 표기는 `%rsp`다. 스터디 Global판의 같은 그림은 p.771에 있다. 이 노트의 그림에는 고정 stack 주소를 넣지 않는다. [S1][S30]
+[CSAPP][사실] 공식 북미판 정오표는 p.735 그림 8.13의 stack 주소 상한 표기와 `%esp`를 정정한다. 실제 stack 주소는 프로세스마다 달라지고 x86-64 stack pointer 표기는 `%rsp`다. 스터디 Global판의 같은 그림은 p.771에 있다. [S1][S30]
 
 | 영역 | 학습할 역할 | Linux 관측 |
 |---|---|---|
@@ -225,7 +227,7 @@ exit_group(0)                  = ?
 
 [OFFICIAL][사실] pagemap은 가상 페이지 단위 정보를 제공한다. Linux 4.2부터 `CAP_SYS_ADMIN`이 없으면 PFN 필드가 0으로 가려질 수 있다. 파일 접근 자체에도 ptrace 권한 검사가 적용된다. kernel 문서와 man-pages의 비트 설명은 버전별로 대조해야 한다. [S11]
 
-[COMMENTARY] 주소 배치·ASLR·공유 영역·KPTI 설정은 실행 환경의 조건이다. 이 노트의 그림은 주소 변환 모델을 표현하며 특정 커널의 전체 page-table 배치를 확정하지 않는다. 실제 mapping은 LAB에서 확인한다.
+[COMMENTARY] 주소 공간 그림은 주소 변환의 개념도다. 실제 배치에는 ASLR·공유 영역·KPTI 설정이 영향을 주며, 프로세스의 mapping은 `/proc/PID/maps`에서 확인한다.
 
 ### 8.2.4 User and Kernel Modes
 
@@ -240,7 +242,7 @@ exit_group(0)                  = ?
 
 ![같은 task의 syscall 진입과 사용자 공간 복귀](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/user-kernel-mode.svg)
 
-[COMMENTARY] syscall이 같은 task로 복귀하는 경우에도 권한 전환은 일어난다. task 변경 여부는 스케줄링의 별도 질문이다.
+[COMMENTARY] syscall은 커널 코드로 진입할 때 권한이 전환된다. 같은 task로 돌아올 수도 있고, 스케줄러가 다른 task를 실행할 수도 있다.
 
 #### x86 특권 명령과 조건
 
@@ -251,13 +253,13 @@ mov %rax, %cr3    # 주소 변환 상태 변경
 hlt               # 특권 조건에서 CPU 대기
 ```
 
-[OFFICIAL][사실] 전원 끄기 syscall은 `CAP_SYS_BOOT` 등 권한 조건을 검사한다. power-off의 실제 결과는 플랫폼에 의존한다. orderly shutdown의 사용자 공간 서비스 정리와 raw `reboot(POWER_OFF)` 요청은 각 단계의 책임을 구분해야 한다. man-pages는 호출 전 `sync`가 없을 때 데이터 손실 가능성을 명시한다. [S5]
+[OFFICIAL][사실] 전원 끄기 syscall은 `CAP_SYS_BOOT` 등 권한 조건을 검사하며, power-off 결과는 플랫폼에 의존한다. orderly shutdown은 사용자 공간 서비스를 정리하는 절차를 포함한다. raw `reboot(POWER_OFF)` 호출 전에는 `sync`로 데이터를 기록해야 하며, man-pages는 이를 생략할 때의 데이터 손실 가능성을 명시한다. [S5]
 
-> **WARNING** 이 노트의 종료·전원 제어 설명은 문서 분석이다. 실습에서는 host의 reboot·shutdown을 실행하지 않는다.
+> **WARNING** 실습에서는 host의 reboot·shutdown을 실행하지 않는다.
 
 ## 보충: 서버 동시성과 런타임
 
-이 절은 교재 §8.1~§8.2.4를 읽은 뒤 연결하는 확장 자료다. Go·Erlang·Rust의 runtime 구현과 다른 저자의 동시성 정의를 다룬다.
+**교재 밖 보충:** Go·Erlang·Rust의 runtime 구현과 다른 저자의 동시성 정의.
 
 ### 다른 자료의 동시성 정의
 
@@ -269,7 +271,7 @@ hlt               # 특권 조건에서 CPU 대기
 
 [OFFICIAL][사실] Pike는 구조와 실행의 관점을 제시한다. OSTEP은 thread마다 PC·레지스터·stack이 있고 주소 공간을 공유한다는 모델에서 동기화로 전개한다. [S12][S13]
 
-[LECTURE] 기존 강의 메모는 C10K, blocking I/O, green thread, Go/Erlang을 확장 주제로 다룬다. 아래 구현 설명과 Rust 보충은 공식 자료 및 작성자 해설로 읽는다.
+[LECTURE] 강의 메모의 확장 주제는 C10K, blocking I/O, green thread, Go/Erlang이다. 구현 설명과 Rust 보충의 출처는 공식 문서와 작성자 해설이다.
 
 ### 많은 요청이 I/O를 기다릴 때
 
@@ -283,7 +285,7 @@ hlt               # 특권 조건에서 CPU 대기
 
 ![blocking worker와 readiness 기반 task 재개의 비교](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/blocking-io.svg)
 
-[COMMENTARY][추론] 동시 connection 증가 시에는 thread 수·stack·대기 시간·CPU를 함께 측정해야 한다. thread-per-request의 한계 수치는 workload와 환경으로 결정된다. 이 문서는 성능 benchmark 수치를 제시하지 않는다.
+[COMMENTARY][추론] 동시 connection을 늘리는 실험에서는 thread 수·stack·대기 시간·CPU 사용량을 함께 측정한다. thread-per-request가 감당할 수 있는 요청 수는 workload와 실행 환경에 따라 달라진다.
 
 ### Scheduling과 function coloring
 
@@ -303,9 +305,9 @@ hlt               # 특권 조건에서 CPU 대기
 
 ![실행 중인 G P M과 netpoll에서 대기하는 G의 관계](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/go-gmp.svg)
 
-[OFFICIAL][사실] 사용자 Go 코드를 실행하는 M에는 P가 필요하다. 지원되는 network I/O는 netpoll로 G를 대기시킬 수 있다. syscall 진입·복귀와 P 회수는 `entersyscall`, `entersyscallblock`, `retake` 등의 경로에서 관리한다. 모든 blocking call이 같은 경로를 따르는지 확인하려면 호출 구현도 읽어야 한다. [S16]
+[OFFICIAL][사실] 사용자 Go 코드를 실행하는 M에는 P가 필요하다. 지원되는 network I/O는 netpoll로 G를 대기시킬 수 있다. syscall 진입·복귀와 P 회수는 `entersyscall`, `entersyscallblock`, `retake` 등의 경로에서 관리한다. blocking call의 처리 경로는 호출 구현에 따라 달라진다. [S16]
 
-[OFFICIAL][사실] Go 1.14는 지원 플랫폼에서 비동기 선점을 도입했다. 현재 scheduler를 설명할 때 함수 호출·협력적 대기 지점과 비동기 선점의 조건을 함께 읽는다. [S21]
+[OFFICIAL][사실] Go 1.14는 지원 플랫폼에서 비동기 선점을 도입했다. Go scheduler에는 함수 호출·협력적 대기 지점과 비동기 선점에 의한 실행 전환이 있다. [S21]
 
 ### Erlang/BEAM과 native blocking
 
@@ -334,7 +336,7 @@ docker run --rm --platform linux/amd64 --cap-add=SYS_PTRACE \
 2. `strace -qq -e trace=write,exit_group ./hello`를 실행한다.
 3. fd·길이·반환값과 `exit_group`을 읽는다.
 
-[EXPECTED] `write(1, "hello, world\n", 13) = 13`과 종료 호출이 보인다. 짧은 문자열 출력 성공을 검사하는 학습 예제다. 일반 출력 루프는 partial write와 `EINTR` 처리도 필요하다. [S8]
+[EXPECTED] `write(1, "hello, world\n", 13) = 13`과 종료 호출이 보인다. 요청 길이와 반환값이 모두 13이면 해당 호출의 출력이 완료된 것이다. 출력 루프에는 partial write와 `EINTR` 처리도 필요하다. [S8]
 
 ### LAB 2: 두 프로세스 흐름
 
@@ -342,7 +344,7 @@ docker run --rm --platform linux/amd64 --cap-add=SYS_PTRACE \
 2. 각 PID의 `step=0,1,2` 순서를 읽는다.
 3. 전체 출력 순서를 다시 실행해 비교한다.
 
-[EXPECTED] 부모·자식이 각각 세 줄을 출력한다. 매 실행의 교차 순서는 달라질 수 있다. CPU 코어의 동시 사용은 별도 tracing·CPU affinity 조건을 갖춰 측정한다.
+[EXPECTED] 부모·자식이 각각 세 줄을 출력한다. 각 프로세스 안에서는 step 순서가 유지되고, 두 프로세스의 출력이 섞이는 순서는 실행마다 달라질 수 있다.
 
 ### LAB 3: 주소와 mapping
 
@@ -351,11 +353,11 @@ docker run --rm --platform linux/amd64 --cap-add=SYS_PTRACE \
 3. `rw-p`와 anonymous mapping을 확인한다.
 4. pagemap의 present 비트를 읽고 PFN 접근 조건을 기록한다.
 
-[EXPECTED] 쓰기 후 해당 가상 페이지의 mapping과 상태가 보인다. PFN이 0이면 권한으로 가려졌을 가능성을 먼저 확인한다. 이 결과만으로 물리 주소를 확정하지 않는다. [S10][S11]
+[EXPECTED] 쓰기 후 해당 가상 페이지의 mapping과 상태가 보인다. PFN이 0이면 접근 권한에 따른 마스킹 여부를 먼저 확인한다. [S10][S11]
 
 ### 관측과 다음 적용
 
-[사실][OBSERVED] 2026-10-25에 OrbStack Linux에서 다음 결과를 얻었다. GCC 12.2.0, strace 6.1, Debian bookworm 컨테이너 기준이다.
+[사실][OBSERVED] 관측일은 2026-10-25다. OrbStack 컨테이너는 Debian bookworm, GCC 12.2.0, strace 6.1을 사용했다. 기존 Ubuntu amd64 머신과 QEMU guest의 환경은 아래 디버깅 사례에 명시했다.
 
 | 실행 환경 | 검사 | 관측 |
 |---|---|---|
@@ -364,11 +366,11 @@ docker run --rm --platform linux/amd64 --cap-add=SYS_PTRACE \
 | OrbStack amd64 userspace | strace | syscall trace 불완전. 전체 LAB 실패 |
 | QEMU full-system x86-64 | 전체 LAB | write·exit_group·부모/자식·rw-p·pagemap PASS |
 
-QEMU 검증은 Linux 6.18.58-0-lts x86-64 커널, Debian userspace, GCC 12.2.0, strace 6.1에서 수행했다. 이는 전체 시스템 에뮬레이션의 관측이다. 실제 x86 하드웨어 성능 측정과는 환경이 다르다. macOS에서 `python3 tools/ch8/qemu-lab.py`로 재현할 수 있다.
+QEMU 검증 환경은 Linux 6.18.58-0-lts x86-64 커널, Debian userspace, GCC 12.2.0, strace 6.1이다. 전체 시스템 에뮬레이션에서 LAB의 기능을 검사했으며, macOS에서 `python3 tools/ch8/qemu-lab.py`로 재현할 수 있다.
 
-ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지 tag를 각각 `linux/arm64`, `csapp-ch8-lab:arm64`로 바꾼다. ISA별 syscall ABI는 공식 표로 확인하고 실험 환경과 구분한다.
+ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지 tag를 각각 `linux/arm64`, `csapp-ch8-lab:arm64`로 바꾼다. syscall ABI는 해당 아키텍처의 공식 규약을 따른다.
 
-실제 환경·명령·전체 출력은 [검증 보고서](../../notes/2026-10-25-csapp-ch8-validation.md)에 기록한다. 다음 단계는 `syscall/signal 관측 → PID·mapping 확인 → runtime 대기 위치 확인 → 가설 → 측정`이다.
+[검증 보고서](../../notes/2026-10-25-csapp-ch8-validation.md)에는 환경·명령·전체 출력이 있다. 같은 관측 방법을 서버 프로그램에 적용하면 요청이 어디서 대기하는지 조사할 수 있다.
 
 | 단계 | 할 일 | 도구 |
 |---|---|---|
@@ -388,7 +390,7 @@ ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지
 
 [사실][OBSERVED] 프로그램은 출력했지만 syscall trace가 비어 있었다. Orb의 기존 Ubuntu amd64에서 재현한 뒤, **x86-64 커널을 부팅한 QEMU에서 전체 LAB을 두 번 통과했다.**
 
-이 사례는 앞의 syscall·프로세스·주소 공간 LAB을 검증하는 과정이다. 아래에서는 관측한 사실, 세운 가설, 확인 실험, 실행 환경 선택의 근거를 차례로 연결한다. LAB의 관측 공백은 해소했고, Orb/Rosetta 내부의 정확한 결함 위치는 미확인이다.
+프로그램 실행과 syscall 관측은 각각 검사해야 한다. 출력이 정상이어도 tracing 도구가 필요한 정보를 보여주는지는 별도로 확인한다.
 
 표기: [관측]은 실제 실행, [공식]은 1차 자료, [가설]은 추론, [결정]은 조치다. [판정]·[해석]은 관측에 대한 작성자 설명이다. 예상은 EXPECTED로 표시한다.
 
@@ -396,8 +398,7 @@ ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지
 
 ##### LAB의 목표
 
-학습 목표는 Linux 프로그램이 커널 기능을 호출하는 경계를 직접 보는 것이다.
-다음 세 예제를 사용했다.
+Linux 프로그램의 커널 호출, 프로세스 흐름, 주소 mapping을 세 예제로 관측한다.
 
 | 예제 | 프로그램의 동작 | 확인할 근거 |
 |---|---|---|
@@ -405,17 +406,16 @@ ARM64 전체 LAB을 재현하려면 위 두 명령의 `linux/amd64`와 이미지
 | flows.c | fork로 부모·자식 생성 | 각 PID가 step 0→1→2 출력 |
 | maps.c | private anonymous mapping 생성·쓰기 | 주소를 포함하는 rw-p 구간, pagemap |
 
-[소스와 실행 스크립트](../../../examples/0002-exceptional-control-flow/)를 함께 읽으면 된다.
+[소스와 실행 스크립트](../../../examples/0002-exceptional-control-flow/)
 
-`hello.c`의 핵심은 다음과 같다.
+`hello.c`는 `write`로 표준 출력에 문자열을 보낸다.
 
 ```c
 static const char message[] = "hello, world\n";
 ssize_t written = write(STDOUT_FILENO, message, sizeof message - 1);
 ```
 
-문자열은 newline을 포함해 13바이트다. 전체 코드의 반환값 검사는 이 짧은 출력이 성공했는지 확인한다.
-일반적인 출력 코드는 partial write와 `EINTR`도 처리해야 한다. [공식: write(2)](https://man7.org/linux/man-pages/man2/write.2.html)
+문자열은 newline을 포함해 13바이트다. 반환값을 검사하면 이 호출이 요청한 바이트를 모두 썼는지 알 수 있다. [공식: write(2)](https://man7.org/linux/man-pages/man2/write.2.html)
 
 ##### 성공 조건을 구체적인 문장으로 쓰기
 
@@ -426,7 +426,7 @@ ssize_t written = write(STDOUT_FILENO, message, sizeof message - 1);
 | 관측 | strace에 write와 exit_group이 나타남 |
 | 해석 | fd=1·요청 13바이트·반환 13을 읽을 수 있음 |
 
-`./hello`의 성공은 두 번째 행까지의 근거다. syscall 관측에는 세 번째 행의 출력이 필요하다.
+`./hello`의 출력으로 실행을 확인하고, trace의 syscall 행으로 커널 호출을 확인한다.
 
 #### 2. strace는 어떤 경계를 관측하는가
 
@@ -441,7 +441,7 @@ Linux 인터페이스다. syscall tracing과 debugger 구현에 사용한다.
 
 자동차가 움직이는지 확인하는 일과 계기판이 속도를 정확하게 표시하는지 확인하는 일은 서로 다른 검사다.
 프로그램의 출력은 차가 움직였다는 관측에, strace 출력은 계기판의 관측에 대응한다.
-실제 strace는 커널 tracing 인터페이스와 아키텍처별 상태를 사용한다. 계기판 비유는 이 구현 세부까지 설명하지 않는다.
+strace가 보여주는 정보는 커널 tracing 인터페이스와 아키텍처별 상태에 의존한다.
 
 ![프로그램의 출력 확인과 kernel tracing을 통한 관측 확인의 두 경로](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-observation-paths.svg)
 
@@ -449,7 +449,7 @@ Linux 인터페이스다. syscall tracing과 debugger 구현에 사용한다.
 
 ##### 기대한 결과
 
-다음은 EXPECTED 예시다. 공백 정렬은 strace 버전에 따라 달라질 수 있다.
+[EXPECTED] syscall 이름·인자·반환값을 확인한다. 공백 정렬은 strace 버전에 따라 달라질 수 있다.
 
 ```text
 write(1, "hello, world\n", 13) = 13
@@ -473,15 +473,14 @@ hello, world
 **[관측]** ARM64 native 컨테이너에서는 같은 예제·검사 스크립트가 통과했다.
 [ARM64 전체 로그](../../../validation/ch8/2026-10-25/lab-arm64.txt)
 
-**[가설]** 프로그램 로직 이외에 tracing 도구와 실행 환경의 조합을 조사할 필요가 있다.
-ARM64 통과는 스크립트가 적어도 한 환경에서 정상 동작했다는 근거다.
-x86-64 전체 환경에서의 정확성을 보장하는 근거는 별도 검사가 필요하다.
+**[가설]** 실행 환경에 따라 tracing 결과가 달라질 수 있다.
+같은 예제와 검사 스크립트가 ARM64에서 통과했으므로, x86-64 실행 경로와 tracing 도구의 조합을 조사한다.
 
 #### 4. orb CLI로 기존 Ubuntu를 직접 확인했다
 
 ##### 환경을 먼저 목록화한다
 
-실제로 사용한 조회 명령은 다음과 같다.
+머신 목록과 아키텍처를 확인하고, 컴파일러·관측 도구의 설치 여부를 조회한다.
 
 ```sh
 command -v orb orbctl
@@ -502,11 +501,9 @@ verify.sh: gcc: not found
 verify.sh: strace: not found
 ```
 
-**[판정]** 이 결과는 필수 도구가 준비되지 않았다는 뜻이다.
-이 단계의 로그로 tracing 호환성을 평가할 수 있는 범위는 없다.
+**[판정]** 컴파일러와 strace가 없어 검사 시작 단계에서 멈췄다. 도구를 설치한 뒤 tracing을 검사한다.
 
-**[결정]** 해당 Ubuntu에 필요한 패키지를 설치하고 같은 LAB을 다시 실행했다.
-실제 설치는 이 머신의 시스템 패키지에 변화를 만든다.
+**[결정]** 해당 Ubuntu에 GCC·libc 개발 파일·strace를 설치하고 같은 LAB을 다시 실행했다.
 
 ```sh
 orb -m ubuntu -u root sh -c \
@@ -534,7 +531,7 @@ orb -m ubuntu strace -e trace=write,exit_group /bin/echo hello
 
 **[관측]** 아래 mode 메시지가 반복됐고 마지막에 `hello`와 종료 코드 0이 나타났다.
 필요한 `write`·`exit_group` trace는 나타나지 않았다.
-아래는 직접 관측한 출력 일부이며 전체 반복 횟수는 생략했다. [최소 재현 trace](../../../validation/ch8/2026-10-25/debug-note/orb-echo-trace.txt)에서 전체 결과를 확인한다.
+출력 발췌이며, 반복 메시지는 [최소 재현 trace](../../../validation/ch8/2026-10-25/debug-note/orb-echo-trace.txt)에 있다.
 
 ```text
 [ Process PID=2682 runs in x32 mode. ]
@@ -544,11 +541,9 @@ hello
 +++ exited with 0 +++
 ```
 
-**[추론]** 사용자 C 예제를 `/bin/echo`로 줄여도 증상이 유지됐다.
-따라서 조사 우선순위를 예제의 C 로직에서 tracing·실행 환경의 조합으로 옮겼다.
+**[추론]** C 예제를 `/bin/echo`로 바꿔도 trace 누락이 재현됐다. 두 프로그램에 공통인 tracing 도구와 실행 환경을 우선 조사한다.
 
-이 메시지만으로 프로그램이 실제 x32 ABI로 반복 전환했다고 결론 내리지 않았다.
-관측 도구가 보고한 상태와 실제 target 상태를 대조할 추가 근거가 필요하기 때문이다.
+**[미확인]** mode 메시지가 실제 프로그램의 ABI 전환을 정확히 반영하는지는 검증하지 않았다. 이를 확인하려면 strace가 읽은 상태와 대상 프로세스의 상태를 대조해야 한다.
 
 #### 5. 왜 uname의 x86_64만으로 충분하지 않았는가
 
@@ -567,8 +562,7 @@ orb -m ubuntu cat /proc/sys/fs/binfmt_misc/rosetta
 **[공식]** `rosetta` 설정은 Intel 코드 실행에 Rosetta를 사용할지 제어한다.
 [OrbStack settings](https://docs.orbstack.dev/settings#use-rosetta-to-run-intel-code)
 
-**[해석]** `amd64` 이미지·실행 파일·호환 환경과 x86-64 커널 전체 부팅은 구분해서 기록해야 한다.
-`uname`은 환경 식별의 단서이며, 이번 실행에서 tracing 경계가 기대대로 동작하는지는 실제 trace로 검사한다.
+**[해석]** 이 환경의 amd64 바이너리는 Rosetta를 거쳐 실행된다. `uname`의 `x86_64` 표기는 실행 환경을 식별하는 단서다. tracing 호환성은 실제 syscall 행이 수집되는지로 검사한다.
 
 ![amd64 userspace 번역 실행과 x86-64 kernel을 포함한 full-system 실행의 비교](../../assets/2026-10-04-csapp-ch8-exceptional-control-flow/debug-environment-layers.svg)
 
@@ -578,28 +572,26 @@ orb -m ubuntu cat /proc/sys/fs/binfmt_misc/rosetta
 |---|---|---|---|
 | 필요한 도구가 없다 | command -v와 버전 조회 | Orb에 GCC·strace가 없었음 | 설치 후 재검사 |
 | C 예제 구현 문제다 | /bin/echo로 축소 | 같은 trace 누락 재현 | 환경·도구 조합 조사 우선 |
-| 단순한 출력 공백 차이다 | 실제 trace 내용 확인 | syscall 행 자체가 없음 | 공백 정규식으로 해결할 대상과 구분 |
-| strace 6.1에만 생긴다 | Orb의 6.14로 실행 | 같은 증상 | 6.1 한 버전에 국한된 가설의 설명력 감소 |
+| 단순한 출력 공백 차이다 | 실제 trace 내용 확인 | syscall 행 자체가 없음 | trace 생성 경로 조사 |
+| strace 6.1에만 생긴다 | Orb의 6.14로 실행 | 같은 증상 | 두 버전에서 재현됨 |
 | tracing과 번역 실행의 경계에 호환성 문제가 있다 | 설정 확인·환경 비교 | Rosetta 사용 상태, ARM64 통과 | full-system 대조 실험 선택 |
-| x86-64 LAB 자체를 실행할 수 없다 | x86-64 kernel 부팅 후 실행 | 전체 LAB 두 번 PASS | 검증 가능한 실행 경로 확보 |
+| x86-64 커널에서 LAB을 관측할 수 있다 | x86-64 kernel 부팅 후 실행 | 전체 LAB 두 번 PASS | 재현 환경으로 사용 |
 
-초기 Docker 실험에는 **별도의 검사 코드 문제**도 있었다.
-`write(...) = 13`의 공백 수를 고정해 비교하던 부분을 정규식으로 고쳤다.
-ARM64 trace에는 syscall 행이 있었으므로 이 수정으로 검사를 진행할 수 있었다.
-Orb amd64의 syscall 행 누락은 그 수정 뒤에도 남았다.
+초기 Docker 실험에서는 **검사 스크립트의 공백 비교**도 실패했다.
+스크립트가 `write(...) = 13`의 공백 수를 고정해 비교하고 있었다.
+ARM64 trace에는 필요한 syscall 행이 있었으므로, 공백 정렬을 허용하는 정규식으로 검사할 수 있었다.
+Orb amd64에서는 이 변경 뒤에도 syscall 행이 누락됐다.
 
 ```sh
 # 공백 정렬을 허용하면서 필요한 의미를 검사한다.
 grep -E 'write\(1, "hello, world\\n", 13\)[[:space:]]+= 13' trace.txt
 ```
 
-**[판정]** 프로그램 실행, trace 생성, trace 해석, 검사 스크립트의 포맷 가정을 나눠야 한다.
-이번 사례에서는 공백 비교와 trace 누락을 각각 수정·조사했다.
+**[판정]** 공백 비교 실패는 trace를 검사하는 단계의 문제이고, 행 누락은 관측 결과를 얻는 단계의 문제다. 실패한 단계를 나누면 각각의 검사 방법을 정할 수 있다.
 
 #### 7. 왜 QEMU full-system을 선택했는가
 
-**[목표]** x86-64 Linux의 syscall·프로세스·mapping LAB을 실제로 통과시키고 근거를 남기는 것이다.
-이 단계의 목표는 Orb 내부 구현의 결함 위치를 찾는 것과 구분했다.
+**[목표]** x86-64 Linux 커널에서 syscall·프로세스·mapping을 관측할 실행 환경을 확보한다.
 
 | 선택지 | 얻을 수 있는 것 | 비용·영향 | 선택 |
 |---|---|---|---|
@@ -613,21 +605,18 @@ grep -E 'write\(1, "hello, world\\n", 13\)[[:space:]]+= 13' trace.txt
 TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이다.
 [QEMU Introduction](https://www.qemu.org/docs/master/system/introduction.html)
 
-**[결정 근거]** host에 이미 `qemu-system-x86_64`가 있었고, 기존 Debian LAB image를 rootfs로 재사용할 수 있었다.
-별도 guest를 만들면 Orb의 전역 설정을 바꾸지 않고 x86-64 커널의 관측 경로를 검사할 수 있었다.
-
-이 비교에서는 커널·부팅 방식 등 여러 조건이 함께 바뀐다.
-따라서 특정 Rosetta 함수나 특정 커널 코드가 원인이라고 분리해 증명한 실험으로 해석하지 않는다.
+**[결정 근거]** host에 설치된 `qemu-system-x86_64`와 기존 Debian LAB image를 사용할 수 있었다.
+QEMU guest에서 x86-64 커널을 부팅하면 그 커널의 `ptrace` 경로를 관측할 수 있다. Orb의 전역 설정도 유지할 수 있어 별도 guest를 선택했다.
 
 #### 8. QEMU 환경을 어떻게 만들었는가
 
 ##### 용어 세 개
 
-| 용어 | 이번 작업에서의 의미 |
+| 용어 | QEMU guest에서의 역할 |
 |---|---|
 | rootfs | guest 안의 /bin, /lib, /usr, LAB 소스 등을 담은 파일 트리 |
 | initramfs | 커널이 초기 파일시스템으로 사용할 cpio archive |
-| init | 커널이 처음 실행할 사용자 프로그램. 이번 guest는 작은 전용 init 사용 |
+| init | 커널이 처음 실행할 사용자 프로그램. 이 guest는 작은 전용 init 사용 |
 
 ##### 구성 순서와 이유
 
@@ -640,13 +629,13 @@ TCG는 여러 CPU 아키텍처를 에뮬레이션할 수 있는 실행 엔진이
 7. **guest serial log와 LAB 종료 코드를 확인한다.** 출력 문구와 프로세스 종료 상태를 함께 평가한다.
 
 [init 소스](../../../tools/ch8/qemu-init.c)는 `/dev`, `/proc`, `/sys`를 mount한 다음 LAB을 실행한다.
-`/proc`는 mapping·pagemap 검사에 필요하다. init의 mount 호출 자체는 개별 반환값을 검사하지 않으므로,
-최종 LAB의 `/proc` 읽기 성공까지 함께 확인했다.
+`/proc`는 mapping·pagemap 검사에 필요하다. 이 init은 mount 호출의 개별 반환값을 검사하지 않는다.
+LAB에서 `/proc` 읽기에 성공한 결과가 최종 접근 가능 여부의 근거다.
 
 정적 링크 init은 필요한 라이브러리를 실행 파일에 포함한다.
-이 선택은 초기 부팅 시 동적 loader 경로에 대한 의존을 줄인다.
+초기 부팅에서 동적 loader 경로에 대한 의존을 줄일 수 있다.
 
-실제 사용한 QEMU 옵션의 핵심은 다음과 같다.
+QEMU 실행 옵션:
 
 ```sh
 qemu-system-x86_64 \
@@ -660,7 +649,7 @@ qemu-system-x86_64 \
 `console=ttyS0`는 serial console로 로그를 받고, `rdinit=/init`은 initramfs의 전용 init을 실행하도록 지정한다. [Kernel parameters](https://docs.kernel.org/admin-guide/kernel-parameters.html)
 `-nic none`은 guest의 가상 network 장치를 만들지 않는다. [QEMU Invocation](https://www.qemu.org/docs/master/system/invocation.html) kernel·패키지 준비 단계에는 host의 인터넷 연결을 사용한다.
 
-**[재현]** 위 파일 구성을 직접 만들지 않아도 다음 명령으로 같은 절차를 실행할 수 있다.
+**[재현]** 다음 명령은 rootfs 구성부터 QEMU 실행·LAB 검사까지 수행한다.
 
 ```sh
 # 레포 root에서. Docker와 QEMU가 준비되어 있어야 한다.
@@ -669,11 +658,10 @@ python3 tools/ch8/qemu-lab.py /tmp/csapp-x86-result.txt
 
 [재현 도구](../../../tools/ch8/qemu-lab.py)는 guest process와 임시 rootfs를 정리한다.
 완료 시 init은 결과 marker를 출력하고 대기하며, host의 실행 도구가 QEMU process를 종료한다.
-실제 host의 shutdown·reboot는 실행하지 않는다.
 
 #### 9. 실제로 무엇을 확인했는가
 
-**[관측]** 첫 실행의 핵심 결과다. 주소·PID·PFN은 그 실행의 값이다.
+**[관측]** 첫 실행 로그 발췌. 주소·PID·PFN은 해당 실행에서 얻은 값이다.
 
 ```text
 Linux 6.18.58-0-lts x86_64 GNU/Linux
@@ -688,47 +676,42 @@ PASS: write/exit_group, parent-child flows, private writable mapping
 CSAPP_QEMU_EXIT=0
 ```
 
-발췌문의 `...`는 부모·자식 출력 등을 생략한 표시다.
-[첫 실행 전체 로그](../../../validation/ch8/2026-10-25/lab-x86-system.txt)에서 생략 없는 결과를 확인한다.
+`...`로 생략한 부모·자식 출력 등은 [첫 실행 전체 로그](../../../validation/ch8/2026-10-25/lab-x86-system.txt)에 있다.
 
 | 관측 | 해석 | 남는 조건 |
 |---|---|---|
 | write의 fd=1 | 표준 출력 fd 사용 | 실제 연결 대상은 실행 환경에 의존 |
-| 요청 13·반환 13 | 해당 호출에서 13바이트 출력 성공 | 일반적인 모든 출력 성공 보장 범위는 별도 |
-| exit_group(0) | thread group 종료 경계 관측 | 사용자 코드로 반환하는 값과 구분 |
-| 부모·자식 각 3줄 | 두 프로세스 실행과 각각의 순서 확인 | 출력만으로 두 코어의 동시 실행 입증 범위 제한 |
-| rw-p | 읽기·쓰기 가능한 private mapping | private mapping과 물리 페이지 독점은 다른 조건 |
-| present=1·PFN 표시 | 해당 guest 권한으로 페이지 정보 확인 | PFN은 guest 물리 페이지 기준이며 host 주소와 구분 |
-| LAB exit 0 | 작성한 검사 모두 통과 | 범위 밖 runtime·성능 비교까지 보장하지 않음 |
+| 요청 13·반환 13 | 해당 호출에서 13바이트 출력 성공 | partial write·EINTR은 별도 처리 필요 |
+| exit_group(0) | thread group 종료 경계 관측 | 인자 0은 종료 상태, 호출은 복귀하지 않음 |
+| 부모·자식 각 3줄 | 두 프로세스 실행과 각각의 순서 확인 | 병렬 실행 확인에는 코어별 실행 시점 필요 |
+| rw-p | 읽기·쓰기 가능한 private mapping | copy-on-write에서 물리 페이지 공유 가능 |
+| present=1·PFN 표시 | 해당 guest 권한으로 페이지 정보 확인 | PFN은 guest 물리 페이지 기준 |
+| LAB exit 0 | syscall·프로세스 흐름·mapping 검사 통과 | runtime·하드웨어 성능 비교는 미실행 |
 
-**[관측]** 재현 도구를 저장한 뒤 다시 실행해 같은 검사들을 통과했다.
-두 번째 PFN은 `329732`였다. 고정 주소를 성공 조건으로 사용하지 않고 mapping 권한·상태를 검사했다.
+**[관측]** 재실행에서도 같은 검사들을 통과했다.
+두 번째 PFN은 `329732`였다. 검사는 실행마다 달라지는 주소·PFN 대신 mapping 권한·상태를 기준으로 한다.
 [재실행 로그](../../../validation/ch8/2026-10-25/lab-x86-system-reproduced.txt)
 
 kernel URL·SHA-256·image ID·QEMU 버전은 [환경 기록](../../../validation/ch8/2026-10-25/x86-system-environment.json)에 있다.
-현재 재현 도구의 kernel URL과 Debian package는 업데이트될 수 있다. 과거와 동일한 바이트를 재현하려면 이 기록의 hash·image ID도 대조해야 한다.
+kernel URL이 제공하는 파일과 Debian package는 업데이트될 수 있다. 동일한 바이너리로 재현하려면 환경 기록의 hash·image ID를 대조한다.
 
 #### 10. 해결한 범위와 남은 질문
 
 ##### 확인된 결론
 
-- Orb CLI의 기존 Ubuntu amd64를 실제로 시도했고 tracing 증상을 재현했다.
-- x86-64 커널을 포함한 QEMU full-system에서 같은 LAB을 두 번 통과했다.
-- x86-64 syscall LAB의 관측 공백을 대체 실행 경로로 해소했다.
-- 글로벌 Rosetta 설정은 유지했다.
+Orb의 기존 Ubuntu amd64에서 trace 누락이 재현됐다. QEMU full-system에서는 x86-64 커널의 syscall·프로세스 흐름·mapping을 두 번 관측했고, 모두 LAB 성공 조건을 충족했다.
 
 ##### 근본 원인에 대한 현재 판단
 
-**[가설]** 해당 Orb amd64 번역 실행과 syscall tracing 사이의 호환성 문제가 유력한 조사 방향이다.
-근거는 예제를 줄여도 유지된 증상, 두 strace 버전에서의 재현, 실제 번역 설정,
-ARM64와 QEMU full-system에서의 성공이다.
+**[가설]** Orb amd64의 번역 실행과 syscall tracing 사이에 호환성 문제가 있을 수 있다.
+`/bin/echo`에서도 증상이 유지됐고, strace 6.1·6.14에서 재현됐으며, Rosetta 사용 설정을 확인했다.
+ARM64와 QEMU full-system에서 같은 LAB이 통과한 결과도 이 조사 방향을 뒷받침한다.
 
-**[미확인]** 정확히 어느 계층의 어떤 구현이 잘못됐는지는 분리해서 검증하지 않았다.
-Rosetta 설정을 바꾼 A/B, `ptrace` 요청·반환값·레지스터 구조의 비교,
-OrbStack·Rosetta·strace의 더 작은 재현 코드와 버전별 대조가 후속 조사다.
+**[미확인]** 결함이 있는 구현과 정확한 원인은 확인되지 않았다. QEMU 비교에서는 커널·부팅 방식 등 여러 조건이 함께 바뀌었다.
+원인을 좁히려면 Rosetta 설정의 A/B 실험, `ptrace` 요청·반환값·레지스터 구조 비교,
+OrbStack·Rosetta·strace의 최소 재현 코드와 버전별 대조가 필요하다.
 
-**[중단 기준]** 이 작업의 LAB 검증 목표는 충족됐다.
-Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 이어갈 수 있다.
+**[판정]** x86-64 LAB의 재현 환경은 확보됐다. Orb의 원인 조사에는 조건을 하나씩 바꾸는 추가 실험이 필요하다.
 
 #### 11. 다른 문제에 적용하는 디버깅 순서
 
@@ -739,7 +722,7 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 5. **가설마다 검사와 판정을 연결한다.** 예상과 실제 결과를 기록한다.
 6. **목표에 맞는 대조 환경을 선택한다.** 바꾼 조건과 그 때문에 남는 한계도 적는다.
 7. **재실행 가능한 근거를 남긴다.** 명령·환경·원본 로그·종료 코드·성공 조건을 보관한다.
-8. **결론의 범위를 제한한다.** 검증 경로 확보와 도구 자체의 원인 규명을 각각 보고한다.
+8. **결론을 근거에 맞춘다.** LAB 성공 여부와 도구의 원인 규명 여부를 각각 기록한다.
 
 ##### 디버깅 사례 확인 질문
 
@@ -754,17 +737,17 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 
 | 항목 | 상태 | 읽는 조건 |
 |---|---|---|
-| 교재 절·인쇄 쪽수 | 사실 | 북미판 공식 목차. 번역판 쪽수와 구분 |
+| 교재 절·인쇄 쪽수 | 사실 | 북미판 공식 목차와 스터디 Global Edition. 판본별 인쇄 쪽수 표시 |
 | Exception 분류 | 조건부 일치 | CSAPP의 넓은 exception 용법과 Intel의 interrupt/exception 구분 |
 | Syscall 레지스터 | 사실 | Linux LP64 x86-64·AArch64 표. 다른 ABI는 별도 확인 |
 | 주소 공간 그림 | 해설 | 개념 mapping. 실제 주소·kernel mapping 설정은 환경 의존 |
 | Runtime 설명 | 사실·해설 | Go go1.26.0·OTP 29.1.2·Rust 문서. 세 runtime의 성능 비교 미실행 |
 | Divide fault·전원 제어 | 미실행 | 자료 검증. 실제 fault 재현과 host 전원 제어 실행 없음 |
-| 강의 세부 발언 | 미확인 | 이 문서는 기존 노트의 확장 범위를 보존. 원 녹취 대조 없음 |
+| 강의 세부 발언 | 미확인 | 강의 메모 기준. 원 녹취 대조 없음 |
 
 ## 출처
 
-확인 날짜는 모두 **2026-10-25 KST**다. 동적 문서의 변경 가능성과 아래 명시 버전을 함께 읽는다. 링크를 열어 필요한 절로 이동한다.
+확인 기준일은 **2026-10-25 KST**다. 버전이 명시된 설명은 해당 버전을 기준으로 하며, 동적 문서는 이후 변경될 수 있다.
 
 - **[S1] CSAPP 3판 공식 목차·서문**: [TOC PDF](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf), Ch8 절·북미판 쪽수. [정오표](https://csapp.cs.cmu.edu/3e/errata.html)도 함께 확인.
 - **[S2] CSAPP 공식 그림 목록**: [Chapter 8 figures](https://csapp.cs.cmu.edu/3e/figures.html), exception·trap·fault 도식.
@@ -783,7 +766,7 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 - **[S15] Mapping 의미**: [mmap(2)](https://man7.org/linux/man-pages/man2/mmap.2.html), MAP_PRIVATE·MAP_SHARED.
 - **[S16] Go go1.26.0 runtime**: [HACKING.md](https://github.com/golang/go/blob/go1.26.0/src/runtime/HACKING.md), G/M/P. [proc.go](https://github.com/golang/go/blob/go1.26.0/src/runtime/proc.go), entersyscall·entersyscallblock·retake·netpoll.
 - **[S17] Rust async**: [The Rust Book §17](https://doc.rust-lang.org/book/ch17-00-async-await.html), async·await·future·runtime와 [동시 실행](https://doc.rust-lang.org/book/ch17-02-concurrency-with-async.html), executor·blocking.
-- **[S18] CMU 공식 강의**: [Exceptions and Processes](https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf), 교재 동반 강의 자료. 이 스터디 강의자의 발언과는 출처를 구분.
+- **[S18] CMU 공식 강의**: [Exceptions and Processes](https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf), 교재 동반 강의 자료.
 - **[S19] C11 위원회 초안**: [N1570 PDF](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf), §6.5.5의 정수 나눗셈 조건.
 - **[S20] AMD64 psABI**: [공식 프로젝트](https://gitlab.com/x86-psABIs/x86-64-ABI), commit `e1ce098331da5dbd66e1ffc74162380bcc213236`의 `x86-64-ABI/low-level-sys-info.tex`, System V 함수 호출 규약 §3.2.3.
 - **[S21] Go 1.14 릴리스 노트**: [runtime](https://go.dev/doc/go1.14#runtime), 비동기 선점·플랫폼 조건.
@@ -797,4 +780,4 @@ Orb 자체의 근본 원인 분석은 별도 목표와 실험 범위를 정해 �
 - **[S28] QEMU Invocation**: [실행 옵션](https://www.qemu.org/docs/master/system/invocation.html), guest 구성·network·kernel 부팅.
 - **[S29] Linux kernel parameters**: [공식 문서](https://docs.kernel.org/admin-guide/kernel-parameters.html), console·rdinit.
 
-- **[S30] 스터디 교재 판본 확인**: [스터디 PDF 진입 주소](https://i.hyeon.me/csapp.pdf)의 HTML redirect를 따라 확인한 CSAPP 3e Global Edition. 표제지 PDF 4쪽, 목차 xv쪽(PDF 15쪽), §8.1~§8.2.4 인쇄 p.759~771. 이 문서의 대응표는 북미판과 Global판 쪽수를 구분한다.
+- **[S30] 스터디 교재 판본 확인**: [스터디 PDF 진입 주소](https://i.hyeon.me/csapp.pdf), CSAPP 3e Global Edition. 표제지 PDF 4쪽, 목차 xv쪽(PDF 15쪽), §8.1~§8.2.4 인쇄 p.759~771.
