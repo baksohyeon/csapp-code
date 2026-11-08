@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 360 495" role="img" aria-labelledby="title desc">
+  <title id="title">두 파일 디스크립터를 기다리는 이벤트 루프</title>
+  <desc id="desc">단일 스레드가 SIGUSR1을 차단한 후 자신에게 보내면 시그널은 대기 상태가 되고 signalfd가 읽기 가능해진다. 별도로 타이머가 만료되면 timerfd가 읽기 가능해진다. poll은 준비된 모든 항목을 표시한다. 루프는 signalfd에서 시그널 정보를, timerfd에서 8바이트 만료 횟수를 읽는다.</desc>
+  <style>
+    :root { color-scheme: light dark; --bg: #fff; --fg: #172c40; --line: #566b7a; --signal: #12589a; --signal-bg: #eef5ff; --timer: #076559; --timer-bg: #e7f6f0; --panel: #f2f4f6; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #151d29; --fg: #eff5fa; --line: #aac0ce; --signal: #a2caff; --signal-bg: #1d3550; --timer: #8cdec6; --timer-bg: #1b3834; --panel: #283645; }
+    }
+    text { font: 18px system-ui, sans-serif; fill: var(--fg); text-anchor: middle; }
+    .heading { font-size: 23px; font-weight: 700; }
+    .name { font-size: 20px; font-weight: 700; }
+    .signal { fill: var(--signal-bg); stroke: var(--signal); }
+    .timer { fill: var(--timer-bg); stroke: var(--timer); }
+    .box { stroke-width: 1.5; }
+    .wire { fill: none; stroke: var(--line); stroke-width: 2; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L9 5 L0 10 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+  <rect width="360" height="495" fill="var(--bg)"/>
+  <text x="180" y="31" class="heading">두 fd의 읽기 준비 상태</text>
+  <rect x="8" y="52" width="167" height="123" rx="9" class="box signal"/>
+  <text x="91" y="85" class="name">SIGUSR1 차단</text>
+  <text x="91" y="119">kill로 자신에게</text>
+  <text x="91" y="146">전송 → pending</text>
+  <rect x="185" y="52" width="167" height="123" rx="9" class="box timer"/>
+  <text x="269" y="85" class="name">타이머 설정</text>
+  <text x="269" y="119">단조 시계로</text>
+  <text x="269" y="146">1초 후 만료</text>
+  <path d="M91 176 V207" class="wire"/>
+  <path d="M269 176 V207" class="wire"/>
+  <rect x="8" y="214" width="167" height="49" rx="9" class="box signal"/>
+  <text x="91" y="245" class="name">signalfd</text>
+  <rect x="185" y="214" width="167" height="49" rx="9" class="box timer"/>
+  <text x="269" y="245" class="name">timerfd</text>
+  <path d="M91 264 V291" class="wire"/>
+  <path d="M269 264 V291" class="wire"/>
+  <rect x="8" y="298" width="344" height="72" rx="9" fill="var(--panel)" stroke="var(--line)" class="box"/>
+  <text x="180" y="327" class="name">poll()에서 깨어남</text>
+  <text x="180" y="354">POLLIN이 켜진 fd마다 read()</text>
+  <path d="M91 372 V399" class="wire"/>
+  <path d="M269 372 V399" class="wire"/>
+  <rect x="8" y="406" width="167" height="77" rx="9" class="box signal"/>
+  <text x="91" y="437" class="name">시그널 정보</text>
+  <text x="91" y="464">ssi_signo 확인</text>
+  <rect x="185" y="406" width="167" height="77" rx="9" class="box timer"/>
+  <text x="269" y="437" class="name">만료 횟수</text>
+  <text x="269" y="464">uint64_t 값 1</text>
+</svg>

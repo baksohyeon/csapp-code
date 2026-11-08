@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 360 540" role="img" aria-labelledby="title desc">
+  <title id="title">사용자 명령이 가상 페이지에 접근한 결과</title>
+  <desc id="desc">주소 변환과 접근 권한 검사를 통과하면 CPU는 메모리에 접근한다. 페이지 폴트가 발생하면 커널이 매핑과 요청 권한을 확인한다. 처리가 가능하면 0으로 채운 페이지나 파일 내용을 준비하거나 쓰기 시 복사를 처리하고 명령을 재시도한다. 미매핑 주소나 허용되지 않은 접근에는 일반적으로 SIGSEGV를 전달한다.</desc>
+  <style>
+    :root { color-scheme: light dark; --bg: #fff; --fg: #172c40; --line: #566b7a; --normal: #12589a; --normal-bg: #eef5ff; --ok: #076559; --ok-bg: #e7f6f0; --error: #924324; --error-bg: #fff1e9; --panel: #f2f4f6; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #151d29; --fg: #eff5fa; --line: #aac0ce; --normal: #a2caff; --normal-bg: #1d3550; --ok: #8cdec6; --ok-bg: #1b3834; --error: #ffb797; --error-bg: #402e29; --panel: #283645; }
+    }
+    text { font: 18px system-ui, sans-serif; fill: var(--fg); text-anchor: middle; }
+    .heading { font-size: 23px; font-weight: 700; }
+    .name { font-size: 20px; font-weight: 700; }
+    .box { stroke-width: 1.5; }
+    .wire { fill: none; stroke: var(--line); stroke-width: 2; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L9 5 L0 10 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+  <rect width="360" height="540" fill="var(--bg)"/>
+  <text x="180" y="31" class="heading">가상 주소에 접근하면</text>
+  <rect x="8" y="52" width="344" height="69" rx="9" fill="var(--panel)" stroke="var(--line)" class="box"/>
+  <text x="180" y="82" class="name">사용자 명령의 읽기·쓰기 요청</text>
+  <text x="180" y="107">MMU가 주소 변환과 권한을 검사</text>
+  <path d="M91 123 V151" class="wire"/>
+  <path d="M269 123 V151" class="wire"/>
+  <rect x="8" y="158" width="167" height="82" rx="9" fill="var(--ok-bg)" stroke="var(--ok)" class="box"/>
+  <text x="91" y="190" class="name">변환·권한 통과</text>
+  <text x="91" y="220">물리 주소로 접근</text>
+  <rect x="185" y="158" width="167" height="82" rx="9" fill="var(--normal-bg)" stroke="var(--normal)" class="box"/>
+  <text x="269" y="190" class="name">페이지 폴트</text>
+  <text x="269" y="220">커널로 제어 이동</text>
+  <path d="M269 242 V270" class="wire"/>
+  <rect x="8" y="277" width="344" height="56" rx="9" fill="var(--panel)" stroke="var(--line)" class="box"/>
+  <text x="180" y="312" class="name">커널이 매핑과 접근 권한 확인</text>
+  <path d="M91 335 V363" class="wire"/>
+  <path d="M269 335 V363" class="wire"/>
+  <rect x="8" y="370" width="167" height="158" rx="9" fill="var(--ok-bg)" stroke="var(--ok)" class="box"/>
+  <text x="91" y="400" class="name">복구 가능</text>
+  <text x="91" y="431">0 채움·파일 읽기</text>
+  <text x="91" y="457">또는 쓰기 시 복사</text>
+  <text x="91" y="502" class="name">명령 재시도</text>
+  <rect x="185" y="370" width="167" height="158" rx="9" fill="var(--error-bg)" stroke="var(--error)" class="box"/>
+  <text x="269" y="400" class="name">접근 위반</text>
+  <text x="269" y="431">미매핑 주소 또는</text>
+  <text x="269" y="457">허용되지 않은 접근</text>
+  <text x="269" y="502" class="name">보통 SIGSEGV</text>
+</svg>

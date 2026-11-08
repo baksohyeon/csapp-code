@@ -8,7 +8,8 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 기록.
 | 무엇을 보고 싶나 | 어디로 |
 |------------------|--------|
 | 렌더링된 노트 (웹/모바일에서 바로 보기) | https://raspberrypi.bobcat-fort.ts.net/csapp/ |
-| 최신 강의노트 (Ch8.1-8.2.4 Exceptional Control Flow) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [레포 소스](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [Markdown 강의노트](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.md) |
+| 최신 강의노트 (§8.2.5~§8.8 시그널과 비지역 점프, Ch9 예습) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.html) · [Markdown 원문](wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.md) |
+| 이전 강의노트 (§8.1~§8.2.4 Exceptional Control Flow) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [레포 소스](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html) · [Markdown 강의노트](wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.md) |
 | 이전 강의노트 (Ch6 Memory Hierarchy) | [라이브](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [레포 소스](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html) · [요약 wrapper](wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.md) |
 | 전체 목차 | [웹 목차](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/) · [wiki/index.md](wiki/index.md) |
 | 교재 PDF | https://i.hyeon.me/csapp.pdf |
@@ -19,7 +20,7 @@ CSAPP(Computer Systems: A Programmer's Perspective) 스터디 기록.
 ```
 wiki/                  ← knowledge base root (여기서부터 읽으면 된다)
   index.md             ← 전체 목차. 항상 여기가 진입점
-  lectures/<year>/     ← 강의노트. HTML 원본 + 같은 이름의 .md 요약 wrapper 쌍
+  lectures/<year>/     ← 강의노트. Markdown 원문 또는 HTML 원본과 Markdown wrapper
   notes/               ← 개별 학습 노트 (컴파일/링킹, Java 실행법, 학습 로그 …)
   topics/              ← 토픽 노드. 여러 노트가 공유하는 개념 허브
   type/                ← 문서 타입 설명 (lecture / note / topic / example)
@@ -36,21 +37,18 @@ AGENTS.md              ← 이 레포의 작성 규칙 (에이전트/사람 공�
 1. 웹에서는 [CSAPP Wiki](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/)를 연다. `/csapp/`에서도 같은 목차가 바로 열린다. 로컬 지식베이스 정본은 [wiki/index.md](wiki/index.md)다.
 2. 문서 안의 `[[이름]]` 표기는 wiki 내부 링크다. `wiki/` 아래에서 같은 이름의
    파일(`이름.md`)을 찾으면 된다 (Obsidian 등 wikilink 지원 도구에서는 바로 클릭 가능).
-3. 강의노트는 **HTML이 1차 자료**다. GitHub 웹에서는 HTML이 코드로 보이므로,
-   렌더링된 화면을 보려면 라즈베리파이에 셀프호스팅된 공개 URL로 열거나 로컬 클론 후
-   브라우저로 연다 (아래 [HTML 렌더링 보기](#html-렌더링-보기) 참고). 같은 이름의 `.md`
-   wrapper에 요약과 메타데이터가 있으니 GitHub에서는 wrapper부터 봐도 된다.
+3. GitHub에서는 Markdown 강의노트를 바로 읽을 수 있다. HTML이 원본인 강의는 같은 이름의 Markdown wrapper에 요약과 메타데이터가 있다. 렌더링된 강의는 공개 사이트나 로컬 브라우저에서 연다.
 
 ## HTML 렌더링 보기
 
 - **웹/모바일 (권장)**: 라즈베리파이 홈서버에 셀프호스팅되어 있어, 아래 주소로 어느 기기에서든
   렌더링된 노트를 바로 볼 수 있다 (Dokku 배포 + Tailscale Funnel 공개).
-  - 최신 강의노트: `https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html`
+  - 최신 강의노트 · [시그널과 비지역 점프](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.html)
   - CSAPP Wiki 목차: `https://raspberrypi.bobcat-fort.ts.net/csapp/`
 - **로컬**: 클론 후 HTML 파일을 브라우저로 연다.
   ```bash
   git clone git@github.com:baksohyeon/csapp-code.git
-  open csapp-code/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html
+  open csapp-code/wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.html
   ```
 
 ## 실습 실행하기

@@ -15,7 +15,12 @@ for(const file of files){
  docs.set(file,{file,text,meta,title,target});
 }
 const byName=new Map([...docs.values()].map(d=>[path.basename(d.file,'.md'),d]));
-const sourceDirs=['examples/0001-compile-linking','examples/0002-exceptional-control-flow','chapter07/examples'];
+const sourceReaders=new Map([
+ ['examples/0001-compile-linking','C 컴파일·링킹 실습'],
+ ['examples/0002-exceptional-control-flow','Ch8 Linux LAB'],
+ ['examples/0003-signal-event-loop','시그널 이벤트 루프 실습'],
+ ['chapter07/examples','Ch7 ELF 실습'],
+]);
 function shell(from,title,content,mainClass='docs-home'){
  const catalog=from==='wiki/index.html'||from==='index.html';
  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>${escape(title)} | CSAPP Wiki</title>${resources(from)}</head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a>${header(from)}<nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li>${catalog?'<span aria-current="page">CSAPP Wiki</span>':`<a href="${relative(from,'wiki/index.html')}">CSAPP Wiki</a>`}</li>${catalog?'':`<li aria-current="page">${escape(title)}</li>`}</ol></nav><main id="content" class="${mainClass}">${content}</main></body></html>\n`;
@@ -24,7 +29,7 @@ async function targetFor(from,href,output){
  if(/^(https?:|mailto:|data:|#)/.test(href))return href;
  const [raw,fragment]=href.split('#');const abs=path.posix.normalize(path.posix.join(path.posix.dirname(from),raw));
  let target=docs.get(abs)?.target;
- if(!target&&sourceDirs.includes(abs.replace(/\/$/,'')))target=abs.replace(/\/$/,'')+'/index.html';
+ if(!target&&sourceReaders.has(abs.replace(/\/$/,'')))target=abs.replace(/\/$/,'')+'/index.html';
  if(!target&&abs.endsWith('.md')){const html=abs.replace(/\.md$/,'.html');try{await access(html);target=html;}catch{}}
  if(!target){try{if((await stat(abs)).isDirectory())return 'https://github.com/baksohyeon/csapp-code/tree/main/'+abs;}catch{}}
  if(target)return relative(output,target)+(fragment?'#'+fragment:'');
@@ -56,16 +61,16 @@ for(const output of [index,'index.html']){
  await writeFile(output,shell(output,'CSAPP Wiki',`<article class="docs-article wiki-catalog">${body}</article>`));
 }
 for(const d of docs.values()){
- if(d.file==='wiki/index.md'||d.meta.type==='Lecture'||d.file.includes('x86-strace-debugging'))continue;
- const category=({Topic:'개념 노트',Note:'학습 기록'})[d.meta.type]||'문서 안내';
+ if(d.file==='wiki/index.md'||(d.meta.type==='Lecture'&&d.meta.artifact_path?.endsWith('.html'))||d.file.includes('x86-strace-debugging'))continue;
+ const category=({Topic:'개념 노트',Note:'학습 기록',Lecture:'강의노트'})[d.meta.type]||'문서 안내';
  let html=await renderBody(d.file,d.text);
  html=html.replace(/<h1[^>]*>[\s\S]*?<\/h1>/,`<p class="docs-kicker">${category}${d.meta.date?' · '+d.meta.date:''}</p><h1>${escape(d.title)}</h1>`);
  const footer=`<footer class="docs-footer"><a href="${relative(d.target,index)}">← CSAPP Wiki</a> · <a href="${path.basename(d.file)}">Markdown 원문</a></footer>`;
  await writeFile(d.target,shell(d.target,d.title,`<article class="docs-article reference-document">${html}${footer}</article>`));
 }
 // Source readers replace raw directory listings for the learning exercises.
-for(const dir of sourceDirs){
- const from=dir+'/index.html';const title=dir.includes('0002')?'Ch8 Linux LAB':dir.includes('0001')?'C 컴파일·링킹 실습':'Ch7 ELF 실습';
+for(const [dir,title] of sourceReaders){
+ const from=dir+'/index.html';
  let content=`<h1>${title}</h1><p>실습 설명을 읽고 소스를 확인한다. 원본 파일 링크는 소스 텍스트를 연다.</p>`;
  try{content+=(await renderBody(dir+'/README.md',await readFile(dir+'/README.md','utf8'))).replace(/<h1[^>]*>[\s\S]*?<\/h1>/,'');}catch(e){if(e.code!=='ENOENT')throw e;}
  const codeFiles=[];
@@ -79,4 +84,4 @@ for(const dir of sourceDirs){
  content+=`<footer class="docs-footer"><a href="${relative(from,index)}">← CSAPP Wiki</a></footer>`;
  await writeFile(from,shell(from,title,`<article class="docs-article reference-document">${content}</article>`));
 }
-console.log(`Rendered one Wiki entrance, ${docs.size} document mappings, readable notes/topics and 3 source readers`);
+console.log(`Rendered one Wiki entrance, ${docs.size} document mappings, readable notes/topics and ${sourceReaders.size} source readers`);

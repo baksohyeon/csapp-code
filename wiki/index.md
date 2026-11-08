@@ -12,6 +12,7 @@ status: living
 - [[2026-07-05-csapp-ch6-memory-hierarchy]] — Chapter 6 메모리 계층과 지역성
 - [[2026-07-26-csapp-ch7-symbol-resolution]] — §7.6.1~§7.6.3 심볼 해석과 정적 라이브러리
 - [[2026-10-04-csapp-ch8-exceptional-control-flow]] — §8.1~§8.2.4 예외와 프로세스
+- [[2026-11-08-csapp-ch8-signals-and-nonlocal-jumps]] · §8.2.5~§8.8 시그널과 비지역 점프, Ch9 예습
 
 ## 개념 노트
 
@@ -27,6 +28,7 @@ status: living
 - [[java-compile-run]] — Java 코드 컴파일과 실행 방법을 확인한다.
 - [[2025-09-21-study-log]] — 트리·인덱스·OLTP/OLAP 학습 기록을 읽는다.
 - [Ch8 Linux LAB](../examples/0002-exceptional-control-flow/) — syscall·프로세스·mapping 코드와 실행 방법
+- [시그널 이벤트 루프 실습](../examples/0003-signal-event-loop/) · 시그널 수신과 대기 흐름을 C 코드로 확인한다.
 - [Ch7 ELF 실습](../chapter07/examples/) — 심볼·archive·링커 예제 코드
 
 ## 교재와 스터디 자료

@@ -1,0 +1,175 @@
+---
+type: Lecture
+status: done
+date: 2026-11-08
+topics:
+  - signals
+  - nonlocal-jumps
+  - event-loops
+  - virtual-memory
+related_to:
+  - "[[2026-10-04-csapp-ch8-exceptional-control-flow]]"
+  - "[[cache-locality]]"
+source_url: https://man7.org/linux/man-pages/man2/signalfd.2.html
+---
+
+# 2026-11-08 CSAPP Ch8 시그널과 비지역 점프
+
+서버가 요청 본문을 읽는 중에 종료 시그널을 받았다. **누가, 어느 시점에 소켓을 닫고 메모리를 해제할까?** 같은 시그널도 핸들러에서 즉시 처리할 때와 이벤트 루프에서 읽을 때의 실행 순서가 다르다.
+
+2026-11-08 스터디에서는 시그널 핸들러에서 비지역 점프를 사용할 때의 위험과, 시그널을 지정한 곳에서 받아 처리하는 방법을 논의했다. 당일 논의의 중심은 §8.5 시그널과 §8.6 비지역 점프다. 이전 강의노트와 이어 읽도록 §8.2.5~§8.4를 복습하고 §8.7~§8.8의 도구와 정리를 덧붙였다. 아래 Linux 실습은 스터디 주제를 재현하기 위해 작성한 예제다. 마지막 절에는 Ch9을 읽기 전 짚어 볼 주소 변환과 페이지 폴트를 담았다. [CSAPP 3판 공식 목차](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf)
+
+**판본과 범위.** 2026-11-08 확인한 Pearson 공식 카탈로그의 최신 표기는 3판이다. 이 노트는 판본별 쪽수 대신 저자 공개 목차의 절 번호를 사용한다. 표준 인터페이스는 POSIX.1-2024, Linux 전용 동작은 Linux man-pages에서 확인했다. [Pearson 판본 정보](https://www.pearson.com/en-us/subject-catalog/p/computer-systems-a-programmers-perspective/P200000003479/9780138105396) · [POSIX.1-2024 시그널 개념](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html)
+
+## §8.2.5~§8.4 · 셸에서 명령 하나가 끝날 때까지
+
+터미널에서 `/bin/sleep 1`을 실행한다고 하자. 셸과 `sleep`을 각각 누가 만드는가? 1초 동안 CPU는 무엇을 하는가? 다음은 단일 스레드 셸이 외부 명령을 전경에서 실행하는 한 가지 모델이다. 이전 노트의 사용자 모드·커널 모드에서 출발한다. [이전 강의 §8.2.4](2026-10-04-csapp-ch8-exceptional-control-flow.html#modes) · [CSAPP 공식 목차](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf)
+
+| 순서 | 누가 무엇을 하는가 | 관찰할 경계 |
+|---|---|---|
+| 1 · 생성 | 셸이 `fork()`를 호출한다. 부모는 자식 PID를, 자식은 0을 반환받고 호출 다음 지점에서 각자의 흐름을 이어 간다. | `getpid()`는 자신의 PID, `getppid()`는 조회 시점의 부모 PID를 반환한다. |
+| 2 · 적재 | 자식이 `execve("/bin/sleep", argv, envp)`를 호출한다. 성공하면 같은 PID의 주소 공간에 새 프로그램이 적재된다. | 성공한 `execve`는 이전 호출 지점으로 돌아오지 않는다. 부모와 자식의 다음 실행 순서는 스케줄러가 정한다. |
+| 3 · 대기 | 부모는 `waitpid(child, &status, 0)`로 자식을 기다리고, `sleep`은 시간 만료를 기다린다. | 대기 중인 태스크는 CPU를 양보한다. CPU는 실행 가능한 다른 태스크를 실행하거나 유휴 상태에 들어간다. |
+| 4 · 회수 | 자식이 끝나면 부모가 종료 상태를 회수한다. | `WIFEXITED(status)`이면 `WEXITSTATUS(status)`, `WIFSIGNALED(status)`이면 `WTERMSIG(status)`를 읽는다. |
+
+**§8.2.5 문맥 교환.** 자식이 수면을 요청하면 CPU가 커널 모드로 진입한다. 커널이 다른 태스크를 고르면 기존 태스크의 레지스터와 재개 위치 등을 보존하고 선택한 태스크의 문맥으로 CPU를 넘긴다. 시간이 만료되면 자식은 다시 실행 가능한 상태가 되고, 실제로 CPU를 받은 시점에 사용자 코드를 계속한다. 짧은 시스템 호출에서는 같은 태스크로 바로 복귀할 수도 있다. [CMU 교재 동반 강의](https://www.cs.cmu.edu/afs/cs/academic/class/15213-m22/www/lectures/14-ecf-procs.pdf)
+
+**§8.3 실패를 읽는 순서.** 먼저 각 함수가 정한 실패 반환값을 검사하고, 그때의 `errno`를 읽는다. 예를 들어 `fork()`가 -1이면 자식은 만들어지지 않았다. Linux의 태스크 수 제한에 걸리면 `EAGAIN`, 메모리가 부족하면 `ENOMEM`이 가능하다. 반면 `pthread_sigmask()`는 오류 번호를 직접 반환하므로 그 값을 해석한다. 성공한 호출 뒤의 `errno`에는 과거 값이 남을 수 있다. [fork(2)](https://man7.org/linux/man-pages/man2/fork.2.html) · [errno(3)](https://man7.org/linux/man-pages/man3/errno.3.html) · [pthread_sigmask(3)](https://man7.org/linux/man-pages/man3/pthread_sigmask.3.html)
+
+**§8.4.1~8.4.3 무엇을 물려받는가.** `fork` 직후 부모와 자식은 독립된 가상 주소 공간을 가진다. 복사한 파일 디스크립터는 같은 열린 파일 객체를 가리켜 파일 오프셋을 공유한다. 사용자 공간의 표준 출력 버퍼는 각 주소 공간에 복사되므로, 미리 버퍼에 쌓인 문자열을 양쪽이 정상 종료 때 각각 비우면 중복 출력될 수 있다. 자식이 `execve`에 실패한 경로에서 `_exit`로 끝내면 상속한 stdio 버퍼를 다시 비우지 않는다. [fork(2)](https://man7.org/linux/man-pages/man2/fork.2.html) · [_exit(2)](https://man7.org/linux/man-pages/man2/_exit.2.html)
+
+종료 상태를 기다려 주는 부모가 있는 일반적인 경우, 종료부터 회수 사이의 자식이 **좀비**다. 커널은 부모에게 돌려줄 PID와 종료 상태 등을 보존한다. **고아**는 부모가 먼저 끝난 자식으로, 계속 실행 중일 수도 있다. Linux에서는 가장 가까운 살아 있는 subreaper 또는 해당 PID 네임스페이스의 init이 입양과 회수에 관여한다. 컨테이너에서 직접 실행한 프로그램이 PID 1이라면 그 역할도 고려한다. Docker의 `--init`은 시그널 전달과 자식 회수를 맡는 작은 init을 둔다. [waitpid(2)](https://man7.org/linux/man-pages/man2/waitpid.2.html) · [Docker 컨테이너 프로세스 관리](https://docs.docker.com/engine/containers/multi-service_container/)
+
+**§8.4.4~8.4.6 대기와 실행.** `sleep`은 시그널 때문에 일찍 끝날 수 있다. 상대 시간으로 `nanosleep`을 호출하고 `EINTR`를 받으면 남은 시간을 기준으로 다시 기다릴 수 있다. 절대 마감 시각을 유지하려면 단조 시계를 쓰는 `clock_nanosleep`의 절대 시간 모드도 선택할 수 있다. 새 프로그램을 적재할 때 `argv`와 `envp`는 각각 널 포인터로 끝나는 배열이다. 열린 FD 중 close-on-exec 표시가 있는 것은 성공한 `execve`에서 닫힌다. [nanosleep(2)](https://man7.org/linux/man-pages/man2/nanosleep.2.html) · [clock_nanosleep(2)](https://man7.org/linux/man-pages/man2/clock_nanosleep.2.html) · [execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html)
+
+## §8.5 시그널은 언제 실행 흐름을 바꾸는가
+
+`kill(pid, SIGTERM)`이 성공한 시각과 수신 프로세스가 종료 처리를 시작한 시각은 다를 수 있다. 세 용어로 그 사이를 설명할 수 있다. [Linux signal(7)](https://man7.org/linux/man-pages/man7/signal.7.html)
+
+| 용어 | 종료 요청을 예로 들면 |
+|---|---|
+| 발생과 보류(pending) | `SIGTERM`이 발생했고 아직 전달되거나 동기적으로 소비되지 않았다. |
+| 마스크(mask) | 각 스레드는 전달을 차단할 시그널 집합을 갖는다. `SIGTERM`을 차단하면 나중에 처리할 수 있다. |
+| 처리 방식(disposition) | 프로세스가 시그널별로 정한 동작이다. `SIGTERM`의 기본 동작은 종료이며, 프로그램은 핸들러를 등록할 수 있다. |
+
+핸들러가 등록돼 있고 해당 스레드가 시그널을 허용하면, 커널은 사용자 코드로 돌아가는 길에 핸들러를 실행하도록 준비할 수 있다. 핸들러가 정상적으로 반환하면 저장한 실행 문맥과 마스크가 복원된다. 핸들러 실행 중에는 일반적으로 그 핸들러를 호출한 시그널과 `sa_mask`에 지정한 시그널의 전달이 차단된다. [signal(7)](https://man7.org/linux/man-pages/man7/signal.7.html) · [sigaction(2)](https://man7.org/linux/man-pages/man2/sigaction.2.html)
+
+**손으로 추적하기.** 모든 스레드가 `SIGUSR1`을 차단한 상태에서, 프로세스에 `SIGUSR1`을 세 번 보낸다. 그동안 아무도 소비하지 않았다면 Linux에는 이 번호의 표준 시그널 하나가 보류된다. 같은 번호가 보류 중일 때 추가 발생이 합쳐지기 때문이다. 작업 세 건을 빠짐없이 기록해야 한다면 작업 목록은 별도 큐에 보관하고 시그널은 “큐를 확인하라”는 통지로 쓸 수 있다. [signal(7), 표준 시그널의 큐잉 규칙](https://man7.org/linux/man-pages/man7/signal.7.html)
+
+### 셸이 짧은 작업의 종료를 놓치는 두 순간
+
+셸에서 `Ctrl+C`를 누르면 보통 터미널 드라이버가 전경 프로세스 그룹에 `SIGINT`를 보낸다. 자식의 종료 상태는 셸이 `waitpid`로 회수한다. `SIGCHLD`는 “자식 상태를 확인할 때가 됐다”는 통지다. 여러 자식이 거의 함께 끝날 수 있으므로, 종료 상태를 수집하는 셸은 `waitpid(-1, &status, WNOHANG)`가 양수 PID를 돌려주는 동안 회수를 반복한다. 0은 자식이 있지만 지금 회수할 상태가 없다는 뜻이고, -1이면 `errno`를 확인한다. [termios(3)](https://man7.org/linux/man-pages/man3/termios.3.html) · [waitpid(2)](https://man7.org/linux/man-pages/man2/waitpid.2.html)
+
+1. **등록 전 종료.** 부모가 `fork` 직후 작업 목록에 PID를 쓰기 전에 자식이 끝나면, 먼저 실행된 `SIGCHLD` 핸들러가 목록에서 PID를 찾지 못할 수 있다. 단일 스레드 셸에서는 `fork` 전에 `SIGCHLD`를 차단하고 부모가 등록을 마친 뒤 기존 마스크로 복구한다. 자식도 상속받은 마스크를 새 프로그램 실행 전에 복구한다.
+2. **확인 직후 종료.** 부모가 “전경 작업이 아직 있다”고 확인한 직후 종료 통지가 처리되면, 바로 다음 `pause()`가 다른 시그널을 기다리며 멈출 수 있다. 부모는 `SIGCHLD`를 차단한 상태에서 조건을 검사하고, 아직 기다려야 하면 `sigsuspend`로 `SIGCHLD`를 허용하는 마스크로 교체하면서 잠든다. 핸들러에서 돌아오면 이전 마스크가 복원되고 부모는 조건을 다시 검사한다. [signal(7)](https://man7.org/linux/man-pages/man7/signal.7.html) · [sigsuspend(2)](https://man7.org/linux/man-pages/man2/sigsuspend.2.html)
+
+핸들러의 코드도 별도로 검토한다. 예컨대 `printf`가 내부 출력 버퍼를 갱신하는 도중 핸들러가 같은 버퍼를 만지면 일관성이 깨질 수 있다. 핸들러에는 async-signal-safe 동작만 두고, 메모리 할당·로그 서식화·복잡한 작업 목록 갱신은 정상 실행 흐름에서 수행한다. [signal-safety(7)](https://man7.org/linux/man-pages/man7/signal-safety.7.html)
+
+## §8.6 비지역 점프가 건너뛰는 코드
+
+`setjmp(env)`가 호출 문맥을 저장하고 처음 반환한 값은 0이다. 같은 스레드의 더 깊은 함수에서 `longjmp(env, 7)`을 호출하면, 저장 지점의 `setjmp`가 이번에는 7을 반환한 것처럼 실행이 이어진다. `longjmp(env, 0)`의 경우에는 1로 돌아온다. [setjmp(3)](https://man7.org/linux/man-pages/man3/longjmp.3.html)
+
+| 실행 순서 | 정상 반환 | 비지역 점프 |
+|---|---|---|
+| 1. `main` | `setjmp`가 0을 반환해 요청 처리를 시작한다. | 같은 지점에서 시작한다. |
+| 2. `serve` | 버퍼를 할당한 뒤 `parse`를 호출한다. | 버퍼를 할당한 뒤 `parse`를 호출한다. |
+| 3. `parse` | 오류를 반환하고 호출자에게 제어를 넘긴다. | 오류를 발견해 `longjmp(env, 7)`을 호출한다. |
+| 4. 다음 실행 위치 | `serve`가 버퍼를 해제한 뒤 `main`으로 돌아간다. | `main`의 복구 분기로 간다. `serve`에 있던 해제 코드는 건너뛴다. |
+
+이 예에서 버퍼의 유일한 포인터가 `serve`의 지역 변수였다면 할당을 회수할 길이 사라진다. 외부 요청마다 이 경로를 반복해서 밟을 수 있는 서버라면 메모리 고갈로 이어질 수 있다. 복구 지점을 이미 반환한 함수에 두거나 다른 스레드가 저장한 문맥으로 점프하면 동작 자체가 정의되지 않는다. 또 `setjmp`를 호출한 함수의 자동 지역 변수 중, 저장 뒤 값이 바뀐 비휘발성 변수는 복귀 후 그 값에 의존할 수 없다. [setjmp(3), 주의사항](https://man7.org/linux/man-pages/man3/longjmp.3.html)
+
+POSIX의 `sigsetjmp(env, 1)`은 호출 스레드의 시그널 마스크도 저장하며, 짝인 `siglongjmp`가 그 마스크까지 복원한다. 이 동작으로 회복되는 것은 저장된 문맥이다. 버퍼 소유권이나 잠금 상태를 복원하려면 별도의 정리 코드가 필요하다. 특히 async-signal-safe 보장이 없는 라이브러리 함수가 실행 중일 때 핸들러가 끼어들어 비지역 점프로 빠져나오면, 이후 다시 안전성이 보장되지 않는 함수를 호출하는 경로에서 동작이 정의되지 않는다. 종료 요청을 받아 자원을 정리하는 서버에서는 정상 제어 흐름에 정리 지점을 두는 편이 검토하기 쉽다. [setjmp(3)](https://man7.org/linux/man-pages/man3/longjmp.3.html) · [signal-safety(7)](https://man7.org/linux/man-pages/man7/signal-safety.7.html)
+
+## 시그널을 어디에서 받을까
+
+| 필요한 동작 | 인터페이스 | 처리를 시작하는 위치 |
+|---|---|---|
+| 실행 중 짧게 종료 의사를 표시한다. | POSIX `sigaction` 핸들러 | 핸들러에서 `volatile sig_atomic_t` 플래그를 설정하고 반환한다. 단일 스레드의 본 흐름이 플래그를 확인할 지점도 필요하다. |
+| 정해진 종류의 시그널을 기다리는 전용 스레드를 둔다. | POSIX `sigwaitinfo` | 호출 스레드가 보류된 시그널 하나를 소비하고 번호와 `siginfo_t` 정보를 받는다. |
+| 소켓, 시그널, 타이머를 한 루프에서 처리한다. | Linux `signalfd` | 대상 시그널이 보류되면 FD가 읽기 가능해진다. `read`가 `signalfd_siginfo` 레코드를 읽고 해당 시그널을 소비한다. |
+
+뒤의 두 방법에서는 **먼저 대상 시그널을 차단한다.** `signalfd`에 넘기는 집합은 이 FD로 받을 시그널을 고른다. 스레드의 마스크는 별도로 설정한다. 여러 스레드가 있는 서버라면 처음 스레드에서 `pthread_sigmask`로 차단한 다음 작업 스레드를 생성하면 자식 스레드들이 마스크를 상속한다. 그래야 프로세스로 보낸 시그널을 다른 스레드가 먼저 전달받는 일을 피할 수 있다. [sigwaitinfo(2)](https://man7.org/linux/man-pages/man2/sigwaitinfo.2.html) · [signalfd(2)](https://man7.org/linux/man-pages/man2/signalfd.2.html) · [pthread_sigmask(3)](https://man7.org/linux/man-pages/man3/pthread_sigmask.3.html)
+
+`SIGKILL`과 `SIGSTOP`은 차단할 수 없다. 잘못된 메모리 접근처럼 특정 명령의 실행에서 발생한 동기식 `SIGSEGV`를 처리하는 데도 `signalfd`를 사용할 수 없다. 이 실습이 다루는 대상은 프로그램 밖에서 보내거나 `kill`로 생성할 수 있는 알림이다. [signalfd(2), 한계](https://man7.org/linux/man-pages/man2/signalfd.2.html)
+
+## 준비된 FD를 읽는 이벤트 루프
+
+소켓을 읽으면 바이트가 오고, 시그널 FD를 읽으면 시그널 정보가 오고, 타이머 FD를 읽으면 만료 횟수가 온다. **FD를 함께 감시해도 각 FD에서 읽을 데이터의 형식은 다르다.** 다음은 종료 요청과 30초 타이머를 함께 기다리는 서버의 예다. [poll(2)](https://man7.org/linux/man-pages/man2/poll.2.html) · [timerfd_create(2)](https://man7.org/linux/man-pages/man2/timerfd_create.2.html)
+
+![시그널과 타이머가 읽기 가능한 FD가 되고 이벤트 루프가 두 결과를 읽는 과정](../../assets/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps/signal-event-loop.svg)
+
+1. `poll`에 시그널 FD, 타이머 FD, 소켓을 등록하고 기다린다. 여러 FD가 준비되면 한 번의 반환에서 여러 항목에 표시될 수 있다.
+2. 시그널 FD가 읽기 가능하면 `read`로 시그널 번호를 확인한다. 종료 요청이면 루프에서 새 요청 수락을 중단하고 처리 중인 자원을 정리한다.
+3. 타이머 FD가 읽기 가능하면 8바이트 `uint64_t` 만료 횟수를 읽는다. “30초 동안 활동이 없으면 종료”라는 정책이라면 활동이 있을 때마다 타이머를 다시 설정한다. 처음 한 번만 설정하면 시작 시각을 기준으로 한 기한이다.
+
+`select`, `poll`, Linux의 `epoll`은 준비된 FD를 찾는 인터페이스다. 언어의 `await`는 기다리던 작업이 완료됐을 때 코루틴 실행을 잇는 표현이다. 두 층이 만나는 사례가 Python의 `SelectorEventLoop`이고, Node.js가 사용하는 libuv는 Linux의 네트워크 소켓을 `epoll`로 감시한다. 타이머와 파일 작업을 구현하는 방법은 런타임과 운영체제에 따라 달라진다. [epoll(7)](https://man7.org/linux/man-pages/man7/epoll.7.html) · [Python 이벤트 루프 구현](https://docs.python.org/3/library/asyncio-eventloop.html#event-loop-implementations) · [libuv 설계](https://docs.libuv.org/en/v1.x/design.html)
+
+## Linux 실습 · 하나의 루프에서 두 사건 읽기
+
+**예측해 보기.** 프로그램이 자기 자신에게 `SIGUSR1`을 보낸 *뒤에* `poll`을 호출한다. 프로그램은 기본 동작인 종료를 피하면서 이미 보낸 시그널까지 어떻게 읽을까? 소스에서 시그널 차단, FD 생성, 시그널 전송의 순서부터 찾는다. [실습 소스 signal-loop.c](../../../examples/0003-signal-event-loop/signal-loop.c)
+
+Linux의 저장소 루트에서 실행한다.
+
+```sh
+cc -std=c11 -Wall -Wextra -Werror -O2 examples/0003-signal-event-loop/signal-loop.c -o /tmp/csapp-signal-loop
+/tmp/csapp-signal-loop
+```
+
+`SIGUSR1`은 전송 전에 차단했으므로 보류된 채 읽기를 기다린다. 시그널을 읽은 뒤에도 루프에는 1초 단발 타이머가 남아 있다. `poll`의 대기 시간 인수는 `-1`이고, 타이머 자체가 읽기 가능해지면서 루프가 깨어난다. 두 FD의 레코드를 하나씩 확인하면 종료한다.
+
+**OBSERVED · 2026-11-08** Ubuntu x86-64, Linux 7.2.12-orbstack, GCC 14.2.0에서 다음 두 줄을 출력하고 종료 코드 0을 반환했다.
+
+```text
+signalfd: SIGUSR1
+timerfd: expirations=1
+```
+
+## §8.7~§8.8 · 실행 흐름을 확인하는 도구
+
+Linux 터미널에서 잠깐 유지되는 자식을 하나 만들면 생성·대기·종료를 눈으로 확인할 수 있다. 아래 명령은 같은 셸에서 차례로 실행한다.
+
+```sh
+sleep 30 &
+child=$!
+ps -o pid,ppid,pgid,stat,comm -p "$child"
+kill -TERM "$child"
+wait "$child"
+printf 'shell wait status = %s\n' "$?"
+```
+
+**확인할 값.** `PID`는 방금 저장한 자식 번호와 같다. `PPID`는 실행한 셸이고 `STAT`의 첫 글자 `S`는 인터럽트 가능한 수면이다. 관측 시점에 따라 다른 상태도 볼 수 있다. `kill`은 지정한 시그널을 보내며, `sleep`은 기본 동작으로 종료한다. 셸의 `wait` 결과는 셸이 표현한 상태값이다. C 프로그램에서는 앞서 본 `waitpid`의 상태 판독 매크로를 사용한다. 실행 중 변화는 `top`, 특정 부모·자식 관계는 `ps`, 시스템 호출과 시그널 전달은 `strace -f`로 확인할 수 있다. [ps(1)](https://man7.org/linux/man-pages/man1/ps.1.html) · [kill(2)](https://man7.org/linux/man-pages/man2/kill.2.html) · [strace(1)](https://man7.org/linux/man-pages/man1/strace.1.html)
+
+**현행 Linux 보충.** 시그널 FD는 지정한 시그널 집합을 관찰한다. 특정 프로세스의 종료를 관찰하려면 Linux 5.3에서 추가된 `pidfd_open(pid, 0)`으로 그 프로세스를 가리키는 FD를 얻을 수 있다. 이 FD도 `poll`에 넣을 수 있다. 그 프로세스가 자신의 자식이면 Linux 5.4부터 `waitid(P_PIDFD, …)`로 상태를 회수할 수 있다. 준비 상태를 통지받는 단계와 자식의 종료 상태를 회수하는 단계를 이렇게 연결한다. [pidfd_open(2)](https://man7.org/linux/man-pages/man2/pidfd_open.2.html) · [waitid(2)](https://man7.org/linux/man-pages/man2/waitid.2.html)
+
+교재 §8.8을 되짚을 때는 사건 하나를 골라 세 가지를 적어 보자. **CPU 또는 프로세스가 무슨 사건을 만났는가? 누가 처리하는가? 어디서 다시 시작하는가?** 예를 들어 자식의 종료는 부모에게 통지될 수 있고, 부모는 종료 상태를 회수한 다음 셸의 입력 루프로 돌아간다. 다음 장에서는 같은 질문을 메모리 접근에 적용한다.
+
+## Ch9 예습 · 한 번의 메모리 읽기
+
+앞에서 본 시그널은 프로세스에 사건을 알리는 메커니즘이다. 이번에는 CPU가 *어떤 주소를 읽으려던 순간*부터 따라가 보자. 교재 §9.1~§9.3은 가상 주소와 물리 주소를 구분하고, DRAM을 가상 페이지를 보관하는 캐시로 설명한다. [CSAPP 3판 공식 목차](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf) · [Linux 메모리 관리 개요](https://docs.kernel.org/admin-guide/mm/concepts.html)
+
+**번역 예시.** 페이지가 4 KiB이고 가상 페이지 번호 `0x12`가 물리 프레임 번호 `0xAB`에 매핑됐다고 하자. CPU가 가상 주소 `0x12345`로 읽기를 요청하면 MMU는 페이지 테이블에 근거해 주소를 번역하고 읽기 권한을 확인한다. 아래 12비트인 오프셋 `0x345`는 그대로여서 물리 주소는 `0xAB345`다. 같은 가상 주소도 프로세스마다 참조하는 페이지 테이블에 따라 다른 프레임에 대응할 수 있다. [Linux 페이지 테이블 문서](https://docs.kernel.org/mm/page_tables.html)
+
+![가상 주소에서 페이지의 상태와 접근 권한을 확인해 읽기를 재개하거나 시그널을 전달하는 과정](../../assets/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps/page-fault.svg)
+
+| 교재의 가상 페이지 상태 | 읽기 요청이 들어오면 |
+|---|---|
+| 할당됨 · 메모리에 있음(cached) | 유효한 번역과 읽기 권한이 있으면 해당 물리 프레임의 데이터를 읽는다. |
+| 할당됨 · 메모리에 없음(uncached) | 커널이 페이지 폴트를 처리한다. 저장장치에서 데이터를 가져와야 하는 경우 프레임에 채우고 매핑을 갱신한 뒤 명령을 재시도한다. |
+| 미할당(unallocated) | 접근을 허용하는 매핑이 있는지 커널이 판정한다. 유효한 매핑이 없는 주소에 대한 사용자 접근은 Linux에서 일반적으로 `SIGSEGV`로 이어진다. |
+
+페이지 폴트의 비용은 커널이 해야 할 일에 달려 있다. 예를 들어 Linux가 익명 페이지의 첫 쓰기에 새 프레임을 제공할 때는 디스크 읽기를 생략할 수 있다. 여유 프레임이 부족하면 커널은 기존 페이지를 회수한다. 원본에서 다시 읽을 수 있는 깨끗한 파일 페이지는 버릴 수 있고, 수정된 파일 페이지를 재사용하려면 변경 내용을 보존해야 한다. [Linux 메모리 관리 개요](https://docs.kernel.org/admin-guide/mm/concepts.html)
+
+**지역성 질문.** 4 KiB 페이지 4개에 들어가는 배열 구간을 반복해서 순회하면, 처음 접근한 뒤에는 그 네 페이지가 계속 사용된다. 한동안 자주 쓰는 페이지 집합이 작업 집합(working set)이다. 작업 집합이 가용 메모리보다 커져 방금 내보낸 페이지를 자꾸 다시 가져오면 페이지 교체에 쓰는 시간이 늘어난다. 배열 크기, 순회 순서, 가용 프레임 수 중 하나를 바꿔 어느 페이지가 다시 필요해지는지 그려 보자. [CSAPP §9.3.6](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf)
+
+### 같은 주소 체계로 프로그램을 배치하고 보호하기
+
+교재 §9.4~§9.5에서는 메모리 관리와 보호를 살펴본다. 링커는 기계어가 담긴 `.text` 등의 섹션을 실행 파일의 세그먼트에 배치한다. Linux의 ELF 로더는 프로그램 헤더를 따라 로드할 세그먼트를 프로세스의 가상 주소 공간에 매핑한다. 실행 코드가 든 영역의 전형적인 권한은 읽기·실행(`r-x`), 수정할 전역 데이터가 든 영역은 읽기·쓰기(`rw-`)다. 프로그램은 각자 연속된 가상 주소 범위를 사용하면서, 물리 메모리의 서로 떨어진 프레임을 사용할 수 있다. MMU는 접근할 때 페이지의 읽기·쓰기·실행 권한을 검사한다. [CSAPP 3판 공식 목차](https://csapp.cs.cmu.edu/3e/pieces/preface3e.pdf) · [elf(5)](https://man7.org/linux/man-pages/man5/elf.5.html) · [proc_pid_maps(5)](https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html)
+
+**Linux에서 찾아보기.** `cat /proc/self/maps`를 실행한 뒤, `cat` 실행 파일을 가리키는 줄 중 `r-xp`인 줄을 찾는다. 이 줄은 해당 파일의 일부가 읽기·실행 가능한 private(쓰기 시 복사) 가상 주소 범위에 매핑됐다는 증거다. 메모리 지도 한 줄은 매핑의 권한을 보여 준다. 현재 물리 메모리에 올라온 페이지 수를 확인하려면 `/proc/<pid>/smaps`의 `Rss` 같은 지표를 따로 읽는다. [proc_pid_maps(5)](https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html) · [proc_pid_smaps(5)](https://man7.org/linux/man-pages/man5/proc_pid_smaps.5.html)
+
+## 스터디 확인 질문
+
+1. 프로세스로 보내는 `SIGTERM`을 전용 스레드에서 받으려 한다. 작업 스레드가 만들어지기 전에 공유해야 할 설정은 무엇인가? **답:** 처음 스레드의 차단 마스크다. 새 스레드가 이를 상속하고, 전용 스레드에서 동기적으로 소비한다.
+2. `sigsetjmp(env, 1)`로 복구 지점을 저장했다. 이후 얻은 잠금을 가진 채 `siglongjmp`를 호출하면 무엇을 따로 처리해야 하나? **답:** 복귀 지점에서도 잠금 소유권은 남는다. 자원 정리 경로가 잠금 해제까지 실행되는지 확인해야 한다.
+3. 시그널과 타이머가 동시에 준비되면 `poll` 반환값 하나로 어떤 FD를 읽을지 알 수 있을까? **답:** 반환값은 이벤트가 표시된 항목 수다. 각 항목의 `revents`를 확인해 준비된 FD마다 맞는 형식으로 읽는다.
+4. 페이지 폴트가 한 번 발생했다는 사실에서 다음에 실행할 명령과 디스크 읽기 횟수를 알 수 있을까? **답:** 매핑과 접근 권한, 페이지 상태를 확인해야 한다. 복구 가능한 폴트에서는 원래 명령을 재시도하며, 필요한 디스크 I/O는 처리 경로에 따라 달라진다.

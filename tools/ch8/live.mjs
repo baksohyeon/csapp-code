@@ -4,6 +4,9 @@ import {execFileSync} from 'node:child_process';
 const base='https://raspberrypi.bobcat-fort.ts.net/csapp/';
 const stem='2026-10-04-csapp-ch8-exceptional-control-flow';
 const files=[
+ 'wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.html','wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.md',
+ ...['signal-event-loop','page-fault'].map(n=>`wiki/assets/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps/${n}.svg`),
+ 'examples/0003-signal-event-loop/index.html','examples/0003-signal-event-loop/signal-loop.c',
  `wiki/lectures/2026/${stem}.html`,`wiki/lectures/2026/${stem}.md`,
  ...['abstraction-layers','exception-flow','concurrency-timeline','virtual-address-space','user-kernel-mode','blocking-io','go-gmp'].map(n=>`wiki/assets/${stem}/${n}.svg`),
  'wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html',

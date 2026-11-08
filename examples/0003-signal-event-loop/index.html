@@ -1,0 +1,69 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>시그널 이벤트 루프 실습 | CSAPP Wiki</title><script>try{const t=localStorage.getItem('csapp-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script><link rel="stylesheet" href="../../wiki/assets/site/tokens.css"><link rel="stylesheet" href="../../wiki/assets/site/docs.css"><link rel="stylesheet" href="../../wiki/assets/site/github-dark.css"><script defer src="../../wiki/assets/site/docs.js"></script></head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a><header class="docs-header"><div class="docs-header-inner"><a class="docs-brand" href="../../wiki/">CSAPP <span>Wiki</span></a><nav aria-label="사이트"><a href="../../wiki/">학습 목차</a><a class="source-link" href="https://github.com/baksohyeon/csapp-code">GitHub</a><button class="docs-theme" data-theme-toggle type="button">테마</button></nav></div></header><nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li><a href="../../wiki/">CSAPP Wiki</a></li><li aria-current="page">시그널 이벤트 루프 실습</li></ol></nav><main id="content" class="docs-home"><article class="docs-article reference-document"><h1>시그널 이벤트 루프 실습</h1><p>실습 설명을 읽고 소스를 확인한다. 원본 파일 링크는 소스 텍스트를 연다.</p><details class="source-file"><summary>signal-loop.c</summary><p><a href="signal-loop.c">원본 파일</a></p><div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-1" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-1" class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> _POSIX_C_SOURCE 200809L</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;err.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;errno.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;inttypes.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;poll.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;signal.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/signalfd.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/timerfd.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+
+<span class="hljs-comment">/* These two Linux fd types return complete, fixed-size records. */</span>
+<span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">read_record</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">void</span> *buffer, <span class="hljs-type">size_t</span> size)</span> {
+    <span class="hljs-type">ssize_t</span> count;
+    <span class="hljs-keyword">do</span> {
+        count = read(fd, buffer, size);
+    } <span class="hljs-keyword">while</span> (count == <span class="hljs-number">-1</span> &amp;&amp; errno == EINTR);
+    <span class="hljs-keyword">if</span> (count == <span class="hljs-number">-1</span>) err(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;read&quot;</span>);
+    <span class="hljs-keyword">if</span> ((<span class="hljs-type">size_t</span>)count != size) errx(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;incomplete event record&quot;</span>);
+}
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+    <span class="hljs-type">sigset_t</span> signals;
+    sigemptyset(&amp;signals);
+    sigaddset(&amp;signals, SIGUSR1);
+    <span class="hljs-keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;signals, <span class="hljs-literal">NULL</span>) == <span class="hljs-number">-1</span>) err(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;sigprocmask&quot;</span>);
+
+    <span class="hljs-type">int</span> signal_fd = signalfd(<span class="hljs-number">-1</span>, &amp;signals, SFD_CLOEXEC);
+    <span class="hljs-keyword">if</span> (signal_fd == <span class="hljs-number">-1</span>) err(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;signalfd&quot;</span>);
+    <span class="hljs-type">int</span> timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
+    <span class="hljs-keyword">if</span> (timer_fd == <span class="hljs-number">-1</span>) err(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;timerfd_create&quot;</span>);
+
+    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">itimerspec</span> <span class="hljs-title">once</span> =</span> {.it_value = {.tv_sec = <span class="hljs-number">1</span>}};
+    <span class="hljs-keyword">if</span> (timerfd_settime(timer_fd, <span class="hljs-number">0</span>, &amp;once, <span class="hljs-literal">NULL</span>) == <span class="hljs-number">-1</span>) err(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;timerfd_settime&quot;</span>);
+    <span class="hljs-keyword">if</span> (kill(getpid(), SIGUSR1) == <span class="hljs-number">-1</span>) err(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;kill&quot;</span>);
+
+    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span> <span class="hljs-title">events</span>[] =</span> {
+        {.fd = signal_fd, .events = POLLIN},
+        {.fd = timer_fd, .events = POLLIN}
+    };
+    <span class="hljs-comment">/* poll ignores negative fds. Retire each source after reading its event. */</span>
+    <span class="hljs-keyword">while</span> (events[<span class="hljs-number">0</span>].fd &gt;= <span class="hljs-number">0</span> || events[<span class="hljs-number">1</span>].fd &gt;= <span class="hljs-number">0</span>) {
+        <span class="hljs-keyword">if</span> (poll(events, <span class="hljs-number">2</span>, <span class="hljs-number">-1</span>) == <span class="hljs-number">-1</span>) {
+            <span class="hljs-keyword">if</span> (errno == EINTR) <span class="hljs-keyword">continue</span>;
+            err(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;poll&quot;</span>);
+        }
+        <span class="hljs-keyword">if</span> ((events[<span class="hljs-number">0</span>].revents | events[<span class="hljs-number">1</span>].revents) &amp; (POLLERR | POLLHUP | POLLNVAL))
+            errx(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;unexpected descriptor state&quot;</span>);
+        <span class="hljs-keyword">if</span> (events[<span class="hljs-number">0</span>].revents &amp; POLLIN) {
+            <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">signalfd_siginfo</span> <span class="hljs-title">info</span>;</span>
+            read_record(signal_fd, &amp;info, <span class="hljs-keyword">sizeof</span>(info));
+            <span class="hljs-keyword">if</span> (info.ssi_signo != SIGUSR1) errx(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;unexpected signal&quot;</span>);
+            <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;signalfd: SIGUSR1&quot;</span>);
+            events[<span class="hljs-number">0</span>].fd = <span class="hljs-number">-1</span>;
+        }
+        <span class="hljs-keyword">if</span> (events[<span class="hljs-number">1</span>].revents &amp; POLLIN) {
+            <span class="hljs-type">uint64_t</span> expirations;
+            read_record(timer_fd, &amp;expirations, <span class="hljs-keyword">sizeof</span>(expirations));
+            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;timerfd: expirations=%&quot;</span> PRIu64 <span class="hljs-string">&quot;\n&quot;</span>, expirations);
+            events[<span class="hljs-number">1</span>].fd = <span class="hljs-number">-1</span>;
+        }
+    }
+    close(signal_fd);
+    close(timer_fd);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+</code></pre></div>
+</details><footer class="docs-footer"><a href="../../wiki/">← CSAPP Wiki</a></footer></article></main></body></html>

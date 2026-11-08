@@ -12,12 +12,16 @@ try{
  }else await page.goto(base);
  assert.equal(page.url(),new URL(base).href);await page.locator('h1').waitFor();
  assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');
- const cards=await page.locator('.lecture-list>li>a').allTextContents();assert.deepEqual(cards.map(t=>t.match(/Ch\d/)[0]),['Ch6','Ch7','Ch8']);
+ const cards=await page.locator('.lecture-list>li>a').allTextContents();assert.deepEqual(cards.map(t=>t.match(/Ch\d/)[0]),['Ch6','Ch7','Ch8','Ch8']);
  assert((await page.locator('.lecture-list').innerText()).includes('§8.1–§8.2.4'));
  const destinations=await page.locator('main a').evaluateAll(xs=>[...new Set(xs.map(x=>x.href))].filter(h=>h.startsWith(location.origin)&&!h.includes('#')));
  assert(destinations.every(h=>!h.endsWith('.md')),'Wiki learning links must not open raw Markdown');
  for(const href of destinations){const r=await page.request.get(href);assert.equal(r.status(),200,href);assert(r.headers()['content-type'].includes('text/html'),href);}
  await page.screenshot({path:out+'/wiki-desktop.png'});
+ await page.getByRole('link',{name:'Ch8 · 시그널과 비지역 점프',exact:true}).click();
+ assert.equal(page.url(),new URL('wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.html',base).href);
+ assert((await page.locator('main h1').innerText()).includes('시그널'));
+ await page.goBack();
  await page.getByRole('link',{name:'Ch8 · Exceptional Control Flow',exact:true}).click();
  const expected=[['exceptions',2,null],['exception-handling',3,'exceptions'],['exception-classes',3,'exceptions'],['linux-exceptions',3,'exceptions'],['processes',2,null],['logical-flow',3,'processes'],['concurrent-flows',3,'processes'],['address-space',3,'processes'],['modes',3,'processes']];
  const audit=JSON.parse(await readFile('validation/ch8/2026-10-25/textbook-audit.json','utf8'));
@@ -44,7 +48,7 @@ try{
  const ids=await page.locator('[id]').evaluateAll(xs=>xs.map(x=>x.id));assert.equal(ids.length,new Set(ids).size);
  records.push({test:'homepage/CSAPP → Wiki → chapter, readable notes, source reader, back to Wiki; textbook hierarchy; code highlight and clipboard',pass:true,linkedPages:destinations.length,colors});
  await context.close();
- const samples=['','wiki/','wiki/notes/0001-compile-linking.html','wiki/topics/compile-linking.html','examples/0002-exceptional-control-flow/','chapter07/examples/'];
+ const samples=['','wiki/','wiki/lectures/2026/2026-11-08-csapp-ch8-signals-and-nonlocal-jumps.html','examples/0003-signal-event-loop/','wiki/notes/0001-compile-linking.html','wiki/topics/compile-linking.html','examples/0002-exceptional-control-flow/','chapter07/examples/'];
  for(const route of samples)for(const [width,scheme] of [[375,'light'],[1440,'dark']]){
   const context=await b.newContext({viewport:{width,height:812},colorScheme:scheme});const p=await context.newPage();await p.goto(new URL(route,base).href,{waitUntil:'networkidle'});
   const audit=await new AxeBuilder({page:p}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
