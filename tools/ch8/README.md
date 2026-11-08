@@ -20,7 +20,7 @@ frontmatter·문서 본문은 Markdown에, 디자인 토큰은 `wiki/assets/site
 배포본 검증:
 
 ```sh
-node tools/ch8/browser.mjs https://raspberrypi.bobcat-fort.ts.net/csapp/ live
+node tools/ch8/browser.mjs https://dorito.tech/csapp/ live
 ```
 
 HTML·Markdown·SVG 및 기존 Ch6/Ch7 파일의 라이브 hash 비교: `node tools/ch8/live.mjs`.
@@ -38,7 +38,7 @@ CSS·JS와 문서 링크는 상대 경로여서 로컬 root와 배포 `/csapp/` 
 ```sh
 node tools/ch8/flow.mjs http://127.0.0.1:8765/ /tmp/csapp-flow
 # 배포 후 실제 홈페이지부터 클릭해 확인
-node tools/ch8/flow.mjs https://raspberrypi.bobcat-fort.ts.net/csapp/ /tmp/csapp-flow-live --homepage
+node tools/ch8/flow.mjs https://dorito.tech/csapp/ /tmp/csapp-flow-live --homepage
 ```
 
 `markdown.mjs`는 C·Shell·Java·x86asm 등을 highlight.js로 미리 렌더링한다. `wiki/assets/site/github-dark.css`는 11.12.0 공식 테마를 scope만 제한한 사본이며 라이선스를 함께 배포한다. 기존 Markdown을 수정하면 HTML도 다시 생성한다.
