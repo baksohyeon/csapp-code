@@ -10,13 +10,26 @@ const url=new URL(file,base).href;
 const browser=await chromium.launch({channel:'chrome',headless:true});
 const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
 const page=await context.newPage();const results=[];
+async function checkHomelabNavigation(){
+ assert((await page.title()).endsWith(' | Dorito’s Homelab'));
+ const home=page.getByRole('link',{name:'홈으로 · Dorito’s Homelab',exact:true});
+ assert(await home.isVisible());
+ assert.equal(await home.getAttribute('href'),'/');
+ for(const icon of ['/favicon.ico','/favicon.svg']){
+  assert.equal(await page.locator(`link[rel="icon"][href="${icon}"]`).count(),1);
+  assert.equal((await page.request.get(new URL(icon,base).href)).status(),200);
+ }
+}
 try{
  let response=await page.goto(base);assert.equal(response.status(),200);
  assert.equal(page.url(),new URL(base).href);assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');
+ await checkHomelabNavigation();
  await page.getByRole('link',{name:'Ch8 · Exceptional Control Flow',exact:true}).click();
  assert.equal(page.url(),url);
+ await checkHomelabNavigation();
  await page.locator('.docs-hero-nav a').filter({hasText:'Ch7'}).click();
  assert(page.url().endsWith('/chapter07/chapter-7.6.1.html'));
+ await checkHomelabNavigation();
  await page.getByRole('navigation',{name:'강의 이동'}).getByRole('link',{name:'Ch8 →'}).click();
  assert.equal(page.url(),url);
  await page.goto(url+'#labs');

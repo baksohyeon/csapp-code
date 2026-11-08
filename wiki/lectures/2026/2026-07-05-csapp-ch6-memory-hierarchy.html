@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>2026-07-05 CSAPP Chapter 6 통합 강의노트</title>
+  <title>2026-07-05 CSAPP Chapter 6 통합 강의노트 | Dorito’s Homelab</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg">
   <style>
     :root {
       color-scheme: light;
@@ -1001,6 +1002,9 @@
       pre { white-space: pre-wrap; background: #f2f2f2; color: #000; border: 1px solid #999; }
       .card, .callout, table { background: #fff; }
     }
+  .homelab-link { display:inline-flex; align-items:center; gap:.5rem; min-height:44px; font:650 .875rem/1.2 system-ui,sans-serif; text-decoration:none; }
+  .homelab-link:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
+  @media print { .homelab-link { display:none; } }
   .lecture-route-nav { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1.5rem; font-size:.875rem; }
 </style>
 </head>
@@ -1027,6 +1031,7 @@
 
   <header class="hero">
     <div class="wrap">
+      <a class="homelab-link" href="/" aria-label="홈으로 · Dorito’s Homelab"><img src="/favicon.svg" alt="" width="21" height="21">홈으로</a>
       <p class="eyebrow">CSAPP Chapter 6 · 2026-07-05 통합 강의노트</p>
       <h1>Memory Hierarchy <br class="mob-br">& Matrix Locality</h1>
       <p class="lead">CPU가 빠르다는 말은 절반만 맞다. 데이터가 가까운 캐시에 있고, cache line을 낭비하지 않고, 안쪽 루프가 연속 주소를 읽을 때만 그 속도가 나온다. Chapter 6의 핵심은 계산량보다 데이터 접근 패턴을 보는 눈이다.</p>

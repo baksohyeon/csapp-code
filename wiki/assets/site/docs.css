@@ -8,6 +8,8 @@ body.docs-page { margin: 0; color: var(--docs-text); background: var(--docs-bg);
 .docs-page .skip:focus { top: var(--docs-space-2); }
 .docs-header { position: sticky; top: 0; z-index: 20; min-height: var(--docs-header-height); background: var(--docs-bg); border-bottom: 1px solid var(--docs-border); }
 .docs-header-inner { max-width: var(--docs-site-width); min-height: var(--docs-header-height); margin: auto; padding-inline: var(--docs-space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--docs-space-4); }
+.docs-identity { display: flex; align-items: center; gap: .75rem; white-space: nowrap; }
+.homelab-link { display: inline-flex; align-items: center; gap: .375rem; min-height: 44px; color: var(--docs-text); font-size: var(--docs-text-sm); text-decoration: none; }
 .docs-brand { font-size: 1.125rem; font-weight: 750; text-decoration: none; color: var(--docs-text) !important; }
 .docs-header nav { display: flex; align-items: center; gap: var(--docs-space-4); }
 .docs-header nav a { font-size: var(--docs-text-sm); }
@@ -81,7 +83,8 @@ body.docs-page { margin: 0; color: var(--docs-text); background: var(--docs-bg);
   .docs-article .toc { display: none; }
 }
 @media (max-width: 40rem) {
-  .docs-header-inner { padding-inline: var(--docs-space-4); }
+  .docs-header-inner { padding-inline: .75rem; gap: .5rem; }
+  .docs-header nav, .docs-identity { gap: .5rem; }
   .docs-header .source-link { display: none; }
   .docs-breadcrumbs { padding-inline: var(--docs-space-4); }
   .docs-grid { padding: var(--docs-space-4); gap: var(--docs-space-6); }

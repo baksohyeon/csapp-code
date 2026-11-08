@@ -2,7 +2,7 @@ import {readFile,writeFile,readdir,access,stat} from 'node:fs/promises';
 import path from 'node:path';
 import YAML from 'yaml';
 import {createMarkdown} from './markdown.mjs';
-import {lectures,relative,resources,header,escape} from './site.mjs';
+import {lectures,relative,resources,header,escape,portalHead} from './site.mjs';
 const files=[];
 async function walk(dir){for(const e of await readdir(dir,{withFileTypes:true})){const p=path.posix.join(dir,e.name);if(e.isDirectory())await walk(p);else if(e.name.endsWith('.md'))files.push(p);}}
 await walk('wiki');
@@ -23,7 +23,7 @@ const sourceReaders=new Map([
 ]);
 function shell(from,title,content,mainClass='docs-home'){
  const catalog=from==='wiki/index.html'||from==='index.html';
- return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>${escape(title)} | CSAPP Wiki</title>${resources(from)}</head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a>${header(from)}<nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li>${catalog?'<span aria-current="page">CSAPP Wiki</span>':`<a href="${relative(from,'wiki/index.html')}">CSAPP Wiki</a>`}</li>${catalog?'':`<li aria-current="page">${escape(title)}</li>`}</ol></nav><main id="content" class="${mainClass}">${content}</main></body></html>\n`;
+ return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark">${portalHead(catalog ? title : title+' | CSAPP Wiki')}${resources(from)}</head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a>${header(from)}<nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li>${catalog?'<span aria-current="page">CSAPP Wiki</span>':`<a href="${relative(from,'wiki/index.html')}">CSAPP Wiki</a>`}</li>${catalog?'':`<li aria-current="page">${escape(title)}</li>`}</ol></nav><main id="content" class="${mainClass}">${content}</main></body></html>\n`;
 }
 async function targetFor(from,href,output){
  if(/^(https?:|mailto:|data:|#)/.test(href))return href;

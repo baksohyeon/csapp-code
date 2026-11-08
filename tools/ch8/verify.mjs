@@ -17,7 +17,8 @@ if(ids.length!==new Set(ids).size)errors.push('duplicate ids');
 for(const [,attribute,value] of html.matchAll(/\b(href|src)="([^"]+)"/g)){
  if(/^(https?|data):/.test(value))continue;
  if(value.startsWith('#')){if(!ids.includes(value.slice(1)))errors.push('anchor '+value);continue;}
- try{await access(path.resolve(base,decodeURI(value.split('#')[0])));}catch{errors.push(attribute+' '+value);}
+ const target=decodeURI(value.split('#')[0]);
+ try{await access(target.startsWith('/')?path.join(root,target):path.resolve(base,target));}catch{errors.push(attribute+' '+value);}
 }
 for(const section of ['8.1.1','8.1.2','8.1.3','8.2.1','8.2.2','8.2.3','8.2.4']){
  if(!md.includes(section)||!html.includes(section))errors.push('missing section '+section);

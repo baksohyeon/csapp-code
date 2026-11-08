@@ -8,7 +8,7 @@ const b=await chromium.launch({channel:'chrome',headless:true});const records=[]
 try{
  const context=await b.newContext({viewport:{width:1440,height:1000},permissions:['clipboard-read','clipboard-write']});const page=await context.newPage();
  if(process.argv.includes('--homepage')){
-  await page.goto(new URL('/',base).href);await page.getByRole('link',{name:'csapp/',exact:true}).click();
+  await page.goto(new URL('/#projects',base).href);await page.locator('a[data-project-link][href="/csapp/"]').click();
  }else await page.goto(base);
  assert.equal(page.url(),new URL(base).href);await page.locator('h1').waitFor();
  assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');

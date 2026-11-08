@@ -10,7 +10,7 @@ const files=[
  `wiki/lectures/2026/${stem}.html`,`wiki/lectures/2026/${stem}.md`,
  ...['abstraction-layers','exception-flow','concurrency-timeline','virtual-address-space','user-kernel-mode','blocking-io','go-gmp'].map(n=>`wiki/assets/${stem}/${n}.svg`),
  'wiki/lectures/2026/2026-07-05-csapp-ch6-memory-hierarchy.html',
- 'chapter07/chapter-7.6.1.html','README.md','index.html','wiki/index.html',
+ 'chapter07/chapter-7.6.1.html','README.md','index.html','wiki/index.html','favicon.svg','favicon.ico',
  ...['tokens.css','docs.css','docs.js','github-dark.css','highlight-LICENSE'].map(n=>`wiki/assets/site/${n}`),
 ];
 for(const dir of ['wiki/notes','wiki/topics','wiki/type'])for(const name of await readdir(dir))if(name.endsWith('.html'))files.push(dir+'/'+name);
