@@ -33,7 +33,7 @@ AGENTS.md              ← 이 레포의 작성 규칙 (에이전트/사람 공�
 
 ## 읽는 법
 
-1. 웹에서는 [CSAPP Wiki](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/)를 연다. `/csapp/`도 같은 Wiki로 이동한다. 로컬 지식베이스 정본은 [wiki/index.md](wiki/index.md)다.
+1. 웹에서는 [CSAPP Wiki](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/)를 연다. `/csapp/`에서도 같은 목차가 바로 열린다. 로컬 지식베이스 정본은 [wiki/index.md](wiki/index.md)다.
 2. 문서 안의 `[[이름]]` 표기는 wiki 내부 링크다. `wiki/` 아래에서 같은 이름의
    파일(`이름.md`)을 찾으면 된다 (Obsidian 등 wikilink 지원 도구에서는 바로 클릭 가능).
 3. 강의노트는 **HTML이 1차 자료**다. GitHub 웹에서는 HTML이 코드로 보이므로,

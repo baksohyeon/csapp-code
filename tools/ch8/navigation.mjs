@@ -12,7 +12,7 @@ const context=await browser.newContext({viewport:{width:1440,height:900},reduced
 const page=await context.newPage();const results=[];
 try{
  let response=await page.goto(base);assert.equal(response.status(),200);
- await page.waitForURL(new URL('wiki/',base).href);assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');
+ assert.equal(page.url(),new URL(base).href);assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');
  await page.getByRole('link',{name:'Ch8 · Exceptional Control Flow',exact:true}).click();
  assert.equal(page.url(),url);
  await page.locator('.docs-hero-nav a').filter({hasText:'Ch7'}).click();

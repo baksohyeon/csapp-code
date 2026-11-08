@@ -10,7 +10,7 @@ try{
  if(process.argv.includes('--homepage')){
   await page.goto(new URL('/',base).href);await page.getByRole('link',{name:'csapp/',exact:true}).click();
  }else await page.goto(base);
- await page.waitForURL(new URL('wiki/',base).href);await page.locator('h1').waitFor();
+ assert.equal(page.url(),new URL(base).href);await page.locator('h1').waitFor();
  assert.equal(await page.locator('h1').innerText(),'CSAPP Wiki');
  const cards=await page.locator('.lecture-list>li>a').allTextContents();assert.deepEqual(cards.map(t=>t.match(/Ch\d/)[0]),['Ch6','Ch7','Ch8']);
  assert((await page.locator('.lecture-list').innerText()).includes('§8.1–§8.2.4'));
@@ -44,7 +44,7 @@ try{
  const ids=await page.locator('[id]').evaluateAll(xs=>xs.map(x=>x.id));assert.equal(ids.length,new Set(ids).size);
  records.push({test:'homepage/CSAPP → Wiki → chapter, readable notes, source reader, back to Wiki; textbook hierarchy; code highlight and clipboard',pass:true,linkedPages:destinations.length,colors});
  await context.close();
- const samples=['wiki/','wiki/notes/0001-compile-linking.html','wiki/topics/compile-linking.html','examples/0002-exceptional-control-flow/','chapter07/examples/'];
+ const samples=['','wiki/','wiki/notes/0001-compile-linking.html','wiki/topics/compile-linking.html','examples/0002-exceptional-control-flow/','chapter07/examples/'];
  for(const route of samples)for(const [width,scheme] of [[375,'light'],[1440,'dark']]){
   const context=await b.newContext({viewport:{width,height:812},colorScheme:scheme});const p=await context.newPage();await p.goto(new URL(route,base).href,{waitUntil:'networkidle'});
   const audit=await new AxeBuilder({page:p}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();

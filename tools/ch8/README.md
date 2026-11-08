@@ -26,14 +26,14 @@ node tools/ch8/browser.mjs https://raspberrypi.bobcat-fort.ts.net/csapp/ live
 HTML·Markdown·SVG 및 기존 Ch6/Ch7 파일의 라이브 hash 비교: `node tools/ch8/live.mjs`.
 
 
-`/`는 `/wiki/`로 이동하며 학습 진입 목차는 Wiki 하나다. 정본 강의 파일은 AGENTS.md의 경로를 유지한다.
+`/`와 `/wiki/`에서 같은 학습 목차를 볼 수 있다. 정본 강의 파일은 AGENTS.md의 경로를 유지한다.
 Ch8의 실습 디버깅 사례는 LAB 아래 `#lab-debugging`에 있으며 이전 한글 fragment는 호환 앵커로 보존한다.
 CSS·JS와 문서 링크는 상대 경로여서 로컬 root와 배포 `/csapp/` 아래에서 동일하게 동작한다.
 
 
 ## Wiki 생성과 학습 동선 검사
 
-`node tools/ch8/render-site.mjs`는 `wiki/index.md`와 Markdown 메타데이터를 읽어 단일 Wiki 입구, 노트·토픽 HTML, 실습 소스 뷰어를 생성한다. `/csapp/`의 index는 Wiki로 이동하는 호환 진입점이다. 변경 후 Ch8은 `render.mjs`로 별도 동기화한다.
+`node tools/ch8/render-site.mjs`는 `wiki/index.md`와 Markdown 메타데이터를 읽어 단일 Wiki 입구, 노트·토픽 HTML, 실습 소스 뷰어를 생성한다. `/csapp/`와 `/csapp/wiki/`의 index는 같은 Markdown에서 생성되며 각 경로에서 바로 열린다. 변경 후 Ch8은 `render.mjs`로 별도 동기화한다.
 
 ```sh
 node tools/ch8/flow.mjs http://127.0.0.1:8765/ /tmp/csapp-flow

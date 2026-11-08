@@ -17,24 +17,27 @@ for(const file of files){
 const byName=new Map([...docs.values()].map(d=>[path.basename(d.file,'.md'),d]));
 const sourceDirs=['examples/0001-compile-linking','examples/0002-exceptional-control-flow','chapter07/examples'];
 function shell(from,title,content,mainClass='docs-home'){
- return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>${escape(title)} | CSAPP Wiki</title>${resources(from)}</head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a>${header(from)}<nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li>${from==='wiki/index.html'?'<span aria-current="page">CSAPP Wiki</span>':`<a href="${relative(from,'wiki/index.html')}">CSAPP Wiki</a>`}</li>${from==='wiki/index.html'?'':`<li aria-current="page">${escape(title)}</li>`}</ol></nav><main id="content" class="${mainClass}">${content}</main></body></html>\n`;
+ const catalog=from==='wiki/index.html'||from==='index.html';
+ return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="icon" href="data:,"><title>${escape(title)} | CSAPP Wiki</title>${resources(from)}</head><body class="docs-page"><a class="skip" href="#content">본문으로 건너뛰기</a>${header(from)}<nav class="docs-breadcrumbs" aria-label="현재 위치"><ol><li><a href="/">홈페이지</a></li><li>${catalog?'<span aria-current="page">CSAPP Wiki</span>':`<a href="${relative(from,'wiki/index.html')}">CSAPP Wiki</a>`}</li>${catalog?'':`<li aria-current="page">${escape(title)}</li>`}</ol></nav><main id="content" class="${mainClass}">${content}</main></body></html>\n`;
 }
-async function targetFor(from,href){
+async function targetFor(from,href,output){
  if(/^(https?:|mailto:|data:|#)/.test(href))return href;
  const [raw,fragment]=href.split('#');const abs=path.posix.normalize(path.posix.join(path.posix.dirname(from),raw));
  let target=docs.get(abs)?.target;
  if(!target&&sourceDirs.includes(abs.replace(/\/$/,'')))target=abs.replace(/\/$/,'')+'/index.html';
  if(!target&&abs.endsWith('.md')){const html=abs.replace(/\.md$/,'.html');try{await access(html);target=html;}catch{}}
  if(!target){try{if((await stat(abs)).isDirectory())return 'https://github.com/baksohyeon/csapp-code/tree/main/'+abs;}catch{}}
- return target?relative(from,target)+(fragment?'#'+fragment:''):href;
+ if(target)return relative(output,target)+(fragment?'#'+fragment:'');
+ if(output===from||href.startsWith('/'))return href;
+ return path.posix.relative(path.posix.dirname(output),abs)+(fragment?'#'+fragment:'');
 }
-async function renderBody(from,text){
+async function renderBody(from,text,output=from){
  let body=text.replace(/^---\n[\s\S]*?\n---\n/,'').replace(/\[\[([^\]]+)\]\]/g,(_,key)=>{
   const [name,label]=key.split('|');const d=byName.get(name);return d?`[${label||d.title}](${relative(from,d.file)})`:label||name;
  });
  // Resolve destinations before Markdown parsing so wrappers always open their readable HTML artifact.
  const destinations=[...body.matchAll(/\]\(([^)]+)\)/g)].map(m=>m[1]);
- for(const href of new Set(destinations))body=body.replaceAll(']('+href+')',']('+await targetFor(from,href)+')');
+ for(const href of new Set(destinations))body=body.replaceAll(']('+href+')',']('+await targetFor(from,href,output)+')');
  const md=createMarkdown({idPrefix:"document-code"});let count=0;
  md.renderer.rules.heading_open=(tokens,i)=>{
   const title=tokens[i+1].content;const id=title.toLowerCase().replace(/[^\p{L}\p{N}_ -]/gu,'').replace(/ /g,'-')||'section-'+(++count);
@@ -43,15 +46,15 @@ async function renderBody(from,text){
  return md.render(body);
 }
 const index='wiki/index.html';
-let body=await renderBody(index,docs.get('wiki/index.md').text);
-const cards=`<ol class="lecture-list">${lectures.map(l=>`<li><p class="docs-kicker">${escape(l.scope)} · ${l.date}</p><a href="${relative(index,l.file)}">${escape(l.title)}</a><p>${escape(l.description)}</p></li>`).join('')}</ol>`;
-body=body.replace(/(<h2[^>]*>강의노트<\/h2>)\s*<ul>[\s\S]*?<\/ul>/,`$1${cards}`);
-body=body.replace(/(<h2[^>]*>문서 작성과 검증 기록<\/h2>)([\s\S]*)$/, '<details class="wiki-maintenance"><summary>문서 작성과 검증 기록</summary>$2</details>');
-const menu=`<nav class="wiki-jump" aria-label="Wiki 탐색"><a href="#강의노트">강의노트</a><a href="#개념-노트">개념 노트</a><a href="#실습과-학습-기록">실습</a><a href="#교재와-스터디-자료">참고 자료</a></nav>`;
-body=body.replace(/(<\/h1>\s*<p>[\s\S]*?<\/p>)/,'$1'+menu);
-await writeFile(index,shell(index,'CSAPP Wiki',`<article class="docs-article wiki-catalog">${body}</article>`));
-// One learning entrance. Old /csapp/ links keep working and land on the Wiki.
-await writeFile('index.html','<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=wiki/"><title>CSAPP Wiki</title></head><body><p><a href="wiki/">CSAPP Wiki 열기</a></p></body></html>\n');
+for(const output of [index,'index.html']){
+ let body=await renderBody(index,docs.get('wiki/index.md').text,output);
+ const cards=`<ol class="lecture-list">${lectures.map(l=>`<li><p class="docs-kicker">${escape(l.scope)} · ${l.date}</p><a href="${relative(output,l.file)}">${escape(l.title)}</a><p>${escape(l.description)}</p></li>`).join('')}</ol>`;
+ body=body.replace(/(<h2[^>]*>강의노트<\/h2>)\s*<ul>[\s\S]*?<\/ul>/,`$1${cards}`);
+ body=body.replace(/(<h2[^>]*>문서 작성과 검증 기록<\/h2>)([\s\S]*)$/, '<details class="wiki-maintenance"><summary>문서 작성과 검증 기록</summary>$2</details>');
+ const menu=`<nav class="wiki-jump" aria-label="Wiki 탐색"><a href="#강의노트">강의노트</a><a href="#개념-노트">개념 노트</a><a href="#실습과-학습-기록">실습</a><a href="#교재와-스터디-자료">참고 자료</a></nav>`;
+ body=body.replace(/(<\/h1>\s*<p>[\s\S]*?<\/p>)/,'$1'+menu);
+ await writeFile(output,shell(output,'CSAPP Wiki',`<article class="docs-article wiki-catalog">${body}</article>`));
+}
 for(const d of docs.values()){
  if(d.file==='wiki/index.md'||d.meta.type==='Lecture'||d.file.includes('x86-strace-debugging'))continue;
  const category=({Topic:'개념 노트',Note:'학습 기록'})[d.meta.type]||'문서 안내';
