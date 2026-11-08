@@ -117,7 +117,7 @@ Dokku build `mvnl9imxumykhi`는 `succeeded`, exit code 0으로 종료했다.
 새 container `fb798948f14b`의 실행과 기본 uptime·port healthcheck 통과를 확인했다.
 정적 사이트의 release는 이 build ID·image·container로 식별한다. 별도 `releases:list` 명령은 이 Dokku 설치에 없다.
 
-- 라이브: [Ch8 학습 문서](https://raspberrypi.bobcat-fort.ts.net/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html)
+- 라이브: [Ch8 학습 문서](https://dorito.tech/csapp/wiki/lectures/2026/2026-10-04-csapp-ch8-exceptional-control-flow.html)
 - [배포 상태](../../validation/ch8/2026-10-25/deployment.json)
 - [라이브 파일 해시](../../validation/ch8/2026-10-25/deployment-content.json): Ch8 HTML·Markdown·SVG 7장, Ch6·Ch7 HTML, README 등 12개 모두 HTTP 200과 SHA-256 일치.
 - [라이브 브라우저 측정](../../validation/ch8/2026-10-25/live/metrics.json): 로컬과 같은 10개 viewport·theme 조건에서 가로 넘침 0·실제 말줄임 0·브라우저 오류 0·세로 스크롤 700px·SVG 7장·anchor 이동 정상.
