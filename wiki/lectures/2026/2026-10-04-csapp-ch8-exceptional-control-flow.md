@@ -124,6 +124,8 @@ source_url: https://i.hyeon.me/csapp
 
 > **REMIND** Fault의 재시도 가능성은 원인이 해결됐을 때의 복귀 모델이다. 접근 위반처럼 프로세스 종료로 이어지는 fault도 있다. [S4][S7]
 
+[COMMENTARY] **그림 읽기** · CPU가 메모리에서 값 하나를 읽는 명령을 실행한다고 하자. 유효한 주소의 페이지를 커널이 준비해 주면 CPU는 같은 명령을 다시 실행해 값을 읽는다. 반면 `write`가 성공해 사용자 코드로 돌아오면 출력 요청은 이미 처리된 상태다. 이때는 호출 다음 명령에서 반환값을 사용할 수 있다. 예외 흐름 그림에서 두 경우의 복귀 위치를 각각 짚어 보자. [S18][S8]
+
 ### 8.1.3 Exceptions in Linux/x86-64 Systems
 
 [CSAPP][사실] 스터디 교재 Global p.765~767의 이 절은 divide error, 일반 보호 예외, page fault, machine check와 system call을 다룬다. CMU 동반 강의도 처리 가능한 page fault의 명령 재실행과 유효하지 않은 메모리 참조의 signal 전달을 비교한다. [S30][S18] (슬라이드 15~17)
@@ -345,6 +347,19 @@ docker run --rm --platform linux/amd64 --cap-add=SYS_PTRACE \
 3. 전체 출력 순서를 다시 실행해 비교한다.
 
 [EXPECTED] 부모·자식이 각각 세 줄을 출력한다. 각 프로세스 안에서는 step 순서가 유지되고, 두 프로세스의 출력이 섞이는 순서는 실행마다 달라질 수 있다.
+
+[COMMENTARY] **먼저 예측하기** · 부모가 `step=2`를 출력한 뒤 자식이 `step=0`을 출력할 수 있을까? 자식이 그때까지 CPU를 배정받지 못했다면 가능하다. 각자의 지역 변수 `i`는 각 프로세스의 주소 공간에 있다. 부모의 반복문이 진행돼도 자식의 첫 값은 0이다. [S31]
+
+저장소 루트에서 다음 명령을 실행한다. 첫 출력은 전체 순서이고, 이어지는 두 줄은 같은 기록을 프로세스별로 읽은 결과다.
+
+```sh
+work=$(mktemp -d)
+cc -std=c11 -Wall -Wextra -Werror examples/0002-exceptional-control-flow/flows.c -o "$work/flows"
+"$work/flows" | tee "$work/run"
+awk '{steps[$1] = steps[$1] " " $3} END {print "parent" steps["parent"]; print "child" steps["child"]}' "$work/run"
+```
+
+[EXPECTED] 마지막 두 줄에는 각각 `step=0 step=1 step=2`가 보인다. 출력에는 코어 번호와 실행 시간이 없으므로, 병렬 실행을 판별하려면 타임라인 그림 아래쪽처럼 같은 시각의 코어별 실행 기록이 필요하다.
 
 ### LAB 3: 주소와 mapping
 
@@ -781,3 +796,5 @@ OrbStack·Rosetta·strace의 최소 재현 코드와 버전별 대조가 필요�
 - **[S29] Linux kernel parameters**: [공식 문서](https://docs.kernel.org/admin-guide/kernel-parameters.html), console·rdinit.
 
 - **[S30] 스터디 교재 판본 확인**: [스터디 PDF 진입 주소](https://i.hyeon.me/csapp.pdf), CSAPP 3e Global Edition. 표제지 PDF 4쪽, 목차 xv쪽(PDF 15쪽), §8.1~§8.2.4 인쇄 p.759~771.
+
+- **[S31] Linux 프로세스 생성**: [fork(2)](https://man7.org/linux/man-pages/man2/fork.2.html), 부모와 자식의 주소 공간 및 반환값. 2026-11-08 확인.

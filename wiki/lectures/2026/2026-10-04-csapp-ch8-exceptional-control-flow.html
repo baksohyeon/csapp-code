@@ -231,6 +231,7 @@
 <blockquote>
 <p><strong>REMIND</strong> Fault의 재시도 가능성은 원인이 해결됐을 때의 복귀 모델이다. 접근 위반처럼 프로세스 종료로 이어지는 fault도 있다. <a class="source-ref" href="#source-s4">[S4]</a><a class="source-ref" href="#source-s7">[S7]</a></p>
 </blockquote>
+<p>[COMMENTARY] <strong>그림 읽기</strong> · CPU가 메모리에서 값 하나를 읽는 명령을 실행한다고 하자. 유효한 주소의 페이지를 커널이 준비해 주면 CPU는 같은 명령을 다시 실행해 값을 읽는다. 반면 <code>write</code>가 성공해 사용자 코드로 돌아오면 출력 요청은 이미 처리된 상태다. 이때는 호출 다음 명령에서 반환값을 사용할 수 있다. 예외 흐름 그림에서 두 경우의 복귀 위치를 각각 짚어 보자. <a class="source-ref" href="#source-s18">[S18]</a><a class="source-ref" href="#source-s8">[S8]</a></p>
 <span class="anchor-alias" id="813-exceptions-in-linuxx86-64-systems" aria-hidden="true"></span><span class="anchor-alias" id="813-linuxx86-64-divide-error와-signal" aria-hidden="true"></span><h3 id="linux-exceptions">8.1.3 Exceptions in Linux/x86-64 Systems<a class="heading-link" href="#linux-exceptions" aria-label="8.1.3 Exceptions in Linux/x86-64 Systems 고정 링크">#</a></h3>
 <p>[CSAPP][사실] 스터디 교재 Global p.765~767의 이 절은 divide error, 일반 보호 예외, page fault, machine check와 system call을 다룬다. CMU 동반 강의도 처리 가능한 page fault의 명령 재실행과 유효하지 않은 메모리 참조의 signal 전달을 비교한다. <a class="source-ref" href="#source-s30">[S30]</a><a class="source-ref" href="#source-s18">[S18]</a> (슬라이드 15~17)</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="가로 스크롤 가능한 비교 표"><table>
@@ -578,6 +579,14 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 <li>전체 출력 순서를 다시 실행해 비교한다.</li>
 </ol>
 <p>[EXPECTED] 부모·자식이 각각 세 줄을 출력한다. 각 프로세스 안에서는 step 순서가 유지되고, 두 프로세스의 출력이 섞이는 순서는 실행마다 달라질 수 있다.</p>
+<p>[COMMENTARY] <strong>먼저 예측하기</strong> · 부모가 <code>step=2</code>를 출력한 뒤 자식이 <code>step=0</code>을 출력할 수 있을까? 자식이 그때까지 CPU를 배정받지 못했다면 가능하다. 각자의 지역 변수 <code>i</code>는 각 프로세스의 주소 공간에 있다. 부모의 반복문이 진행돼도 자식의 첫 값은 0이다. <a class="source-ref" href="#source-s31">[S31]</a></p>
+<p>저장소 루트에서 다음 명령을 실행한다. 첫 출력은 전체 순서이고, 이어지는 두 줄은 같은 기록을 프로세스별로 읽은 결과다.</p>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-4" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-4" class="hljs language-bash">work=$(<span class="hljs-built_in">mktemp</span> -d)
+cc -std=c11 -Wall -Wextra -Werror examples/0002-exceptional-control-flow/flows.c -o <span class="hljs-string">&quot;<span class="hljs-variable">$work</span>/flows&quot;</span>
+<span class="hljs-string">&quot;<span class="hljs-variable">$work</span>/flows&quot;</span> | <span class="hljs-built_in">tee</span> <span class="hljs-string">&quot;<span class="hljs-variable">$work</span>/run&quot;</span>
+awk <span class="hljs-string">&#x27;{steps[$1] = steps[$1] &quot; &quot; $3} END {print &quot;parent&quot; steps[&quot;parent&quot;]; print &quot;child&quot; steps[&quot;child&quot;]}&#x27;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$work</span>/run&quot;</span>
+</code></pre></div>
+<p>[EXPECTED] 마지막 두 줄에는 각각 <code>step=0 step=1 step=2</code>가 보인다. 출력에는 코어 번호와 실행 시간이 없으므로, 병렬 실행을 판별하려면 타임라인 그림 아래쪽처럼 같은 시각의 코어별 실행 기록이 필요하다.</p>
 <span class="anchor-alias" id="lab-3-주소와-mapping" aria-hidden="true"></span><h3 id="lab-mapping">LAB 3: 주소와 mapping<a class="heading-link" href="#lab-mapping" aria-label="LAB 3: 주소와 mapping 고정 링크">#</a></h3>
 <ol>
 <li><code>maps.c</code>가 <code>MAP_PRIVATE|MAP_ANONYMOUS</code>로 만든 주소와 PID를 출력한다.</li>
@@ -695,7 +704,7 @@ docker run --<span class="hljs-built_in">rm</span> --platform linux/amd64 --cap-
 </table></div>
 <p><a href="../../../examples/0002-exceptional-control-flow/">소스와 실행 스크립트</a></p>
 <p><code>hello.c</code>는 <code>write</code>로 표준 출력에 문자열을 보낸다.</p>
-<div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-4" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-4" class="hljs language-c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span> message[] = <span class="hljs-string">&quot;hello, world\n&quot;</span>;
+<div class="code-block"><div class="code-toolbar"><span>C</span><button type="button" class="code-copy" data-copy-code="code-5" aria-label="C 코드 복사">복사</button></div><pre tabindex="0" aria-label="C 코드"><code id="code-5" class="hljs language-c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span> message[] = <span class="hljs-string">&quot;hello, world\n&quot;</span>;
 <span class="hljs-type">ssize_t</span> written = write(STDOUT_FILENO, message, <span class="hljs-keyword">sizeof</span> message - <span class="hljs-number">1</span>);
 </code></pre></div>
 <p>문자열은 newline을 포함해 13바이트다. 반환값을 검사하면 이 호출이 요청한 바이트를 모두 썼는지 알 수 있다. <a href="https://man7.org/linux/man-pages/man2/write.2.html">공식: write(2)</a></p>
@@ -741,14 +750,14 @@ strace가 보여주는 정보는 커널 tracing 인터페이스와 아키텍처�
 <span class="anchor-alias" id="3-첫-증상-출력은-있고-trace는-없다" aria-hidden="true"></span><h4 id="debug-symptom">3. 첫 증상: 출력은 있고 trace는 없다<a class="heading-link" href="#debug-symptom" aria-label="3. 첫 증상: 출력은 있고 trace는 없다 고정 링크">#</a></h4>
 <span class="anchor-alias" id="기대한-결과" aria-hidden="true"></span><h5 id="detail-14">기대한 결과<a class="heading-link" href="#detail-14" aria-label="기대한 결과 고정 링크">#</a></h5>
 <p>[EXPECTED] syscall 이름·인자·반환값을 확인한다. 공백 정렬은 strace 버전에 따라 달라질 수 있다.</p>
-<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-5" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-5" class="hljs language-plaintext">write(1, &quot;hello, world\n&quot;, 13) = 13
+<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-6" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-6" class="hljs language-plaintext">write(1, &quot;hello, world\n&quot;, 13) = 13
 exit_group(0)                  = ?
 </code></pre></div>
 <span class="anchor-alias" id="실제-관측" aria-hidden="true"></span><h5 id="detail-15">실제 관측<a class="heading-link" href="#detail-15" aria-label="실제 관측 고정 링크">#</a></h5>
 <p><strong>[관측]</strong> OrbStack Docker의 Linux/amd64 환경에서 hello 프로그램은 실행됐다.
 필터링된 trace에는 필요한 syscall 행이 나타나지 않아 LAB이 멈췄다.</p>
 <p><a href="../../../validation/ch8/2026-10-25/lab-amd64-strace-incomplete.txt">당시 로그</a>:</p>
-<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-6" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-6" class="hljs language-plaintext">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
+<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-7" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-7" class="hljs language-plaintext">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
 gcc (Debian 12.2.0-14+deb12u1) 12.2.0
 strace -- version 6.1
 hello, world
@@ -760,7 +769,7 @@ hello, world
 <span class="anchor-alias" id="4-orb-cli로-기존-ubuntu를-직접-확인했다" aria-hidden="true"></span><h4 id="debug-orb">4. orb CLI로 기존 Ubuntu를 직접 확인했다<a class="heading-link" href="#debug-orb" aria-label="4. orb CLI로 기존 Ubuntu를 직접 확인했다 고정 링크">#</a></h4>
 <span class="anchor-alias" id="환경을-먼저-목록화한다" aria-hidden="true"></span><h5 id="detail-16">환경을 먼저 목록화한다<a class="heading-link" href="#detail-16" aria-label="환경을 먼저 목록화한다 고정 링크">#</a></h5>
 <p>머신 목록과 아키텍처를 확인하고, 컴파일러·관측 도구의 설치 여부를 조회한다.</p>
-<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-7" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-7" class="hljs language-bash"><span class="hljs-built_in">command</span> -v orb orbctl
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-8" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-8" class="hljs language-bash"><span class="hljs-built_in">command</span> -v orb orbctl
 orbctl list
 orbctl info ubuntu
 orb -m ubuntu <span class="hljs-built_in">uname</span> -a
@@ -770,30 +779,30 @@ orb -m ubuntu sh -c <span class="hljs-string">&#x27;command -v gcc; command -v s
 <code>orbctl info</code>는 Ubuntu 25.04, architecture amd64를 표시했다.
 처음에는 Python만 있었고 GCC와 strace가 없었다.</p>
 <span class="anchor-alias" id="첫-실패는-도구-부재였다" aria-hidden="true"></span><h5 id="detail-17">첫 실패는 도구 부재였다<a class="heading-link" href="#detail-17" aria-label="첫 실패는 도구 부재였다 고정 링크">#</a></h5>
-<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-8" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-8" class="hljs language-plaintext">verify.sh: gcc: not found
+<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-9" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-9" class="hljs language-plaintext">verify.sh: gcc: not found
 verify.sh: strace: not found
 </code></pre></div>
 <p><strong>[판정]</strong> 컴파일러와 strace가 없어 검사 시작 단계에서 멈췄다. 도구를 설치한 뒤 tracing을 검사한다.</p>
 <p><strong>[결정]</strong> 해당 Ubuntu에 GCC·libc 개발 파일·strace를 설치하고 같은 LAB을 다시 실행했다.</p>
-<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-9" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-9" class="hljs language-bash">orb -m ubuntu -u root sh -c \
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-10" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-10" class="hljs language-bash">orb -m ubuntu -u root sh -c \
   <span class="hljs-string">&#x27;apt-get update &amp;&amp; apt-get install -y gcc libc6-dev strace&#x27;</span>
 orb -m ubuntu sh examples/0002-exceptional-control-flow/verify.sh
 </code></pre></div>
 <span class="anchor-alias" id="도구-설치-뒤의-실패를-따로-기록한다" aria-hidden="true"></span><h5 id="detail-18">도구 설치 뒤의 실패를 따로 기록한다<a class="heading-link" href="#detail-18" aria-label="도구 설치 뒤의 실패를 따로 기록한다 고정 링크">#</a></h5>
 <p><strong>[관측]</strong> GCC 14.2.0·strace 6.14가 준비된 뒤에도 LAB은 exit 1이었다.
 <a href="../../../validation/ch8/2026-10-25/lab-orb-amd64.txt">Orb amd64 로그</a>:</p>
-<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-10" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-10" class="hljs language-plaintext">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
+<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-11" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-11" class="hljs language-plaintext">Linux 7.2.12-orbstack-00394-gbecdd6130068 x86_64 GNU/Linux
 gcc (Ubuntu 14.2.0-19ubuntu2) 14.2.0
 strace -- version 6.14
 hello, world
 </code></pre></div>
 <span class="anchor-alias" id="예제를-더-작게-줄였다" aria-hidden="true"></span><h5 id="detail-19">예제를 더 작게 줄였다<a class="heading-link" href="#detail-19" aria-label="예제를 더 작게 줄였다 고정 링크">#</a></h5>
-<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-11" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-11" class="hljs language-bash">orb -m ubuntu strace -e trace=write,exit_group /bin/echo hello
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-12" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-12" class="hljs language-bash">orb -m ubuntu strace -e trace=write,exit_group /bin/echo hello
 </code></pre></div>
 <p><strong>[관측]</strong> 아래 mode 메시지가 반복됐고 마지막에 <code>hello</code>와 종료 코드 0이 나타났다.
 필요한 <code>write</code>·<code>exit_group</code> trace는 나타나지 않았다.
 출력 발췌이며, 반복 메시지는 <a href="../../../validation/ch8/2026-10-25/debug-note/orb-echo-trace.txt">최소 재현 trace</a>에 있다.</p>
-<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-12" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-12" class="hljs language-plaintext">[ Process PID=2682 runs in x32 mode. ]
+<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-13" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-13" class="hljs language-plaintext">[ Process PID=2682 runs in x32 mode. ]
 [ Process PID=2682 runs in 64 bit mode. ]
 ...
 hello
@@ -803,7 +812,7 @@ hello
 <p><strong>[미확인]</strong> mode 메시지가 실제 프로그램의 ABI 전환을 정확히 반영하는지는 검증하지 않았다. 이를 확인하려면 strace가 읽은 상태와 대상 프로세스의 상태를 대조해야 한다.</p>
 <span class="anchor-alias" id="5-왜-uname의-x86_64만으로-충분하지-않았는가" aria-hidden="true"></span><h4 id="debug-architecture">5. 왜 uname의 x86_64만으로 충분하지 않았는가<a class="heading-link" href="#debug-architecture" aria-label="5. 왜 uname의 x86_64만으로 충분하지 않았는가 고정 링크">#</a></h4>
 <p><strong>[관측]</strong> 다음 설정과 등록 상태를 조회했다.</p>
-<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-13" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-13" class="hljs language-bash">orbctl config get rosetta
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-14" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-14" class="hljs language-bash">orbctl config get rosetta
 orb -m ubuntu <span class="hljs-built_in">cat</span> /proc/sys/fs/binfmt_misc/rosetta
 </code></pre></div>
 <p>설정 값은 <code>true</code>, 등록된 interpreter 표기는 <code>[rosetta]</code>였다.</p>
@@ -866,7 +875,7 @@ orb -m ubuntu <span class="hljs-built_in">cat</span> /proc/sys/fs/binfmt_misc/ro
 스크립트가 <code>write(...) = 13</code>의 공백 수를 고정해 비교하고 있었다.
 ARM64 trace에는 필요한 syscall 행이 있었으므로, 공백 정렬을 허용하는 정규식으로 검사할 수 있었다.
 Orb amd64에서는 이 변경 뒤에도 syscall 행이 누락됐다.</p>
-<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-14" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-14" class="hljs language-bash"><span class="hljs-comment"># 공백 정렬을 허용하면서 필요한 의미를 검사한다.</span>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-15" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-15" class="hljs language-bash"><span class="hljs-comment"># 공백 정렬을 허용하면서 필요한 의미를 검사한다.</span>
 grep -E <span class="hljs-string">&#x27;write\(1, &quot;hello, world\\n&quot;, 13\)[[:space:]]+= 13&#x27;</span> trace.txt
 </code></pre></div>
 <p><strong>[판정]</strong> 공백 비교 실패는 trace를 검사하는 단계의 문제이고, 행 누락은 관측 결과를 얻는 단계의 문제다. 실패한 단계를 나누면 각각의 검사 방법을 정할 수 있다.</p>
@@ -959,7 +968,7 @@ LAB에서 <code>/proc</code> 읽기에 성공한 결과가 최종 접근 가능 
 <p>정적 링크 init은 필요한 라이브러리를 실행 파일에 포함한다.
 초기 부팅에서 동적 loader 경로에 대한 의존을 줄일 수 있다.</p>
 <p>QEMU 실행 옵션:</p>
-<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-15" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-15" class="hljs language-bash">qemu-system-x86_64 \
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-16" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-16" class="hljs language-bash">qemu-system-x86_64 \
   -accel tcg -machine q35 -cpu max -m 1536 -smp 2 \
   -nographic -no-reboot -nic none \
   -kernel /path/to/vmlinuz \
@@ -969,14 +978,14 @@ LAB에서 <code>/proc</code> 읽기에 성공한 결과가 최종 접근 가능 
 <p><code>console=ttyS0</code>는 serial console로 로그를 받고, <code>rdinit=/init</code>은 initramfs의 전용 init을 실행하도록 지정한다. <a href="https://docs.kernel.org/admin-guide/kernel-parameters.html">Kernel parameters</a>
 <code>-nic none</code>은 guest의 가상 network 장치를 만들지 않는다. <a href="https://www.qemu.org/docs/master/system/invocation.html">QEMU Invocation</a> kernel·패키지 준비 단계에는 host의 인터넷 연결을 사용한다.</p>
 <p><strong>[재현]</strong> 다음 명령은 rootfs 구성부터 QEMU 실행·LAB 검사까지 수행한다.</p>
-<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-16" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-16" class="hljs language-bash"><span class="hljs-comment"># 레포 root에서. Docker와 QEMU가 준비되어 있어야 한다.</span>
+<div class="code-block"><div class="code-toolbar"><span>Shell</span><button type="button" class="code-copy" data-copy-code="code-17" aria-label="Shell 코드 복사">복사</button></div><pre tabindex="0" aria-label="Shell 코드"><code id="code-17" class="hljs language-bash"><span class="hljs-comment"># 레포 root에서. Docker와 QEMU가 준비되어 있어야 한다.</span>
 python3 tools/ch8/qemu-lab.py /tmp/csapp-x86-result.txt
 </code></pre></div>
 <p><a href="../../../tools/ch8/qemu-lab.py">재현 도구</a>는 guest process와 임시 rootfs를 정리한다.
 완료 시 init은 결과 marker를 출력하고 대기하며, host의 실행 도구가 QEMU process를 종료한다.</p>
 <span class="anchor-alias" id="9-실제로-무엇을-확인했는가" aria-hidden="true"></span><h4 id="debug-results">9. 실제로 무엇을 확인했는가<a class="heading-link" href="#debug-results" aria-label="9. 실제로 무엇을 확인했는가 고정 링크">#</a></h4>
 <p><strong>[관측]</strong> 첫 실행 로그 발췌. 주소·PID·PFN은 해당 실행에서 얻은 값이다.</p>
-<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-17" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-17" class="hljs language-plaintext">Linux 6.18.58-0-lts x86_64 GNU/Linux
+<div class="code-block"><div class="code-toolbar"><span>실행 출력</span><button type="button" class="code-copy" data-copy-code="code-18" aria-label="실행 출력 코드 복사">복사</button></div><pre tabindex="0" aria-label="실행 출력 코드"><code id="code-18" class="hljs language-plaintext">Linux 6.18.58-0-lts x86_64 GNU/Linux
 gcc (Debian 12.2.0-14+deb12u1) 12.2.0
 strace -- version 6.1
 write(1, &quot;hello, world\n&quot;, 13)          = 13
@@ -1207,6 +1216,9 @@ OrbStack·Rosetta·strace의 최소 재현 코드와 버전별 대조가 필요�
 </li>
 <li id="source-s30">
 <p><strong><a class="source-ref" href="#source-s30">[S30]</a> 스터디 교재 판본 확인</strong>: <a href="https://i.hyeon.me/csapp.pdf">스터디 PDF 진입 주소</a>, CSAPP 3e Global Edition. 표제지 PDF 4쪽, 목차 xv쪽(PDF 15쪽), §8.1~§8.2.4 인쇄 p.759~771.</p>
+</li>
+<li id="source-s31">
+<p><strong><a class="source-ref" href="#source-s31">[S31]</a> Linux 프로세스 생성</strong>: <a href="https://man7.org/linux/man-pages/man2/fork.2.html">fork(2)</a>, 부모와 자식의 주소 공간 및 반환값. 2026-11-08 확인.</p>
 </li>
 </ul>
 </section><footer class="docs-footer"><nav class="docs-pagination" aria-label="이전 강의와 원문"><a href="../../../chapter07/chapter-7.6.1.html">← Ch7 · Symbol Resolution</a><a href="2026-10-04-csapp-ch8-exceptional-control-flow.md">Markdown 원문</a></nav><p>확인 기준일 2026-10-25 KST</p></footer></article></main><aside class="docs-outline"><nav aria-label="이 문서에서"><p class="docs-nav-title">이 문서에서</p><ul><li><a href="#summary" data-section="summary">요약과 학습 지도</a></li><li><a href="#foundations" data-section="foundations">기초 개념과 교재 대응</a></li><li><a href="#exceptions" data-section="exceptions">8.1 Exceptions</a></li><li class="nested"><a href="#exception-handling" data-section="exception-handling">8.1.1 Exception Handling</a></li><li class="nested"><a href="#exception-classes" data-section="exception-classes">8.1.2 Classes of Exceptions</a></li><li class="nested"><a href="#linux-exceptions" data-section="linux-exceptions">8.1.3 Exceptions in Linux/x86-64 Systems</a></li><li><a href="#processes" data-section="processes">8.2 Processes</a></li><li class="nested"><a href="#logical-flow" data-section="logical-flow">8.2.1 Logical Control Flow</a></li><li class="nested"><a href="#concurrent-flows" data-section="concurrent-flows">8.2.2 Concurrent Flows</a></li><li class="nested"><a href="#address-space" data-section="address-space">8.2.3 Private Address Space</a></li><li class="nested"><a href="#modes" data-section="modes">8.2.4 User and Kernel Modes</a></li><li><a href="#runtimes" data-section="runtimes">보충: 서버 동시성과 런타임</a></li><li><a href="#labs" data-section="labs">LAB와 적용 로드맵</a></li><li class="nested"><a href="#lab-debugging" data-section="lab-debugging">실습 디버깅 사례</a></li><li><a href="#conditions" data-section="conditions">적용 조건과 미확인</a></li><li><a href="#references" data-section="references">출처</a></li></ul></nav></aside></div></body></html>
